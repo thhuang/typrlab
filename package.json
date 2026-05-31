@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.2.8",
+    "@fontsource/atkinson-hyperlegible-mono": "^5.2.10",
     "@fontsource/cascadia-code": "^5.2.3",
-    "@fontsource/fira-code": "^5.2.7",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/lexend": "^5.2.11",
@@ -26,7 +26,6 @@
     "@fontsource/merriweather": "^5.2.11",
     "@fontsource/source-code-pro": "^5.2.7",
     "@fontsource/space-grotesk": "^5.2.10",
-    "@fontsource/ubuntu-mono": "^5.2.8",
     "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
