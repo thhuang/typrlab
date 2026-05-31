@@ -954,6 +954,11 @@
   gap: 22px;
   align-items: start;
 }
+/* The heading spans both columns as the top row. */
+.settings-twopane > .settings-title {
+  grid-column: 1 / -1;
+  margin-bottom: -6px;
+}
 .settings-nav {
   display: flex;
   flex-direction: column;
@@ -989,10 +994,23 @@
   gap: 16px;
   min-width: 0;
 }
-@media (max-width: 780px) {
-  .settings-twopane {
-    grid-template-columns: 1fr;
-  }
+
+/* Single-column fallback (<=780px): the three groups stacked, preview inside
+   Text appearance. The layout is chosen in JS, so the two-pane never renders here. */
+.settings-single {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.settings-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.3px;
+}
+.settings-preview-wrap {
+  padding: 6px 0 14px;
 }
 .sgroup {
   border: 1px solid var(--line);
