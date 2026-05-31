@@ -19,7 +19,7 @@ import {
   saveHistory,
   clearHistory,
 } from '@/core/persist';
-import { fontStack } from '@/ui/fonts';
+import { fontStack, resolveFontId } from '@/ui/fonts';
 
 export interface TypingSession {
   settings: Settings;
@@ -76,8 +76,15 @@ async function applyDevHash(): Promise<void> {
   }
 }
 
+// Load settings, coercing a retired saved font id to a valid one.
+function loadSettingsResolved(): Settings {
+  const s = loadSettings();
+  s.font = resolveFontId(s.font);
+  return s;
+}
+
 export function useTypingSession(): TypingSession {
-  const [settings, setSettings] = useState<Settings>(() => loadSettings());
+  const [settings, setSettings] = useState<Settings>(loadSettingsResolved);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
 
@@ -123,7 +130,7 @@ export function useTypingSession(): TypingSession {
       statsRef.current = stats;
       bigramsRef.current = bigrams;
       setHistory(h);
-      const s = loadSettings();
+      const s = loadSettingsResolved();
       settingsRef.current = s;
       setSettings(s);
       startNext();

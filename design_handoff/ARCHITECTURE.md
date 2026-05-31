@@ -39,7 +39,7 @@ npm run test:smoke # headless checks of the adaptive core
 | `src/core/*` | Engine: `guided`, `phonetic`, `keyStats`, `bigramStats`, `learning`, `target`, `textInput`, `result`, `settings`, `persist`, `words`, `types`. |
 | `src/theme.css` | **Generated** design tokens — `:root` + a `[data-theme='…']` block per theme. Do not edit by hand; regenerate via `scripts/gen-themes.mjs`. |
 | `src/app.css` | All component styles (class-based). |
-| `src/fonts-load.ts` | Imports each `@fontsource` face (Latin subset) + bundled Meslo (`src/meslo.css`, `public/fonts/meslo-lg.woff2`). |
+| `src/fonts-load.ts` | Imports each `@fontsource` face (Latin subset). |
 | `scripts/gen-themes.mjs` | Palette → OKLCH token generator → writes `src/theme.css`. |
 
 Path alias: **`@/` → `src/`**.
