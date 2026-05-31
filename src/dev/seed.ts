@@ -1,7 +1,7 @@
 // Dev-only: seed a realistic practice history so the Analysis view can be
-// demoed/screenshotted without typing 40 lessons by hand. Loaded only when
-// `import.meta.env.DEV` is true and the URL hash contains "seed" — never ships
-// in a production build.
+// demoed/screenshotted without typing 40 lessons by hand. Dynamically imported by
+// useTypingSession only when `process.env.NODE_ENV === 'development'` and the URL
+// hash contains "seed" — so it is stripped from production builds.
 import type { BigramEntry, HistogramEntry, LessonResult } from '../core/types';
 import { computeMetrics } from '../core/result';
 
