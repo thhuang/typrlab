@@ -200,7 +200,8 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          typr <span className="tag">adaptive</span>
+          typr<span className="caret">_</span>
+          <span className="tag">adaptive</span>
         </div>
         <div className="viewtoggle">
           <button className={view === 'practice' ? 'active' : ''} onClick={() => setView('practice')}>

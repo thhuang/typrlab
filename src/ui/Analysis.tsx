@@ -9,6 +9,9 @@ import { timeToSpeed } from '../core/target';
 import { projectLessonsToTarget } from '../core/learning';
 import { LineChart } from './LineChart';
 import { HeatmapChart, type HeatRow } from './HeatmapChart';
+import { BarChart, type Bar } from './BarChart';
+import { KeyboardHeatmap } from './KeyboardHeatmap';
+import { confidenceColor } from './color';
 
 const FREQ_ORDER = 'etaoinshrdlcumwfgypbvkjxqz';
 const HEATMAP_MAX_COLS = 60;
@@ -93,6 +96,29 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
       cells: shownColumns.map((col) => col.get(cp) ?? null),
     }));
 
+  // Per-key speed histogram (slowest first), bars tinted by confidence.
+  const speedBars: Bar[] = stats
+    .allStats()
+    .filter((s) => s.timeToType !== null)
+    .map((s) => {
+      const conf = stats.effectiveConfidence(
+        s.codePoint,
+        settings.targetSpeed,
+        !settings.recoverKeys,
+        settings.accuracyAware,
+      );
+      return {
+        label: String.fromCodePoint(s.codePoint),
+        value: wpm(s.timeToType ? timeToSpeed(s.timeToType) : 0),
+        color: confidenceColor(Math.min(1, conf)),
+      };
+    })
+    .sort((a, b) => a.value - b.value);
+
+  // Per-key accuracy, for the keyboard heatmap.
+  const accValues = new Map<number, number>();
+  for (const s of stats.allStats()) if (s.accuracy !== null) accValues.set(s.codePoint, s.accuracy);
+
   return (
     <section className="analysis">
       <div className="analysis-toolbar">
@@ -169,6 +195,18 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
 
       <div className="acard">
         <div className="acard-head">
+          <span>Key speed</span>
+          <span className="muted">average words per minute per key · slowest first</span>
+        </div>
+        {speedBars.length > 0 ? (
+          <BarChart bars={speedBars} unit="wpm" />
+        ) : (
+          <p className="muted pad">No key data yet — type a lesson.</p>
+        )}
+      </div>
+
+      <div className="acard">
+        <div className="acard-head">
           <span>Transitions to drill</span>
           <span className="muted">slowest digraphs — the transitions costing you the most</span>
         </div>
@@ -199,6 +237,20 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="acard">
+        <div className="acard-head">
+          <span>Accuracy by key</span>
+          <span className="muted">how cleanly you hit each key · red → green</span>
+        </div>
+        {accValues.size > 0 ? (
+          <div className="kb-heatmap-wrap">
+            <KeyboardHeatmap values={accValues} />
+          </div>
+        ) : (
+          <p className="muted pad">No accuracy data yet — type a lesson.</p>
+        )}
       </div>
     </section>
   );
