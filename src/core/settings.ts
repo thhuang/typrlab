@@ -36,6 +36,8 @@ export interface Settings {
   theme: string;
   /** Typing cursor indicator style. */
   cursorStyle: 'box' | 'underline' | 'bar' | 'block';
+  /** Typing-surface font id (see src/ui/fonts.ts). */
+  font: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -50,4 +52,5 @@ export const DEFAULT_SETTINGS: Settings = {
   layout: 'en',
   theme: 'paper',
   cursorStyle: 'box',
+  font: 'jetbrains-mono',
 };
