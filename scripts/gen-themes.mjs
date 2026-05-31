@@ -90,6 +90,11 @@ function tokens(t) {
     ['--key-edge', css(keyEdge)],
     ['--hit', css(hit)],
     ['--miss', css(miss)],
+    // Confidence ramp endpoints = this theme's own red/green (mixed in OKLCH at
+    // use sites). --on-confidence is the legible text color over those fills.
+    ['--slow-key-color', css(miss)],
+    ['--fast-key-color', css(hit)],
+    ['--on-confidence', light ? 'oklch(0.99 0 0)' : 'oklch(0.16 0.012 265)'],
     ['--glow-1', css(accent, light ? 0.05 : 0.1)],
     ['--glow-2', css(hit, light ? 0.04 : 0.08)],
     ['--grain-opacity', light ? '0.02' : '0.04'],
@@ -100,8 +105,6 @@ const block = (sel, pairs, extra = []) =>
   `${sel} {\n${[...extra, ...pairs].map(([k, v]) => `  ${k}: ${v};`).join('\n')}\n}`;
 
 const CONSTS = [
-  ['--slow-key-color', '#ff5d5d'],
-  ['--fast-key-color', '#5fd38a'],
   ['--radius', '14px'],
   ['--font-display', `'Space Grotesk', ui-sans-serif, system-ui, sans-serif`],
   ['--font-mono', `'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace`],

@@ -29,7 +29,7 @@ export function Keyboard({ stats, targetSpeed, included, focus, recoverKeys }: P
               : stats.bestConfidence(cp, targetSpeed);
             const isFocus = focus === cp;
             const style: CSSProperties = inc
-              ? { background: confidenceColor(conf), color: conf > 0.55 ? '#08121a' : '#fff' }
+              ? { background: confidenceColor(conf), color: 'var(--on-confidence)' }
               : {};
             const pct = Math.round(Math.min(1, conf) * 100);
             const cls = `key ${inc ? 'included' : 'excluded'}${isFocus ? ' focus' : ''}`;

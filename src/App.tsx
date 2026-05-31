@@ -295,6 +295,22 @@ export default function App() {
               />
               recover keys
             </label>
+            <label className="rng cursor-pick">
+              Cursor
+              <select
+                className="theme-select"
+                value={settings.cursorStyle}
+                onChange={(e) =>
+                  updateSettings({ cursorStyle: e.target.value as Settings['cursorStyle'] })
+                }
+                aria-label="Cursor style"
+              >
+                <option value="box">Box</option>
+                <option value="underline">Underline</option>
+                <option value="bar">Bar</option>
+                <option value="block">Block (reverse)</option>
+              </select>
+            </label>
             <button onClick={() => startNext()} title="Skip lesson (Ctrl+→)">
               Skip
             </button>
@@ -304,7 +320,14 @@ export default function App() {
           </div>
 
           <main className="stage">
-            {plan && <TypingBoard text={plan.text} position={position} hasError={hasError} />}
+            {plan && (
+              <TypingBoard
+                text={plan.text}
+                position={position}
+                hasError={hasError}
+                cursorStyle={settings.cursorStyle}
+              />
+            )}
             <Keyboard
               stats={statsRef.current}
               targetSpeed={settings.targetSpeed}

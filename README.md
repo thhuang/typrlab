@@ -38,6 +38,8 @@ npm run build        # typecheck + production build
 - **Bigram-aware targeting** — finds the slowest *transitions* (digraphs like
   `th`, `er`) hiding inside otherwise-fine per-key averages, and drills them.
 - Phonetic pseudo-words plus a real-word mode.
+- Calm, configurable typing cursor — **box / underline / bar / reverse** — and a
+  theme-aware confidence ramp (each theme's own red→green, mixed in OKLCH).
 
 ### Analysis
 - Learning curve (speed over time) with trend.
