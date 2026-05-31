@@ -1,0 +1,218 @@
+.app {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Top bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.brand .tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+}
+.controls .rng {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.controls .chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.controls button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.controls button:hover {
+  border-color: var(--accent);
+}
+.controls button.danger:hover {
+  border-color: var(--miss);
+  color: var(--miss);
+}
+
+/* Stage */
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+}
+
+/* Typing board */
+.board {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 30px 28px;
+  min-height: 96px;
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 30px;
+  line-height: 1.7;
+  letter-spacing: 1px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: none;
+}
+.ch {
+  color: var(--untyped);
+  transition: color 80ms linear;
+}
+.ch.hit {
+  color: var(--hit);
+}
+.ch.cursor {
+  background: var(--cursor);
+  color: #08121a;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(154, 216, 255, 0.35);
+}
+.ch.cursor.err {
+  background: var(--miss);
+  color: #1a0608;
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.4);
+}
+
+/* Keyboard */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.krow {
+  display: flex;
+  gap: 8px;
+}
+.key {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 17px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+}
+.key.excluded {
+  color: #4a5562;
+  opacity: 0.55;
+  position: relative;
+}
+.key.focus {
+  outline: 3px solid var(--cursor);
+  outline-offset: 1px;
+}
+
+/* Hint */
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.hint b {
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+/* Stats */
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+}
+@media (max-width: 760px) {
+  .cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.card-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.card-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.goal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.goalbar {
+  flex: 1;
+  height: 8px;
+  background: var(--panel-2);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.goalfill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--fast-key-color));
+  transition: width 200ms ease;
+}
+.goaltext {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
