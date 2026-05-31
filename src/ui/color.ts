@@ -12,8 +12,9 @@ function hexToRgb(hex: string): Rgb {
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
-const SLOW = hexToRgb('#cc0000');
-const FAST = hexToRgb('#60d788');
+// Refined confidence ramp endpoints (kept in sync with the CSS custom props).
+const SLOW = hexToRgb('#ff5d5d');
+const FAST = hexToRgb('#5fd38a');
 
 export function confidenceColor(confidence: number): string {
   const t = Math.max(0, Math.min(1, confidence));
