@@ -21,6 +21,7 @@ import { TypingBoard } from './ui/TypingBoard';
 import { Keyboard } from './ui/Keyboard';
 import { StatsPanel } from './ui/StatsPanel';
 import { Analysis } from './ui/Analysis';
+import { DARK_THEMES, LIGHT_THEMES } from './ui/themes';
 
 type View = 'practice' | 'analysis';
 
@@ -119,6 +120,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
+  // Apply the active color theme to the document root.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.theme);
+  }, [settings.theme]);
+
   function updateSettings(patch: Partial<Settings>) {
     setSettings((prev) => {
       const next = { ...prev, ...patch };
@@ -203,19 +209,43 @@ export default function App() {
           typr<span className="caret">_</span>
           <span className="tag">adaptive</span>
         </div>
-        <div className="viewtoggle">
-          <button className={view === 'practice' ? 'active' : ''} onClick={() => setView('practice')}>
-            Practice
-          </button>
-          <button
-            className={view === 'analysis' ? 'active' : ''}
-            onClick={() => {
-              setView('analysis');
-              rerender();
-            }}
+        <div className="header-right">
+          <select
+            className="theme-select"
+            value={settings.theme}
+            onChange={(e) => updateSettings({ theme: e.target.value })}
+            title="Color theme"
+            aria-label="Color theme"
           >
-            Analysis
-          </button>
+            <optgroup label="Dark">
+              {DARK_THEMES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Light">
+              {LIGHT_THEMES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+          <div className="viewtoggle">
+            <button className={view === 'practice' ? 'active' : ''} onClick={() => setView('practice')}>
+              Practice
+            </button>
+            <button
+              className={view === 'analysis' ? 'active' : ''}
+              onClick={() => {
+                setView('analysis');
+                rerender();
+              }}
+            >
+              Analysis
+            </button>
+          </div>
         </div>
       </header>
 

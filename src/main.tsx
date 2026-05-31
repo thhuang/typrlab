@@ -10,6 +10,15 @@ async function boot() {
     const { seedDemo } = await import('./dev/seed');
     seedDemo();
   }
+  // Dev-only theme override via #...theme=<id> (for previews/screenshots).
+  if (import.meta.env.DEV) {
+    const m = location.hash.match(/theme=([a-z0-9-]+)/);
+    if (m) {
+      const s = JSON.parse(localStorage.getItem('typr.settings') || '{}');
+      s.theme = m[1];
+      localStorage.setItem('typr.settings', JSON.stringify(s));
+    }
+  }
   createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
       <App />

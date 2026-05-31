@@ -32,6 +32,8 @@ export interface Settings {
   bigramTargeting: boolean;
   /** Keyboard layout id (informational for now). */
   layout: string;
+  /** Active color theme id (see src/ui/themes.ts). */
+  theme: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -44,4 +46,5 @@ export const DEFAULT_SETTINGS: Settings = {
   accuracyAware: true,
   bigramTargeting: true,
   layout: 'en',
+  theme: 'amber',
 };
