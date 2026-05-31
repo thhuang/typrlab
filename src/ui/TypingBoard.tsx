@@ -8,12 +8,14 @@ interface Props {
   position: number;
   hasError: boolean;
   cursorStyle: Settings['cursorStyle'];
+  /** Render as a naked line (no panel) for the Zen focus view. */
+  bare?: boolean;
 }
 
-export function TypingBoard({ text, position, hasError, cursorStyle }: Props) {
+export function TypingBoard({ text, position, hasError, cursorStyle, bare = false }: Props) {
   const chars = Array.from(text);
   return (
-    <div className="board" aria-label="typing text">
+    <div className={bare ? 'zen-text' : 'board'} aria-label="typing text">
       {chars.map((ch, i) => {
         let cls = 'ch';
         if (i < position) cls += ' hit';
