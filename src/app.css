@@ -180,7 +180,18 @@
   color: var(--miss);
 }
 
-/* ---------- Typing board ---------- */
+/* ---------- Practice stage (Instrument layout) / typing board ---------- */
+.practice-instrument {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+}
 .board {
   position: relative;
   width: 100%;
@@ -331,6 +342,7 @@
   margin: 0;
   color: var(--muted);
   font-size: 13.5px;
+  text-align: center;
 }
 .hint b {
   color: var(--accent-soft);
@@ -340,6 +352,9 @@
 }
 .hint-left {
   text-align: left;
+}
+.hint .dim {
+  opacity: 0.7;
 }
 
 /* ---------- Coach practice layout ---------- */

@@ -5,6 +5,7 @@ import { useTypingSession } from '@/hooks/useTypingSession';
 import { TypingBoard } from '@/ui/TypingBoard';
 import { Keyboard } from '@/ui/Keyboard';
 import { CoachRail } from '@/ui/CoachRail';
+import { StatsPanel } from '@/ui/StatsPanel';
 import { ZenView } from '@/ui/ZenView';
 import { Analysis } from '@/ui/Analysis';
 import { SettingsView } from '@/ui/SettingsView';
@@ -29,11 +30,13 @@ export default function TyprApp() {
     plan,
     position,
     hasError,
+    last,
     stats,
     bigrams,
     startNext,
     processKey,
     updateSettings,
+    setPracticeView,
     clearAll,
     exportData,
     importData,
@@ -75,6 +78,11 @@ export default function TyprApp() {
 
   const includedSet = new Set(plan?.included ?? []);
   const focusCp = plan?.focus ?? null;
+  const focusChar = focusCp !== null ? String.fromCodePoint(focusCp) : null;
+  const bigramFocus = plan?.bigramFocus ?? null;
+  const drillLabel = bigramFocus
+    ? `${String.fromCodePoint(bigramFocus[0])}→${String.fromCodePoint(bigramFocus[1])}`
+    : (focusChar ?? '—');
 
   // Zen focus mode replaces the whole practice screen with a calm, chrome-free view.
   if (view === 'practice' && focusMode && plan) {
@@ -115,6 +123,19 @@ export default function TyprApp() {
       {view === 'practice' ? (
         <>
           <div className="actions">
+            <div className="segmented" role="group" aria-label="Practice layout">
+              {(['coach', 'instrument'] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`seg${settings.practiceView === v ? ' active' : ''}`}
+                  aria-pressed={settings.practiceView === v}
+                  onClick={() => setPracticeView(v)}
+                >
+                  {v[0].toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
             <span className="actions-target">
               Target {Math.round(settings.targetSpeed / 5)} wpm
             </span>
@@ -131,30 +152,67 @@ export default function TyprApp() {
             </button>
           </div>
 
-          <main className="practice-coach">
-            <div className="coach-main">
-              {plan && (
-                <TypingBoard
-                  text={plan.text}
-                  position={position}
-                  hasError={hasError}
-                  cursorStyle={settings.cursorStyle}
+          {settings.practiceView === 'instrument' ? (
+            <div className="practice-instrument">
+              <main className="stage">
+                {plan && (
+                  <TypingBoard
+                    text={plan.text}
+                    position={position}
+                    hasError={hasError}
+                    cursorStyle={settings.cursorStyle}
+                  />
+                )}
+                <Keyboard
+                  stats={stats}
+                  targetSpeed={settings.targetSpeed}
+                  included={includedSet}
+                  focus={focusCp}
+                  recoverKeys={settings.recoverKeys}
                 />
-              )}
-              <Keyboard
-                stats={stats}
-                targetSpeed={settings.targetSpeed}
-                included={includedSet}
-                focus={focusCp}
-                recoverKeys={settings.recoverKeys}
+                <p className="hint">
+                  Just start typing — a wrong key holds the cursor until you fix it. Drilling:{' '}
+                  <b>{drillLabel}</b>
+                  {bigramFocus ? <span className="dim"> (weak transition)</span> : null}
+                </p>
+              </main>
+
+              <StatsPanel
+                last={last}
+                history={history}
+                settings={settings}
+                unlocked={includedSet.size}
+                focus={focusChar}
               />
-              <p className="hint hint-left">
-                Continuous flow — finishing a line generates the next automatically. A wrong key
-                holds the cursor until you fix it.
-              </p>
             </div>
-            {plan && <CoachRail plan={plan} stats={stats} bigrams={bigrams} settings={settings} />}
-          </main>
+          ) : (
+            <main className="practice-coach">
+              <div className="coach-main">
+                {plan && (
+                  <TypingBoard
+                    text={plan.text}
+                    position={position}
+                    hasError={hasError}
+                    cursorStyle={settings.cursorStyle}
+                  />
+                )}
+                <Keyboard
+                  stats={stats}
+                  targetSpeed={settings.targetSpeed}
+                  included={includedSet}
+                  focus={focusCp}
+                  recoverKeys={settings.recoverKeys}
+                />
+                <p className="hint hint-left">
+                  Continuous flow — finishing a line generates the next automatically. A wrong key
+                  holds the cursor until you fix it.
+                </p>
+              </div>
+              {plan && (
+                <CoachRail plan={plan} stats={stats} bigrams={bigrams} settings={settings} />
+              )}
+            </main>
+          )}
         </>
       ) : view === 'analysis' ? (
         <Analysis

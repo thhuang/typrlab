@@ -36,12 +36,14 @@ export interface TypingSession {
   /** Feed a keydown event (caller attaches the listener only while practicing). */
   processKey: (e: KeyboardEvent) => void;
   updateSettings: (patch: Partial<Settings>) => void;
+  /** Switch practice layout (coach/instrument) without regenerating the lesson. */
+  setPracticeView: (view: Settings['practiceView']) => void;
   clearAll: () => void;
   exportData: () => void;
   importData: (file: File) => void;
 }
 
-/** Dev-only: apply #seed / #seedfull / #theme= / #font= / #cursor= hash hooks for previews. */
+/** Dev-only: apply #seed / #seedfull / #theme= / #font= / #cursor= / #view= hash hooks for previews. */
 async function applyDevHash(): Promise<void> {
   if (process.env.NODE_ENV !== 'development' || typeof location === 'undefined') return;
   try {
@@ -60,11 +62,13 @@ async function applyDevHash(): Promise<void> {
     const t = grab(/theme=([a-z0-9-]+)/);
     const f = grab(/font=([a-z0-9-]+)/);
     const c = grab(/cursor=([a-z]+)/);
-    if (t || f || c) {
+    const v = grab(/view=(coach|instrument)/);
+    if (t || f || c || v) {
       const s = JSON.parse(localStorage.getItem('typr.settings') || '{}');
       if (t) s.theme = t;
       if (f) s.font = f;
       if (c) s.cursorStyle = c;
+      if (v) s.practiceView = v;
       localStorage.setItem('typr.settings', JSON.stringify(s));
     }
   } catch {
@@ -185,6 +189,17 @@ export function useTypingSession(): TypingSession {
     [startNext, rerender],
   );
 
+  // View-only preference: persist + re-render, but keep the current lesson.
+  const setPracticeView = useCallback((practiceView: Settings['practiceView']) => {
+    setSettings((prev) => {
+      if (prev.practiceView === practiceView) return prev;
+      const next = { ...prev, practiceView };
+      saveSettings(next);
+      settingsRef.current = next;
+      return next;
+    });
+  }, []);
+
   const clearAll = useCallback(() => {
     clearHistory();
     statsRef.current = new KeyStatsMap();
@@ -255,6 +270,7 @@ export function useTypingSession(): TypingSession {
     startNext,
     processKey,
     updateSettings,
+    setPracticeView,
     clearAll,
     exportData,
     importData,
