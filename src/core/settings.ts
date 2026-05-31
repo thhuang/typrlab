@@ -48,6 +48,6 @@ export const DEFAULT_SETTINGS: Settings = {
   accuracyAware: true,
   bigramTargeting: true,
   layout: 'en',
-  theme: 'amber',
+  theme: 'paper',
   cursorStyle: 'box',
 };
