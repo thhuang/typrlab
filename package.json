@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Adaptive typing trainer inspired by keybr.com, built to be better.",
+  "description": "An adaptive typing trainer that drills your weakest keys and transitions.",
+  "license": "UNLICENSED",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.json && vite build",

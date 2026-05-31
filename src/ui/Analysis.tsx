@@ -8,6 +8,10 @@ import { BigramStatsMap } from '../core/bigramStats';
 import { timeToSpeed } from '../core/target';
 import { projectLessonsToTarget } from '../core/learning';
 import { LineChart } from './LineChart';
+import { HeatmapChart, type HeatRow } from './HeatmapChart';
+
+const FREQ_ORDER = 'etaoinshrdlcumwfgypbvkjxqz';
+const HEATMAP_MAX_COLS = 60;
 
 interface Props {
   stats: KeyStatsMap;
@@ -66,6 +70,29 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
     .sort((a, b) => a.conf - b.conf)
     .slice(0, 8);
 
+  // Per-key learning heatmap: replay history, snapshotting each key's live
+  // confidence after every lesson.
+  const replay = new KeyStatsMap();
+  const columns: Array<Map<number, number>> = [];
+  for (const r of history) {
+    replay.ingestResult(r);
+    const snap = new Map<number, number>();
+    for (const ch of FREQ_ORDER) {
+      const cp = ch.codePointAt(0)!;
+      const st = replay.get(cp);
+      if (st && st.timeToType !== null) snap.set(cp, replay.confidence(cp, settings.targetSpeed));
+    }
+    columns.push(snap);
+  }
+  const shownColumns = columns.slice(Math.max(0, columns.length - HEATMAP_MAX_COLS));
+  const heatRows: HeatRow[] = Array.from(FREQ_ORDER)
+    .map((ch) => ch.codePointAt(0)!)
+    .filter((cp) => replay.get(cp)?.timeToType != null)
+    .map((cp) => ({
+      label: String.fromCodePoint(cp),
+      cells: shownColumns.map((col) => col.get(cp) ?? null),
+    }));
+
   return (
     <section className="analysis">
       <div className="analysis-toolbar">
@@ -87,6 +114,18 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
           <LineChart values={curve} />
         ) : (
           <p className="muted pad">Type a few lessons to see your curve build.</p>
+        )}
+      </div>
+
+      <div className="acard">
+        <div className="acard-head">
+          <span>Learning progress</span>
+          <span className="muted">per-key confidence over lessons · red → green</span>
+        </div>
+        {heatRows.length > 0 ? (
+          <HeatmapChart rows={heatRows} />
+        ) : (
+          <p className="muted pad">Type a few lessons to see your progress map.</p>
         )}
       </div>
 
@@ -131,7 +170,7 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
       <div className="acard">
         <div className="acard-head">
           <span>Transitions to drill</span>
-          <span className="muted">slowest digraphs · typr targets these, keybr can't see them</span>
+          <span className="muted">slowest digraphs — the transitions costing you the most</span>
         </div>
         <table className="ktable">
           <thead>

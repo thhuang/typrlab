@@ -359,3 +359,38 @@
 .ktable tr.reached .kcell {
   color: var(--hit);
 }
+
+/* Learning heatmap */
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+.hm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hm-label {
+  width: 14px;
+  flex: 0 0 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+.hm-cells {
+  display: flex;
+  gap: 2px;
+}
+.hm-cell {
+  width: 12px;
+  height: 16px;
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}

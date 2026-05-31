@@ -1,21 +1,18 @@
 # typr
 
-An **adaptive typing trainer** — inspired by [keybr.com](https://www.keybr.com/), built to be better.
+An **adaptive typing trainer** that figures out exactly what's slowing you down —
+key by key, *transition by transition* — and drills it, so practice time goes
+where it actually moves the needle.
 
-typr generates targeted practice on the fly, tracks your performance per key, and adapts what it drills based on where you're actually slow — so practice time goes where it matters instead of retyping text you already type well.
-
-## Vision
-
-keybr proved the model: don't make people copy random books — generate *pronounceable pseudo-words* from a phonetic n-gram model, unlock keys progressively as you hit a target speed, and bias each lesson toward your weakest keys. typr keeps that proven core and aims to beat it on:
-
-- **Smarter adaptation** — richer per-key/per-bigram modeling, confidence-aware key selection, and faster convergence on weak spots.
-- **Deeper analysis** — clearer learning curves, a per-key heatmap, error/latency breakdowns, and actionable "drill this next" guidance.
-- **Better practice UX** — responsive feedback, configurable content (pseudo-words, real words, code, punctuation/numbers), and frictionless flow.
-- **Local-first & portable** — your data is yours; works offline, syncs when you want it to.
+typr generates practice text on the fly from the letters you've unlocked, weighted
+toward your weak spots. It expands your alphabet only when you're both fast **and**
+accurate, tracks per-key and per-transition timing, and shows you an honest,
+actionable picture of what to work on next.
 
 ## Status
 
-🟢 **Runnable MVP.** Stack: **React + TypeScript + Vite**, local-first (`localStorage`). The adaptive core is implemented and verified — the `timeToType`/`confidence` model, per-key EMA (α=0.1), the confidence-gated letter-unlock rule with weakest-key focus, an n-gram phonetic generator, and a live per-key confidence keyboard.
+🟢 **Runnable.** Stack: **React + TypeScript + Vite**, local-first (your data
+stays in your browser).
 
 ```bash
 npm install
@@ -24,49 +21,44 @@ npm run test:smoke   # headless checks of the adaptive core
 npm run build        # typecheck + production build
 ```
 
-The deep technical study this is built from lives in [`docs/keybr-explainer.md`](docs/keybr-explainer.md) and [`BUILD_NOTES.md`](BUILD_NOTES.md).
+## Features
 
-### Implemented (keybr baseline)
+### Adaptive practice
+- Guided lessons over a dynamically expanding letter set (starts with the most
+  common letters and grows as you improve).
+- Stop-on-error typing with precise per-keystroke timing and outlier rejection.
+- **Accuracy-aware unlocking** — a key must be typed fast *and* accurately before
+  it counts toward unlocking the next letter.
+- **Bigram-aware targeting** — finds the slowest *transitions* (digraphs like
+  `th`, `er`) hiding inside otherwise-fine per-key averages, and drills them.
+- Phonetic pseudo-words plus a real-word mode.
 
-- Guided lessons over a dynamically expanding letter set (starts at `etaoin`).
-- Stop-on-error typing with per-keystroke timing and outlier clamping.
-- Adaptive unlocking gated on best/live confidence (`recover keys` toggle).
-- Phonetic pseudo-words + natural-words mode; weakest key over-sampled.
-- Live keyboard heatmap, post-lesson gauges, daily-goal bar, persistent history.
+### Analysis
+- Learning curve (speed over time) with trend.
+- **Per-key learning heatmap** — every key's confidence over your whole history.
+- **Keys to drill** — weakest-first table with speed, accuracy, confidence, and a
+  projected *lessons-to-target* estimate per key.
+- **Transitions to drill** — your slowest digraphs.
 
-### Better than keybr (shipped)
+### Your data
+- Local-first. Full **JSON export / import** of your history and settings.
 
-- **Accuracy-aware unlocking** — keybr's confidence is speed-only, so a key typed
-  fast but sloppily unlocks the next letter prematurely (typos are excluded from
-  its timing). typr folds accuracy into confidence, so a key must be fast **and**
-  accurate to bank/unlock. Toggle: `accuracy-aware` (default on).
-- **Actionable Analysis view** — instead of keybr's stale, baked-in "you beat X%"
-  percentile, typr shows a learning curve plus a weakest-first **keys-to-drill**
-  table with per-key speed, accuracy, confidence, and **projected lessons-to-target**.
-- **Bigram-aware targeting** — keybr only models single keys, so a slow
-  *transition* (a same-finger digraph like `ed`, or `th`/`er`) hides inside an
-  otherwise-fine per-key average. typr measures per-transition timing, finds the
-  weakest digraph among your unlocked letters, and drills it (seeds + boosts that
-  transition in generated text). Surfaced as a "Transitions to drill" table.
-  Toggle: `bigram targeting` (default on).
-- **Data export / import** — full JSON portability of your history + settings,
-  which keybr does not offer.
+## Roadmap
 
-### Next
+- Key-speed histogram and accuracy heatmap in the Analysis view.
+- Larger / real phonetic models per language.
+- Code, numbers, and punctuation practice modes.
+- Optional accounts + cross-device sync.
 
-- Per-key learning heatmap + key-speed histogram in the Analysis view.
-- Larger/real phonetic models per language.
-- Code / numbers / punctuation modes.
+## Acknowledgements
 
-## Core concepts (planned)
-
-| Piece | What it does |
-| --- | --- |
-| Phonetic generator | Produces pronounceable pseudo-words from a per-language n-gram model, weighted toward currently-targeted keys. |
-| Adaptive engine | Unlocks new keys as you reach a target speed; selects which keys to emphasize based on per-key stats and confidence. |
-| Per-key stats model | Smoothed (decaying) per-key speed & accuracy, with sample-count confidence. |
-| Analysis | Learning curve over time, keyboard heatmap, key-speed histogram, error breakdowns. |
+typr's adaptive approach was informed by studying **keybr.com**
+([source](https://github.com/aradzie/keybr.com), AGPL-3.0) — an excellent
+open-source typing trainer. typr is an independent, from-scratch implementation
+with its own design and improvements; no keybr code was used. Detailed study
+notes: [`docs/keybr-explainer.md`](docs/keybr-explainer.md). See
+[`docs/ATTRIBUTION.md`](docs/ATTRIBUTION.md).
 
 ## License
 
-TBD.
+Proprietary — all rights reserved. See [LICENSE](LICENSE).
