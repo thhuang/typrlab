@@ -40,6 +40,8 @@ npm run build        # typecheck + production build
 - Phonetic pseudo-words plus a real-word mode.
 - Calm, configurable typing cursor — **box / underline / bar / reverse** — and a
   theme-aware confidence ramp (each theme's own red→green, mixed in OKLCH).
+- **Pick your typing font** — 9 curated Google Fonts across **monospace** (default,
+  best for accuracy), **sans-serif**, and **serif** (e.g. Lora/Literata for prose).
 
 ### Analysis
 - Learning curve (speed over time) with trend.

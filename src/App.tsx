@@ -22,6 +22,7 @@ import { Keyboard } from './ui/Keyboard';
 import { StatsPanel } from './ui/StatsPanel';
 import { Analysis } from './ui/Analysis';
 import { DARK_THEMES, LIGHT_THEMES } from './ui/themes';
+import { fontStack, MONO_FONTS, SANS_FONTS, SERIF_FONTS } from './ui/fonts';
 
 type View = 'practice' | 'analysis';
 
@@ -124,6 +125,11 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme);
   }, [settings.theme]);
+
+  // Apply the typing-surface font.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--font-board', fontStack(settings.font));
+  }, [settings.font]);
 
   function updateSettings(patch: Partial<Settings>) {
     setSettings((prev) => {
@@ -309,6 +315,37 @@ export default function App() {
                 <option value="underline">Underline</option>
                 <option value="bar">Bar</option>
                 <option value="block">Block (reverse)</option>
+              </select>
+            </label>
+            <label className="rng cursor-pick">
+              Font
+              <select
+                className="theme-select"
+                value={settings.font}
+                onChange={(e) => updateSettings({ font: e.target.value })}
+                aria-label="Typing font"
+              >
+                <optgroup label="Monospace">
+                  {MONO_FONTS.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.label}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Sans-serif">
+                  {SANS_FONTS.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.label}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Serif">
+                  {SERIF_FONTS.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.label}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </label>
             <button onClick={() => startNext()} title="Skip lesson (Ctrl+→)">
