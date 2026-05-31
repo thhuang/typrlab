@@ -4,8 +4,9 @@
 //    preview inside Text appearance (the minimal-diff fallback).
 // Reuses the shared controls (.switch, .segmented, .theme-select, range,
 // .danger-btn) and pushes every change through update / onClear.
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import type { Settings } from '../core/settings';
+import { WORDS } from '../core/words';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { DARK_THEMES, LIGHT_THEMES } from './themes';
 import { MONO_FONTS, SANS_FONTS, SERIF_FONTS } from './fonts';
@@ -351,23 +352,77 @@ function Toggle({
   );
 }
 
+// A fresh line of real words from the bank — varied each loop, but length-bounded
+// (PREVIEW_MAX) so it never exceeds two wrapped lines even on a phone (paired with
+// the 2-line min-height on .settings-preview, that keeps the box from resizing).
+const PREVIEW_MIN = 14;
+const PREVIEW_MAX = 24;
+function buildPreviewLine(): string {
+  const words: string[] = [];
+  let len = 0;
+  let prev = '';
+  while (len < PREVIEW_MIN) {
+    const w = WORDS[Math.floor(Math.random() * WORDS.length)]!;
+    if (w === prev) continue;
+    const add = words.length === 0 ? w.length : w.length + 1;
+    if (words.length > 0 && len + add > PREVIEW_MAX) break;
+    words.push(w);
+    prev = w;
+    len += add;
+  }
+  return words.join(' ');
+}
+
+// Live preview: auto-types a line (cursor advancing, glyphs flipping
+// untyped -> hit) so the chosen font/theme/cursor is shown in motion, then
+// pauses and starts a fresh random line. Static under reduced-motion.
 function Preview({ cursorStyle }: { cursorStyle: Settings['cursorStyle'] }) {
-  const typed = 'the quick ';
-  const at = 'b';
-  const rest = 'rown fox';
+  const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const [{ line, pos }, setFrame] = useState(() => ({ line: 'the quick brown fox', pos: 10 }));
+
+  useEffect(() => {
+    // Reduced motion: a single static, recognizable mid-typed frame.
+    if (reduced) {
+      setFrame({ line: 'the quick brown fox', pos: 10 });
+      return;
+    }
+
+    let timer: ReturnType<typeof setTimeout>;
+    let text = buildPreviewLine();
+    let p = 0;
+    setFrame({ line: text, pos: 0 });
+
+    const step = () => {
+      if (p < text.length) {
+        p += 1;
+        setFrame({ line: text, pos: p });
+        timer = setTimeout(step, 70 + Math.random() * 90); // ~70–160ms per char
+      } else {
+        // Finished: hold the completed line, then start a fresh one.
+        timer = setTimeout(() => {
+          text = buildPreviewLine();
+          p = 0;
+          setFrame({ line: text, pos: 0 });
+          timer = setTimeout(step, 550);
+        }, 1300);
+      }
+    };
+    timer = setTimeout(step, 450);
+    return () => clearTimeout(timer);
+  }, [reduced]);
+
   return (
     <div className="board settings-preview" aria-hidden="true">
-      {Array.from(typed).map((c, i) => (
-        <span key={`t${i}`} className="ch hit">
-          {c === ' ' ? ' ' : c}
-        </span>
-      ))}
-      <span className={`ch cursor cursor-${cursorStyle}`}>{at}</span>
-      {Array.from(rest).map((c, i) => (
-        <span key={`r${i}`} className="ch">
-          {c === ' ' ? ' ' : c}
-        </span>
-      ))}
+      <div className="settings-preview-line">
+        {Array.from(line).map((c, i) => {
+          const cls = i < pos ? 'ch hit' : i === pos ? `ch cursor cursor-${cursorStyle}` : 'ch';
+          return (
+            <span key={i} className={cls}>
+              {c === ' ' ? ' ' : c}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }
