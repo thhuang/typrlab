@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.2.8",
-    "@fontsource/atkinson-hyperlegible-mono": "^5.2.10",
     "@fontsource/cascadia-code": "^5.2.3",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
