@@ -44,12 +44,11 @@ npm run build        # production build
 - Calm, configurable typing cursor — **box / underline / bar / reverse** — and a
   theme-aware confidence ramp (each theme's own red→green, mixed in OKLCH).
 - **Adjustable text size** (the evidence-backed lever for reading performance) and a
-  **typing-font picker** — 10 **self-hosted** fonts (no CDN), at least three per
-  category: monospace (default — **Atkinson Hyperlegible Mono**, a disambiguated,
-  legibility-first face; plus JetBrains Mono, Cascadia Code, Source Code Pro), sans,
-  and serif. Typeface is largely _preference_ — research shows it barely affects
-  reading speed; size and personal fit matter more
-  (see [`docs/font-research.md`](docs/font-research.md)).
+  **typing-font picker** — 9 **self-hosted** fonts (no CDN), three per category:
+  monospace (default — **JetBrains Mono**, a disambiguated face with clear l/I/1 ·
+  0/O; plus Cascadia Code, Source Code Pro), sans, and serif. Typeface is largely
+  _preference_ — research shows it barely affects reading speed; size and personal
+  fit matter more (see [`docs/font-research.md`](docs/font-research.md)).
 
 ### Analysis
 

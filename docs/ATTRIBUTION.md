@@ -37,6 +37,6 @@ and used to train the phonetic model and as the natural-words pool.
 
 typr **self-hosts all fonts** (no external CDN). The UI font and the selectable
 typing fonts are bundled via [Fontsource](https://fontsource.org/) (each under its
-own SIL Open Font License or Apache-2.0): Space Grotesk (UI), Atkinson Hyperlegible
-Mono, JetBrains Mono, Cascadia Code, Source Code Pro, Atkinson Hyperlegible, Inter,
-Lexend, Literata, Merriweather, and Lora.
+own SIL Open Font License or Apache-2.0): Space Grotesk (UI), JetBrains Mono,
+Cascadia Code, Source Code Pro, Atkinson Hyperlegible, Inter, Lexend, Literata,
+Merriweather, and Lora.

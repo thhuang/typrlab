@@ -48,17 +48,15 @@ specific styles.
 - **Default:** a clean, well-sized, conventional font. A disambiguated **monospace** is
   well justified for a *typing* trainer: no reading penalty (finding 2), helps dyslexic
   readers (finding 7), and clear l/I/1·0/O glyphs reduce wrong-key recognition errors.
-  typr defaults to **Atkinson Hyperlegible Mono** — a disambiguated monospace built for
-  legibility (broad-audience accessibility); **JetBrains Mono** stays on the shelf and
-  powers the UI chrome (`--font-mono`).
+  typr defaults to **JetBrains Mono** — a disambiguated monospace (clear l/I/1 · 0/O)
+  that also powers the UI chrome (`--font-mono`).
 - **The real lever is SIZE** → offer an adjustable **text size** (the one change the
   evidence most strongly supports). typr's board is already ~24px+, above the 18pt floor.
 - **Font picker = comfort/preference, not performance.** Keep it, but don't claim speed
   or accuracy gains (finding 3). Honest copy.
 - **Don't widen letter-spacing** as a "readability" feature (finding 5).
-- **Justified-by-evidence options:** Atkinson Hyperlegible (low-vision) and the
-  hyperlegible monospace (dyslexia/low-vision). Everything else on the shelf (Literata,
-  Merriweather, Lora, Inter, Lexend, JetBrains Mono, Cascadia Code, Source Code Pro) is
-  fine to offer **for preference** — Lexend's reading-proficiency marketing is *not*
-  independently replicated, so don't promise it.
+- **Justified-by-evidence options:** Atkinson Hyperlegible (low-vision). Everything else
+  on the shelf (Literata, Merriweather, Lora, Inter, Lexend, Cascadia Code, Source Code
+  Pro) is fine to offer **for preference** — Lexend's reading-proficiency marketing is
+  *not* independently replicated, so don't promise it.
 - **Avoid italic** for the practice text (finding 7).

@@ -9,7 +9,6 @@ import '@fontsource/space-grotesk/latin-700.css';
 
 // Monospace board fonts. JetBrains Mono also powers --font-mono (UI chrome:
 // keys at 700, caret at 800), so it keeps its extra weights.
-import '@fontsource/atkinson-hyperlegible-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-700.css';
 import '@fontsource/jetbrains-mono/latin-800.css';
