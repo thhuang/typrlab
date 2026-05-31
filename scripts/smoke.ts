@@ -168,5 +168,30 @@ assert(
   'guided sets bigramFocus to the weak a→o transition',
 );
 
+console.log('12) natural-word lessons over-sample the weak transition (real-content targeting)');
+const fullStats = new KeyStatsMap();
+for (const ch of 'etaoinshrdlcumwfgypbvkjxqz') {
+  for (let i = 0; i < 3; i++) {
+    fullStats.ingest({ codePoint: ch.codePointAt(0)!, hitCount: 5, missCount: 0, timeToType: fast });
+  }
+}
+const bsTH = new BigramStatsMap();
+for (let i = 0; i < 4; i++) {
+  bsTH.ingest({ from: 't'.codePointAt(0)!, to: 'h'.codePointAt(0)!, hitCount: 3, timeToType: 600 });
+}
+function thRate(bigramTargeting: boolean): number {
+  let th = 0;
+  let total = 0;
+  for (let k = 0; k < 40; k++) {
+    const p = guided.plan(fullStats, { ...settings, naturalWords: true, bigramTargeting }, Math.random, bsTH);
+    for (let i = 1; i < p.text.length; i++) if (p.text[i - 1] === 't' && p.text[i] === 'h') th += 1;
+    total += p.text.length;
+  }
+  return th / total;
+}
+const onTH = thRate(true);
+const offTH = thRate(false);
+assert(onTH > offTH, `natural-word targeting raises t→h frequency (on=${onTH.toFixed(4)} > off=${offTH.toFixed(4)})`);
+
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
 process.exit(failures === 0 ? 0 : 1);
