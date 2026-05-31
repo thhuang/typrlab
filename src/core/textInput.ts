@@ -110,9 +110,7 @@ export class TextInput {
     for (const cp of cps) {
       const e = byCp.get(cp);
       const times = e?.times ?? [];
-      const mean = times.length
-        ? Math.round(times.reduce((a, b) => a + b, 0) / times.length)
-        : 0;
+      const mean = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
       histogram.push({
         codePoint: cp,
         hitCount: e?.hit ?? 0,
@@ -123,7 +121,10 @@ export class TextInput {
 
     // Per-transition (digraph) timing: consecutive counted steps. The interval
     // recorded on step i IS the time to type `to` given the preceding `from`.
-    const byBigram = new Map<string, { from: CodePoint; to: CodePoint; hit: number; times: number[] }>();
+    const byBigram = new Map<
+      string,
+      { from: CodePoint; to: CodePoint; hit: number; times: number[] }
+    >();
     for (let i = 1; i < counted.length; i++) {
       const from = counted[i - 1]!.codePoint;
       const to = counted[i]!.codePoint;

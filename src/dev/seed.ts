@@ -45,7 +45,16 @@ export function seedDemo(): void {
       timeToType: Math.round(Math.max(70, base - imp * i)),
     }));
     ts += 90_000;
-    results.push({ timeStamp: ts, layout: 'en', length, time, errors, ...metrics, histogram, bigrams });
+    results.push({
+      timeStamp: ts,
+      layout: 'en',
+      length,
+      time,
+      errors,
+      ...metrics,
+      histogram,
+      bigrams,
+    });
   }
 
   localStorage.setItem('typr.history', JSON.stringify(results));

@@ -52,24 +52,24 @@ This is the only thing you persist. Everything else is derived by replaying resu
 
 ```ts
 type Result = {
-  layout: string;          // e.g. "us-qwerty"
-  textType: "guided" | "wordlist" | "custom" | "numbers";
-  timeStamp: number;       // epoch ms when the lesson completed
-  length: number;          // chars typed
-  time: number;            // total ms spent
-  errors: number;          // miss count for the whole lesson
-  speed: number;           // CPM = (length / (time/1000)) * 60   [derived, stored for convenience]
-  accuracy: number;        // (length - errors) / length
-  complexity: number;      // # of distinct characters in the lesson (floor 3)
-  score: number;           // composite, see §6
-  histogram: KeySample[];  // per-key counts+timing FOR THIS LESSON ONLY
+  layout: string; // e.g. "us-qwerty"
+  textType: 'guided' | 'wordlist' | 'custom' | 'numbers';
+  timeStamp: number; // epoch ms when the lesson completed
+  length: number; // chars typed
+  time: number; // total ms spent
+  errors: number; // miss count for the whole lesson
+  speed: number; // CPM = (length / (time/1000)) * 60   [derived, stored for convenience]
+  accuracy: number; // (length - errors) / length
+  complexity: number; // # of distinct characters in the lesson (floor 3)
+  score: number; // composite, see §6
+  histogram: KeySample[]; // per-key counts+timing FOR THIS LESSON ONLY
 };
 
 type KeySample = {
-  codePoint: number;       // the key
+  codePoint: number; // the key
   hitCount: number;
   missCount: number;
-  timeToType: number;      // ms/char for this key THIS lesson = round(sumTime / hitCount)
+  timeToType: number; // ms/char for this key THIS lesson = round(sumTime / hitCount)
 };
 ```
 
@@ -86,17 +86,17 @@ type KeyStatsMap = Map<number /*codePoint*/, KeyStats>;
 
 type KeyStats = {
   codePoint: number;
-  samples: KeySampleHistory[];   // one entry per lesson this key appeared in (for charts/regression)
-  timeToType: number | null;     // current EMA-smoothed ms/char (null = not yet calibrated)
+  samples: KeySampleHistory[]; // one entry per lesson this key appeared in (for charts/regression)
+  timeToType: number | null; // current EMA-smoothed ms/char (null = not yet calibrated)
   bestTimeToType: number | null; // running MIN of the SMOOTHED values
 };
 
 type KeySampleHistory = {
-  index: number;            // sequential lesson index (for the x-axis of charts)
+  index: number; // sequential lesson index (for the x-axis of charts)
   timeStamp: number;
   hitCount: number;
   missCount: number;
-  timeToType: number;       // raw per-lesson mean (clamped)
+  timeToType: number; // raw per-lesson mean (clamped)
   filteredTimeToType: number; // the EMA value after this sample
 };
 ```
@@ -113,11 +113,11 @@ type LessonKey = {
   samples: KeySampleHistory[];
   timeToType: number | null;
   bestTimeToType: number | null;
-  confidence: number | null;     // = target.confidence(timeToType)      — see §5
+  confidence: number | null; // = target.confidence(timeToType)      — see §5
   bestConfidence: number | null; // = target.confidence(bestTimeToType)
-  isIncluded: boolean;           // currently in the active alphabet
-  isFocused: boolean;            // the single weakest key being drilled
-  isForced: boolean;             // padded in by the "unlock more letters" slider
+  isIncluded: boolean; // currently in the active alphabet
+  isFocused: boolean; // the single weakest key being drilled
+  isForced: boolean; // padded in by the "unlock more letters" slider
 };
 ```
 
@@ -128,30 +128,30 @@ Make `Settings` **immutable**: `set()` returns a new instance. This makes the Re
 ```ts
 type Settings = {
   // Guided-mode core
-  targetSpeed: number;        // CPM. default 175 (= 35 WPM). range 75–750 (15–150 WPM)
-  alphabetSize: number;       // 0..1 "unlock more letters" slider. default 0
-  naturalWords: boolean;      // mix real dictionary words. default true
-  recoverKeys: boolean;       // unlock gate uses current vs best confidence. default false
-  keyboardOrder: boolean;     // unlock order by keyboard rows vs pure frequency. default false
+  targetSpeed: number; // CPM. default 175 (= 35 WPM). range 75–750 (15–150 WPM)
+  alphabetSize: number; // 0..1 "unlock more letters" slider. default 0
+  naturalWords: boolean; // mix real dictionary words. default true
+  recoverKeys: boolean; // unlock gate uses current vs best confidence. default false
+  keyboardOrder: boolean; // unlock order by keyboard rows vs pure frequency. default false
 
   // Lesson shape
-  lessonLength: number;       // 0..1 "add words". default 0 (minimum)
-  capitals: number;           // 0..1 fraction of words capitalized. default 0
-  punctuation: number;        // 0..1 punctuation injected. default 0
-  repeatWords: number;        // 1..10. default 1
+  lessonLength: number; // 0..1 "add words". default 0 (minimum)
+  capitals: number; // 0..1 fraction of words capitalized. default 0
+  punctuation: number; // 0..1 punctuation injected. default 0
+  repeatWords: number; // 1..10. default 1
 
   // Typing behavior (see §3)
-  stopOnError: boolean;       // default true
-  forgiveErrors: boolean;     // default true
-  spaceSkipsWords: boolean;   // default false  (NOTE: keybr's operative default is false)
+  stopOnError: boolean; // default true
+  forgiveErrors: boolean; // default true
+  spaceSkipsWords: boolean; // default false  (NOTE: keybr's operative default is false)
 
   // Motivation
-  dailyGoal: number;          // minutes. default 30. range 0–120 (0 hides the indicator)
+  dailyGoal: number; // minutes. default 30. range 0–120 (0 hides the indicator)
 
   // Display
-  speedUnit: "wpm" | "cpm";   // default wpm
-  language: string;           // "en"
-  layout: string;             // "us-qwerty"
+  speedUnit: 'wpm' | 'cpm'; // default wpm
+  language: string; // "en"
+  layout: string; // "us-qwerty"
 };
 ```
 
@@ -195,7 +195,7 @@ The guided mode generates pronounceable pseudo-words from a per-language **lette
 
 ### 4.1 What the model is
 
-A **4-gram letter-transition table**: each next letter is conditioned on the previous **3** letters. (keybr constructs it as `new TransitionTableBuilder(4, [0x0020, ...alphabet])` — the `4` is the tuple width. In strict Markov terms that is a **3rd-order chain**; call it a "4-gram / order-4 tuple model" to avoid the off-by-one confusion. Do not be misled by the model also exposing `ngram1`/`ngram2` unigram/bigram views — those are *derived marginal* tables used for things like keyboard heat coloring, **not** the generation order.)
+A **4-gram letter-transition table**: each next letter is conditioned on the previous **3** letters. (keybr constructs it as `new TransitionTableBuilder(4, [0x0020, ...alphabet])` — the `4` is the tuple width. In strict Markov terms that is a **3rd-order chain**; call it a "4-gram / order-4 tuple model" to avoid the off-by-one confusion. Do not be misled by the model also exposing `ngram1`/`ngram2` unigram/bigram views — those are _derived marginal_ tables used for things like keyboard heat coloring, **not** the generation order.)
 
 The data structure: for every 3-letter **context**, store a segment of `{codePoint, frequency}` entries giving the count of each possible next character. Index it as a base-`alphabetSize` number into a flat array:
 
@@ -248,7 +248,7 @@ retry up to 5 times if you dead-end (no valid next char)
 Two-part filter passed into generation:
 
 1. **Allowed set** — the unlocked/included letters. `filter.includes(cp)` is true only for unlocked letters; every sampling step drops locked letters. This is what makes early lessons use only your 6 starting keys.
-2. **Focused letter** — the single weakest key (§5). The focused letter is **forced into the word via prefix seeding**: seed generation from a precomputed prefix that contains the focus letter (or a bare `[focusLetter]` prefix if none match). This guarantees the target letter appears, while the rest of the walk stays inside the allowed set. The focus letter is *seeded at the start*; the rest of the word is constrained, not forced.
+2. **Focused letter** — the single weakest key (§5). The focused letter is **forced into the word via prefix seeding**: seed generation from a precomputed prefix that contains the focus letter (or a bare `[focusLetter]` prefix if none match). This guarantees the target letter appears, while the rest of the walk stays inside the allowed set. The focus letter is _seeded at the start_; the rest of the word is constrained, not forced.
 
 ### 4.5 Natural-words mode (default on)
 
@@ -337,7 +337,7 @@ function updateLessonKeys(keyStatsMap, settings):
 - **`recoverKeys=false` (default):** the gate uses `bestConfidence`. You only have to hit target speed **once** on each key; one good run "banks" it. Decayed keys don't re-lock progress.
 - **`recoverKeys=true`:** the gate uses current `confidence`. A key that has slipped below target **re-locks further unlocking** until you bring all current keys back above target. Harder, better retention.
 
-The distinction is real and worth a unit test: with previous keys at *current* confidence 0.9 but *best* confidence 1.0, `recoverKeys=false` unlocks a new letter while `recoverKeys=true` refuses and re-focuses the weakest old key. (keybr's own test fixtures encode exactly this case.)
+The distinction is real and worth a unit test: with previous keys at _current_ confidence 0.9 but _best_ confidence 1.0, `recoverKeys=false` unlocks a new letter while `recoverKeys=true` refuses and re-focuses the weakest old key. (keybr's own test fixtures encode exactly this case.)
 
 ### 5.4 Learning-rate / "lessons remaining" prediction (nice-to-have)
 
@@ -388,8 +388,8 @@ for each result (oldest -> newest):
 
 Two non-obvious points, both load-bearing:
 
-1. **`bestTimeToType` is the running minimum of the *smoothed* values**, never of the raw per-lesson times. This is why `bestConfidence` (and thus the default unlock gate) reflects sustained best performance, not a single lucky keystroke.
-2. **Lesson-level summary stats (avg/min/max/last/delta) are plain cumulative aggregates, NOT EMA.** Only the *per-key* `timeToType` uses the EMA. Keep these two paths separate — `avg = sum/count`, `delta = last - avg`.
+1. **`bestTimeToType` is the running minimum of the _smoothed_ values**, never of the raw per-lesson times. This is why `bestConfidence` (and thus the default unlock gate) reflects sustained best performance, not a single lucky keystroke.
+2. **Lesson-level summary stats (avg/min/max/last/delta) are plain cumulative aggregates, NOT EMA.** Only the _per-key_ `timeToType` uses the EMA. Keep these two paths separate — `avg = sum/count`, `delta = last - avg`.
 
 ### Other formulas you need
 
@@ -410,25 +410,17 @@ wpm = cpm / 5
 A fixed, ordered set of sections. Render them unconditionally (no paywall — see §8). Each is derived purely from the results log + the KeyStats fold.
 
 **Summary scorecards (no axes):**
+
 1. **All-Time Summary** — Time practiced, Lessons count, Top speed, Average speed, Top accuracy, Average accuracy.
 2. **Today Summary** — same six, filtered to today.
 
-**Time-series / learning curves:**
-3. **Typing Speed (learning curve).** X = lesson number; left Y = speed; right Y = accuracy. Scatter three smoothed series — speed, accuracy, and complexity (distinct-key count, floor 3) — plus a bold **linear-regression trend line** through speed. Add a user **smoothness slider** (exponential smoothing, default 0.5) to damp noise. Insight: *am I getting faster while accuracy holds as new keys come in?*
-4. **Learning Progress Overview (per-key heatmap).** X = lesson number; Y = one row per letter; each cell colored by that key's **confidence at that lesson** (red→green). This is the canonical "keys turn green as you master them" view across all of history.
+**Time-series / learning curves:** 3. **Typing Speed (learning curve).** X = lesson number; left Y = speed; right Y = accuracy. Scatter three smoothed series — speed, accuracy, and complexity (distinct-key count, floor 3) — plus a bold **linear-regression trend line** through speed. Add a user **smoothness slider** (exponential smoothing, default 0.5) to damp noise. Insight: _am I getting faster while accuracy holds as new keys come in?_ 4. **Learning Progress Overview (per-key heatmap).** X = lesson number; Y = one row per letter; each cell colored by that key's **confidence at that lesson** (red→green). This is the canonical "keys turn green as you master them" view across all of history.
 
-**Per-key drill-down:**
-5. **Key Typing Speed.** A key selector; X = lesson, Y = speed for that key; scatter + regression curve + a horizontal **target-speed threshold line**. Optionally extend the x-axis with a "Now" marker and the lessons-remaining projection (§5.4).
-6. **Key Typing Speed Histogram.** Bars = average speed per key (Y = speed from 0, X = keys).
-7. **Key Frequency Histogram.** Three stacked panels per key: hit count, miss count, and **miss/hit ratio** (`missCount/hitCount` — the per-key relative error rate). The ratio panel is the most actionable: it surfaces keys you hit *often but wrong*.
-8. **Key Frequency Heatmap.** Overlay the virtual keyboard with two color layers — hit count and miss count per key — so the user literally sees which keys they press most and miss most.
+**Per-key drill-down:** 5. **Key Typing Speed.** A key selector; X = lesson, Y = speed for that key; scatter + regression curve + a horizontal **target-speed threshold line**. Optionally extend the x-axis with a "Now" marker and the lessons-remaining projection (§5.4). 6. **Key Typing Speed Histogram.** Bars = average speed per key (Y = speed from 0, X = keys). 7. **Key Frequency Histogram.** Three stacked panels per key: hit count, miss count, and **miss/hit ratio** (`missCount/hitCount` — the per-key relative error rate). The ratio panel is the most actionable: it surfaces keys you hit _often but wrong_. 8. **Key Frequency Heatmap.** Overlay the virtual keyboard with two color layers — hit count and miss count per key — so the user literally sees which keys they press most and miss most.
 
-**Benchmark (percentile):**
-9. **Relative Speed / Relative Accuracy histograms.** Plot a **precomputed static empirical distribution** of all users (a baked-in histogram JSON), show the PMF bars + a CDF curve, and draw a vertical line at the user's average (or top) value with the sentence *"Your average speed beats X% of all people"* via `distribution.cdf(value)`. **This is computed entirely client-side against a static asset — not a live query.** Caveat to internalize: that reference distribution is frozen at build time and goes stale as your real population improves; periodically regenerate it from your own aggregated data. (keybr's `dist_speed.json` / `dist_accuracy.json` haven't been updated since 2024.)
+**Benchmark (percentile):** 9. **Relative Speed / Relative Accuracy histograms.** Plot a **precomputed static empirical distribution** of all users (a baked-in histogram JSON), show the PMF bars + a CDF curve, and draw a vertical line at the user's average (or top) value with the sentence _"Your average speed beats X% of all people"_ via `distribution.cdf(value)`. **This is computed entirely client-side against a static asset — not a live query.** Caveat to internalize: that reference distribution is frozen at build time and goes stale as your real population improves; periodically regenerate it from your own aggregated data. (keybr's `dist_speed.json` / `dist_accuracy.json` haven't been updated since 2024.)
 
-**Engagement:**
-10. **Accuracy Streaks.** Longest consecutive runs of lessons clearing accuracy tiers **100% / 97% / 95%**, each row showing lessons, characters, top/avg speed, start date.
-11. **Practice Calendar.** GitHub-style activity calendar, days colored by effort.
+**Engagement:** 10. **Accuracy Streaks.** Longest consecutive runs of lessons clearing accuracy tiers **100% / 97% / 95%**, each row showing lessons, characters, top/avg speed, start date. 11. **Practice Calendar.** GitHub-style activity calendar, days colored by effort.
 
 **Charts NOT on this page (they belong to the post-lesson result view):** a within-lesson rolling-speed chart (speed vs elapsed time, with typo "bumps") and a per-keystroke time-to-type histogram for the just-finished lesson. Keep these on the practice screen, not the long-term analysis page.
 
@@ -443,32 +435,34 @@ A fixed, ordered set of sections. Render them unconditionally (no paywall — se
 ### Anonymous (default)
 
 - **Results:** append-only log in **IndexedDB**, object store `history`, `autoIncrement: true`, each `Result` stored as JSON. Replay the whole log on load to rebuild `KeyStatsMap` via the EMA fold (it's cheap — thousands of lessons fold in milliseconds). This is keybr's exact model.
-- **Settings:** **`localStorage`** under key `settings`, as JSON. (Note: settings live in `localStorage`, *not* IndexedDB — don't conflate the two.)
+- **Settings:** **`localStorage`** under key `settings`, as JSON. (Note: settings live in `localStorage`, _not_ IndexedDB — don't conflate the two.)
 - Clearing browser data wipes progress; surface this honestly and offer an export (dump the results log as a file).
 
 ### Signed-in (add later, only for cross-device sync)
 
 When you add accounts, the cleanest design (and keybr's):
 
-- Keep the **local IndexedDB log as-is**; signing in *adds* server sync, it doesn't replace local.
+- Keep the **local IndexedDB log as-is**; signing in _adds_ server sync, it doesn't replace local.
 - **Results** sync as one **append-only binary blob per user** (a `stats.data` file / `application/octet-stream`). GET to pull, POST to push, DELETE to clear.
 - **Settings** sync as JSON over a separate endpoint.
 - **Conflict policy: server is source of truth, no merge.** On load: if the server has data, use it and ignore local. If the server is empty, upload the local log once (first-sign-in migration), clear local, then use the server copy. This is dramatically simpler than CRDT-style merging and is fine because results are an append-only log keyed by timestamp — you rarely have genuine divergence, and "newest device wins on the blob" is acceptable for a typing trainer. Don't over-engineer this.
 - **Auth:** passwordless. Email magic-link + OAuth (Google/Microsoft) covers everyone with minimal liability. No passwords to store or leak.
-- **Account controls:** "Anonymize me" (hide public name), "Sign out", "Delete account" (wipes PII), and a *separate* "clear my typing stats" on the analysis page.
+- **Account controls:** "Anonymize me" (hide public name), "Sign out", "Delete account" (wipes PII), and a _separate_ "clear my typing stats" on the analysis page.
 
 ### Monetization stance (if you ever charge)
 
-**Do not paywall analytics or learning features.** keybr's entire stats/chart/percentile/prediction surface is free; premium is a one-time lifetime payment that only removes ads/trackers and speeds page loads (`premium: boolean`, gating ad UI only). Gate *ads and convenience*, never the adaptive engine or the charts — those are the product's reason to exist.
+**Do not paywall analytics or learning features.** keybr's entire stats/chart/percentile/prediction surface is free; premium is a one-time lifetime payment that only removes ads/trackers and speeds page loads (`premium: boolean`, gating ad UI only). Gate _ads and convenience_, never the adaptive engine or the charts — those are the product's reason to exist.
 
 ---
 
 ## 9. Phased build order: MVP → v1
 
 ### Phase 0 — skeleton (½ day)
+
 Vite + React + TS. The `engine/result` types. A WPM/CPM formatter with a unit test (the off-by-5 trap). The immutable `Settings` class.
 
 ### Phase 1 — MVP: a typing loop that records (2–3 days)
+
 - **Typing-input state machine** (§3): char states, `stopOnError` only (skip `forgiveErrors` for now), per-keystroke timing with the `/(modifiers+1)` split, blur-resets-lesson.
 - **Lesson text from a filtered word list only** — real words restricted to a hardcoded 6-letter starting set. No phonetic model yet.
 - On completion: build a `Result`, validity-gate it, append to **IndexedDB**.
@@ -476,13 +470,15 @@ Vite + React + TS. The `engine/result` types. A WPM/CPM formatter with a unit te
 - **Milestone:** you can type, it records, and reloading the page replays the log.
 
 ### Phase 2 — the adaptive core (2–3 days)
+
 - **KeyStats fold** with the **EMA filter (alpha 0.1)** and `bestTimeToType` (§6).
 - **`Target` / confidence** (§5.1) and the **unlock + focus algorithm** (§5.2), including `minSize=6`, the every-key gate, and `recoverKeys`.
 - **Virtual keyboard** colored by per-key confidence (red→green gradient; gray = uncalibrated); highlight the focused key.
 - Bias lesson text toward the focused letter (even with just the word-list approach: prefer words containing the focus letter).
-- **Milestone:** letters unlock one at a time as you hit target speed; the keyboard greens up. This *is* the keybr experience, minus pretty pseudo-words.
+- **Milestone:** letters unlock one at a time as you hit target speed; the keyboard greens up. This _is_ the keybr experience, minus pretty pseudo-words.
 
 ### Phase 3 — v1 polish (1 week)
+
 - **Phonetic model** (§4): write the offline build script, ship `model-en.bin`, swap generation to the weighted random walk with focus-prefix seeding + natural-words fallback. Now early lessons read like words.
 - **`forgiveErrors`** 3-char-lookahead recovery; garbage chars; cursor shapes.
 - **Post-lesson gauges** with deltas; **daily goal**; **accuracy streaks**; celebratory alerts.
@@ -490,6 +486,7 @@ Vite + React + TS. The `engine/result` types. A WPM/CPM formatter with a unit te
 - Settings UI for target speed, daily goal, natural words, recover keys, typing behavior.
 
 ### Phase 4 — v1+ (optional, demand-driven)
+
 - **Learning-rate prediction** ("N lessons to target", §5.4).
 - **Accounts + cross-device sync** (§8): passwordless auth, per-user binary blob, server-as-truth no-merge.
 - More **languages** (each = one corpus → one `model-<lang>.bin` + word list) and **layouts**.
@@ -500,11 +497,11 @@ Vite + React + TS. The `engine/result` types. A WPM/CPM formatter with a unit te
 ## 10. Pitfalls checklist (things that will bite you)
 
 - **Everything in CPM/ms internally; WPM only at the formatter.** `WPM = CPM / 5`.
-- **Per-key `timeToType` is EMA (alpha 0.1), not a mean. `bestTimeToType` is the min of the *smoothed* values.** Lesson summary aggregates are plain means — different code path.
+- **Per-key `timeToType` is EMA (alpha 0.1), not a mean. `bestTimeToType` is the min of the _smoothed_ values.** Lesson summary aggregates are plain means — different code path.
 - **Confidence is a speed ratio, not certainty.** `confidence >= 1` == at/above target. `null` == uncalibrated == render gray.
 - **Typos never contribute to timing** — they only bump `missCount`. Clamp per-key sample times to [40ms, 12000ms]; drop the first keystroke of each lesson.
 - **Reset (don't record) on blur/tab-switch.** A returning alt-tab would corrupt a key's timing otherwise.
-- **The unlock gate is "*every* included key clears confidence ≥ 1", not "the focused key."** And by default it uses `bestConfidence` (banked once), unless `recoverKeys` is on.
+- **The unlock gate is "_every_ included key clears confidence ≥ 1", not "the focused key."** And by default it uses `bestConfidence` (banked once), unless `recoverKeys` is on.
 - **The percentile distribution is a static baked asset** — it goes stale; plan to regenerate it.
 - **`spaceSkipsWords` default is `false`** despite a misleading baseline constant.
 - **Keep `phonetic-model` and `result` pure** (no UI, no storage). It's the only way the math stays testable.

@@ -1,14 +1,16 @@
+'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import type { LessonResult } from './core/types';
-import type { Settings } from './core/settings';
-import { KeyStatsMap } from './core/keyStats';
-import { BigramStatsMap } from './core/bigramStats';
-import { PhoneticModel } from './core/phonetic';
-import { GuidedLesson, type LessonPlan } from './core/guided';
-import { TextInput } from './core/textInput';
-import { isValidResult } from './core/result';
-import { WORDS } from './core/words';
+import { usePathname, useRouter } from 'next/navigation';
+import type { LessonResult } from '@/core/types';
+import type { Settings } from '@/core/settings';
+import { KeyStatsMap } from '@/core/keyStats';
+import { BigramStatsMap } from '@/core/bigramStats';
+import { PhoneticModel } from '@/core/phonetic';
+import { GuidedLesson, type LessonPlan } from '@/core/guided';
+import { TextInput } from '@/core/textInput';
+import { isValidResult } from '@/core/result';
+import { WORDS } from '@/core/words';
 import {
   loadSettings,
   saveSettings,
@@ -16,17 +18,30 @@ import {
   appendHistory,
   saveHistory,
   clearHistory,
-} from './core/persist';
-import { TypingBoard } from './ui/TypingBoard';
-import { Keyboard } from './ui/Keyboard';
-import { StatsPanel } from './ui/StatsPanel';
-import { Analysis } from './ui/Analysis';
-import { fontStack } from './ui/fonts';
-import { SettingsView } from './ui/SettingsView';
+} from '@/core/persist';
+import { TypingBoard } from '@/ui/TypingBoard';
+import { Keyboard } from '@/ui/Keyboard';
+import { StatsPanel } from '@/ui/StatsPanel';
+import { Analysis } from '@/ui/Analysis';
+import { fontStack } from '@/ui/fonts';
+import { SettingsView } from '@/ui/SettingsView';
 
 type View = 'practice' | 'analysis' | 'settings';
 
-export default function App() {
+const PATHS: Record<View, string> = {
+  practice: '/',
+  analysis: '/analysis',
+  settings: '/settings',
+};
+
+export default function TyprApp() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const view: View =
+    pathname === '/analysis' ? 'analysis' : pathname === '/settings' ? 'settings' : 'practice';
+  const viewRef = useRef(view);
+  viewRef.current = view;
+
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -37,15 +52,6 @@ export default function App() {
   const inputRef = useRef<TextInput | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const initRef = useRef(false);
-
-  const [view, setView] = useState<View>(() => {
-    const h = typeof location !== 'undefined' ? location.hash : '';
-    if (h.includes('settings')) return 'settings';
-    if (h.includes('analysis')) return 'analysis';
-    return 'practice';
-  });
-  const viewRef = useRef(view);
-  viewRef.current = view;
 
   const [history, setHistory] = useState<LessonResult[]>([]);
   const [plan, setPlan] = useState<LessonPlan | null>(null);
@@ -65,23 +71,52 @@ export default function App() {
     setHasError(false);
   }, []);
 
-  // One-time init: build the model, replay history into per-key stats.
+  // One-time init: (dev) apply hash hooks, build the model, replay history.
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
-    const model = new PhoneticModel(WORDS, 3);
-    guidedRef.current = new GuidedLesson(model, WORDS);
-    const h = loadHistory();
-    const stats = new KeyStatsMap();
-    const bigrams = new BigramStatsMap();
-    for (const r of h) {
-      stats.ingestResult(r);
-      bigrams.ingestResult(r);
-    }
-    statsRef.current = stats;
-    bigramsRef.current = bigrams;
-    setHistory(h);
-    startNext();
+    void (async () => {
+      if (process.env.NODE_ENV === 'development' && typeof location !== 'undefined') {
+        try {
+          const hash = location.hash;
+          if (hash.includes('seed') && !localStorage.getItem('typr.history')) {
+            const { seedDemo } = await import('@/dev/seed');
+            seedDemo();
+          }
+          const grab = (re: RegExp) => hash.match(re)?.[1];
+          const t = grab(/theme=([a-z0-9-]+)/);
+          const f = grab(/font=([a-z0-9-]+)/);
+          const c = grab(/cursor=([a-z]+)/);
+          if (t || f || c) {
+            const s = JSON.parse(localStorage.getItem('typr.settings') || '{}');
+            if (t) s.theme = t;
+            if (f) s.font = f;
+            if (c) s.cursorStyle = c;
+            localStorage.setItem('typr.settings', JSON.stringify(s));
+          }
+        } catch {
+          /* ignore dev hash errors */
+        }
+      }
+
+      const model = new PhoneticModel(WORDS, 3);
+      guidedRef.current = new GuidedLesson(model, WORDS);
+      const h = loadHistory();
+      const stats = new KeyStatsMap();
+      const bigrams = new BigramStatsMap();
+      for (const r of h) {
+        stats.ingestResult(r);
+        bigrams.ingestResult(r);
+      }
+      statsRef.current = stats;
+      bigramsRef.current = bigrams;
+      setHistory(h);
+      // Re-sync settings in case dev overrides changed localStorage.
+      const s = loadSettings();
+      settingsRef.current = s;
+      setSettings(s);
+      startNext();
+    })();
   }, [startNext]);
 
   const handleKey = useCallback(
@@ -124,17 +159,13 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  // Apply the active color theme to the document root.
+  // Apply theme / font / size on change (initial flash handled by ThemeScript).
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme);
   }, [settings.theme]);
-
-  // Apply the typing-surface font.
   useEffect(() => {
     document.documentElement.style.setProperty('--font-board', fontStack(settings.font));
   }, [settings.font]);
-
-  // Apply the practice text size.
   useEffect(() => {
     document.documentElement.style.setProperty('--board-size', `${settings.textSize}px`);
   }, [settings.textSize]);
@@ -224,30 +255,35 @@ export default function App() {
           <span className="tag">adaptive</span>
         </div>
         <div className="header-right">
-          <div className="viewtoggle">
-            <button className={view === 'practice' ? 'active' : ''} onClick={() => setView('practice')}>
+          <nav className="viewtoggle">
+            <button
+              className={view === 'practice' ? 'active' : ''}
+              onClick={() => router.push(PATHS.practice)}
+            >
               Practice
             </button>
             <button
               className={view === 'analysis' ? 'active' : ''}
-              onClick={() => {
-                setView('analysis');
-                rerender();
-              }}
+              onClick={() => router.push(PATHS.analysis)}
             >
               Analysis
             </button>
-            <button className={view === 'settings' ? 'active' : ''} onClick={() => setView('settings')}>
+            <button
+              className={view === 'settings' ? 'active' : ''}
+              onClick={() => router.push(PATHS.settings)}
+            >
               Settings
             </button>
-          </div>
+          </nav>
         </div>
       </header>
 
       {view === 'practice' ? (
         <>
           <div className="actions">
-            <span className="actions-target">Target {Math.round(settings.targetSpeed / 5)} wpm</span>
+            <span className="actions-target">
+              Target {Math.round(settings.targetSpeed / 5)} wpm
+            </span>
             <span className="spacer" />
             <button onClick={() => startNext()} title="Skip lesson (Ctrl+→)">
               Skip

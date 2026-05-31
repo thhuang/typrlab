@@ -18,7 +18,7 @@ export function computeMetrics(
   const speed = time > 0 ? (length / (time / 1000)) * 60 : 0;
   const accuracy = length > 0 ? Math.max(0, (length - errors) / length) : 1;
   const complexity = Math.max(3, distinct);
-  const score = (speed * complexity) / (errors + 1) * (length / 50);
+  const score = ((speed * complexity) / (errors + 1)) * (length / 50);
   return { speed, accuracy, complexity, score };
 }
 

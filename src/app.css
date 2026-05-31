@@ -90,7 +90,9 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: color 140ms ease, background 140ms ease;
+  transition:
+    color 140ms ease,
+    background 140ms ease;
 }
 .viewtoggle button:hover {
   color: var(--text);
@@ -164,7 +166,10 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: border-color 140ms ease, color 140ms ease, transform 140ms ease;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 .controls button:hover {
   border-color: var(--accent-line);
@@ -197,7 +202,9 @@
   white-space: pre-wrap;
   word-break: break-word;
   user-select: none;
-  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 24px 60px -30px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 .board::before {
   content: '';
@@ -303,8 +310,12 @@
   background: linear-gradient(180deg, var(--panel-2), var(--panel));
   border: 1px solid var(--line);
   border-bottom: 2px solid var(--key-edge);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 0 rgba(0, 0, 0, 0.22);
-  transition: transform 110ms ease, filter 110ms ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 0 rgba(0, 0, 0, 0.22);
+  transition:
+    transform 110ms ease,
+    filter 110ms ease;
 }
 .key:hover {
   transform: translateY(-1px);
@@ -427,7 +438,9 @@
   font-family: var(--font-display);
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 140ms ease, transform 140ms ease;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease;
 }
 .analysis-toolbar button:hover {
   border-color: var(--accent-line);
@@ -730,7 +743,9 @@
   border: 1px solid var(--line);
   background: var(--panel-2);
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
   flex: 0 0 auto;
   padding: 0;
 }
@@ -742,7 +757,9 @@
   height: 20px;
   border-radius: 50%;
   background: var(--muted);
-  transition: transform 160ms ease, background 160ms ease;
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
 }
 .switch.on {
   background: var(--accent-dim);
@@ -772,7 +789,9 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: color 140ms ease, background 140ms ease;
+  transition:
+    color 140ms ease,
+    background 140ms ease;
 }
 .segmented .seg:hover {
   color: var(--text);

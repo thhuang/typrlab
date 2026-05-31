@@ -114,7 +114,11 @@ export class PhoneticModel {
     return out.length >= MIN_LEN ? codePointsToString(out) : 'the';
   }
 
-  private randomAllowed(filter: Filter, avoid: CodePoint | null, rng: () => number): CodePoint | null {
+  private randomAllowed(
+    filter: Filter,
+    avoid: CodePoint | null,
+    rng: () => number,
+  ): CodePoint | null {
     const all = [...filter.allowed];
     if (all.length === 0) return null;
     const pool = all.filter((c) => c !== avoid);
