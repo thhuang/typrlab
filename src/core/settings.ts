@@ -40,6 +40,8 @@ export interface Settings {
   font: string;
   /** Practice text size in px (size is the evidence-backed lever, not typeface). */
   textSize: number;
+  /** Practice layout: 'coach' (focus rail) or 'instrument' (full stat strip). */
+  practiceView: 'coach' | 'instrument';
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -56,4 +58,5 @@ export const DEFAULT_SETTINGS: Settings = {
   cursorStyle: 'box',
   font: 'jetbrains-mono',
   textSize: 32,
+  practiceView: 'coach',
 };
