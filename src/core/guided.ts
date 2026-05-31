@@ -104,14 +104,31 @@ export class GuidedLesson {
   private generateLine(filter: Filter, s: Settings, rng: () => number): string {
     const real = s.naturalWords ? this.realWords(filter) : [];
     const useReal = real.length >= NATURAL_WORD_THRESHOLD;
+
+    // The weak target to over-sample in NATURAL-word lessons too ("adaptive real
+    // content"): the focused digraph when drilling a transition, else the weak key.
+    const target =
+      filter.boost != null
+        ? String.fromCodePoint(filter.boost.from) + String.fromCodePoint(filter.boost.to)
+        : filter.focus != null
+          ? String.fromCodePoint(filter.focus)
+          : null;
+    const matching = target != null ? real.filter((w) => w.includes(target)) : [];
+
+    // ~70% of the time prefer a real word containing the weak key/transition.
+    const pickReal = (): string =>
+      matching.length > 0 && rng() < 0.7
+        ? matching[Math.floor(rng() * matching.length)]!
+        : real[Math.floor(rng() * real.length)]!;
+
     const words: string[] = [];
     let len = 0;
     let prev = '';
     while (len < LINE_MIN_CHARS) {
-      let w = useReal ? real[Math.floor(rng() * real.length)]! : this.model.nextWord(filter, rng);
+      let w = useReal ? pickReal() : this.model.nextWord(filter, rng);
       // Avoid obvious back-to-back repeats when the pool allows variety.
       for (let tries = 0; tries < 3 && w === prev; tries++) {
-        w = useReal ? real[Math.floor(rng() * real.length)]! : this.model.nextWord(filter, rng);
+        w = useReal ? pickReal() : this.model.nextWord(filter, rng);
       }
       words.push(w);
       prev = w;
@@ -120,10 +137,11 @@ export class GuidedLesson {
     return words.join(' ');
   }
 
+  /** Bank words usable with the currently-unlocked letters (length >= 2). */
   private realWords(filter: Filter): string[] {
     const out: string[] = [];
     for (const w of this.words) {
-      if (w.length < 3) continue;
+      if (w.length < 2) continue;
       let ok = true;
       for (const ch of w) {
         if (!filter.allowed.has(ch.codePointAt(0)!)) {
@@ -132,15 +150,6 @@ export class GuidedLesson {
         }
       }
       if (ok) out.push(w);
-    }
-    if (filter.boost) {
-      // Bubble words containing the targeted digraph to the front.
-      const bg = String.fromCodePoint(filter.boost.from) + String.fromCodePoint(filter.boost.to);
-      out.sort((a, b) => (b.includes(bg) ? 1 : 0) - (a.includes(bg) ? 1 : 0));
-    } else if (filter.focus !== null) {
-      const f = String.fromCodePoint(filter.focus);
-      // Bubble words containing the focus letter to the front.
-      out.sort((a, b) => (b.includes(f) ? 1 : 0) - (a.includes(f) ? 1 : 0));
     }
     return out;
   }
