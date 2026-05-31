@@ -17,14 +17,16 @@ actionable picture of what to work on next.
 
 ## Status
 
-🟢 **Runnable.** Stack: **React + TypeScript + Vite**, local-first (your data
-stays in your browser).
+🟢 **Runnable.** **Next.js 14 (App Router) + TypeScript**, local-first (your data
+stays in your browser). Real, deep-linkable routes: `/`, `/analysis`, `/settings`.
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173 — just start typing
+npm run dev          # http://localhost:3000 — just start typing
 npm run test:smoke   # headless checks of the adaptive core
-npm run build        # typecheck + production build
+npm run typecheck    # tsc (strict)
+npm run lint         # ESLint
+npm run build        # production build
 ```
 
 ## Features
@@ -70,13 +72,27 @@ npm run build        # typecheck + production build
 
 - Local-first. Full **JSON export / import** of your history and settings.
 
+## Tech & structure
+
+Next.js (App Router) · TypeScript (strict) · ESLint + Prettier · **self-hosted
+fonts** (no CDN). The local-first app renders client-side (`ssr: false`), so future
+SEO/marketing pages and sync/payments **API routes drop in as sibling routes** — no
+rewrite needed.
+
+- `app/` — routes (`/`, `/analysis`, `/settings`) + shell (layout, no-flash theme script)
+- `src/core/` — framework-agnostic domain: typing engine, per-key & per-transition
+  stats, phonetic model, adaptive lesson generation
+- `src/ui/` — React components (board, keyboard, charts, settings)
+- `src/hooks/` — `useTypingSession` (all stateful logic, kept out of the view)
+- `scripts/` — generators (`gen-themes`, `gen-words`) + a headless smoke test
+
 ## Roadmap
 
-- More themes + a custom theme builder; optional auto light/dark by time of day.
-- Self-hosted fonts for full offline use; responsive/mobile polish.
-- Larger / real phonetic models per language.
-- Code, numbers, and punctuation practice modes.
-- Optional accounts + cross-device sync.
+- Content modes: code, numbers, punctuation, custom text, quotes.
+- A custom theme builder; optional auto light/dark by time of day.
+- Larger / real phonetic models per language; responsive / mobile polish.
+- Optional accounts + cross-device sync; SEO / marketing pages.
+- CI (typecheck / lint / build / smoke) once the `workflow` OAuth scope is granted.
 
 ## Acknowledgements
 
