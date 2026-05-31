@@ -1,6 +1,7 @@
 // Typing-surface font registry. Applied to the practice board only (the text
-// you read/type), via the --font-board CSS variable. All are free Google Fonts
-// loaded in index.html; the browser only downloads the one actually in use.
+// you read/type), via the --font-board CSS variable. All are self-hosted
+// (Fontsource + a bundled Meslo, loaded in src/fonts-load.ts); the browser only
+// downloads the one actually in use.
 export type FontCategory = 'mono' | 'sans' | 'serif';
 
 export interface FontDef {

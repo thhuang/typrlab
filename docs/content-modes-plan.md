@@ -27,7 +27,7 @@ interface ContentSource {
 - `GuidedLesson` becomes the `adaptive` source (its `LessonPlan` → `Lesson.target`).
 - Other sources return `target: null` → the on-screen keyboard hides (or goes neutral)
   and there's no unlock/focus, but **stats still accumulate** for every mode.
-- `App` holds a `mode` setting and the active source; a small **mode selector** (chips
+- The session hook (`useTypingSession`) holds a `mode` setting and the active source; a small **mode selector** (chips
   above the board, or a Settings row) switches it. Per-mode options live in Settings.
 
 ## Sources

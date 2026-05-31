@@ -1,5 +1,5 @@
 // Self-hosted fonts (Fontsource, Latin subset) — no external CDN. Imported once
-// in main.tsx so all picker fonts are bundled and served from typr's own origin.
+// in app/layout.tsx so all picker fonts are bundled and served from typr's own origin.
 
 // UI / display
 import '@fontsource/space-grotesk/latin-400.css';

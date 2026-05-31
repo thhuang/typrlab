@@ -1,5 +1,10 @@
 # BUILD NOTES FOR typr
 
+> **Note (kept in sync):** This is the _original_ build plan. typr ultimately adopted
+> **Next.js (App Router)** instead of Vite — to keep future sync/payments and SEO pages
+> additive — see the [README](README.md) for the current stack and structure. The data
+> model, algorithms, and analysis design below were implemented largely as written.
+
 A pragmatic, opinionated guide to building a keybr-like adaptive typing trainer from an empty repo. Where this mirrors keybr's behavior, it cites the open-source keybr.com (github.com/aradzie/keybr.com, AGPL-3.0) implementation. Where we deviate, it says so and why.
 
 The single most important idea to internalize before writing any code: **the entire system is built around one per-key number called `timeToType` (milliseconds per character), and a derived ratio called `confidence`. WPM is only a display transform applied at the very end.** Everything — letter unlocking, key coloring, lesson focus, progress prediction — is downstream of those two numbers. Get the data model right and the rest falls out.
@@ -11,7 +16,7 @@ The single most important idea to internalize before writing any code: **the ent
 ### Opinionated stack
 
 - **Language:** TypeScript end-to-end. The math (EMA filters, polynomial regression, weighted sampling) and the data shapes are identical client and server; one language avoids reimplementing the model twice. keybr itself is a TS monorepo for exactly this reason.
-- **Frontend:** React + Vite. A typing trainer is a single hot loop (keydown → update text-input state → re-render one line). You do not need SSR or a meta-framework for v1. Vite gives you instant HMR, which matters because you will be iterating on the typing-input state machine constantly.
+- **Frontend:** React + Vite for v1 _(the project ultimately chose **Next.js (App Router)** — see the note at top — for routing + a future backend/SEO; the per-loop client rendering still applies)_. A typing trainer is a single hot loop (keydown → update text-input state → re-render one line). You do not need SSR for the practice loop. Vite/HMR (or Next dev) matters because you will iterate on the typing-input state machine constantly.
 - **Rendering the typing line:** plain DOM with per-character `<span>`s styled by state class. Do **not** reach for canvas for the text line — you need per-char styling and a cursor, and the DOM handles ~80 spans trivially. Reserve canvas/SVG for the analysis charts (heatmaps over hundreds of lessons).
 - **State:** a small store (Zustand or even plain `useSyncExternalStore`). The typing engine should be a **plain class, not React state** — it processes keystrokes synchronously and you subscribe React to it. Putting per-keystroke state in `useState` will cause jank.
 - **Persistence (v1):** local-first. IndexedDB for the append-only results log, `localStorage` for settings. (See §8.) This is exactly keybr's model: anonymous users keep results in an IndexedDB store named `history` and settings in `localStorage` under key `settings`; nothing hits a server until you sign in.
@@ -459,7 +464,7 @@ When you add accounts, the cleanest design (and keybr's):
 
 ### Phase 0 — skeleton (½ day)
 
-Vite + React + TS. The `engine/result` types. A WPM/CPM formatter with a unit test (the off-by-5 trap). The immutable `Settings` class.
+Next.js (App Router) + React + TS. The `engine/result` types. A WPM/CPM formatter with a unit test (the off-by-5 trap). The immutable `Settings` class.
 
 ### Phase 1 — MVP: a typing loop that records (2–3 days)
 
