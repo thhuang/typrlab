@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>typr — Color &amp; Theme System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="typr-tokens.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    position: relative;
+    min-height: 100%;
+    font-family: var(--font-display);
+    color: var(--text);
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(900px 520px at 10% -10%, var(--glow-1), transparent 60%),
+      radial-gradient(1000px 620px at 100% -6%, var(--glow-2), transparent 55%),
+      radial-gradient(760px 760px at 50% 118%, var(--glow-1), transparent 62%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 280ms ease, color 280ms ease;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 16px clamp(20px, 5vw, 56px);
+    background: color-mix(in oklch, var(--bg) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+  }
+  .brand .caret { color: var(--accent); font-family: var(--font-mono); font-weight: 800; }
+  .brand .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-radius: 999px;
+    padding: 3px 9px;
+    margin-left: 10px;
+    align-self: center;
+  }
+  .switcher { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .scheme-badge {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 11px;
+  }
+  .theme-select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 140ms ease;
+  }
+  .theme-select:hover { border-color: var(--accent-line); }
+
+  /* ---------- Layout ---------- */
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 52px) clamp(20px, 5vw, 56px) 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+  .hero { display: flex; flex-direction: column; gap: 18px; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(34px, 6vw, 56px);
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+  .hero p {
+    margin: 0;
+    max-width: 60ch;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .hero p b { color: var(--text); font-weight: 600; }
+
+  /* Provenance chips */
+  .provenance {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 6px;
+    padding: 18px 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .provenance .plabel {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .hexrow { display: flex; flex-wrap: wrap; gap: 10px; }
+  .hexchip {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 12px 6px 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .hexchip .dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in oklch, var(--text) 18%, transparent);
+  }
+  .hexchip .hxname { color: var(--muted); }
+  .hexchip .hxval { color: var(--text); }
+
+  /* ---------- Section ---------- */
+  section { display: flex; flex-direction: column; gap: 20px; scroll-margin-top: 90px; }
+  .sec-head { display: flex; flex-direction: column; gap: 6px; }
+  .sec-head h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sec-head h2::before {
+    content: '';
+    width: 22px; height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .sec-head p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.6; max-width: 64ch; text-wrap: pretty; }
+
+  /* Token grid */
+  .tokens { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 14px; }
+  .token {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 160ms ease, transform 160ms ease;
+  }
+  .token:hover { border-color: var(--line-2); transform: translateY(-2px); }
+  .swatch {
+    height: 84px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .swatch .alpha-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(45deg, color-mix(in oklch, var(--text) 8%, transparent) 25%, transparent 25%),
+      linear-gradient(-45deg, color-mix(in oklch, var(--text) 8%, transparent) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, color-mix(in oklch, var(--text) 8%, transparent) 75%),
+      linear-gradient(-45deg, transparent 75%, color-mix(in oklch, var(--text) 8%, transparent) 75%);
+    background-size: 14px 14px;
+    background-position: 0 0, 0 7px, 7px -7px, -7px 0;
+    z-index: 0;
+  }
+  .swatch .fill { position: absolute; inset: 0; z-index: 1; }
+  .token-meta { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 5px; }
+  .token-name { font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+  .token-role { font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .token-val { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); word-break: break-all; opacity: 0.85; }
+
+  /* Text samples */
+  .textcard {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .textrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  .textrow:last-child { border-bottom: 0; padding-bottom: 0; }
+  .textrow .sample { font-size: 22px; }
+  .textrow .tn { font-family: var(--font-mono); font-size: 12px; color: var(--accent-soft); }
+  .textrow .tv { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  /* Accent showcase */
+  .accent-demo { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .accent-demo { grid-template-columns: 1fr; } }
+  .demo-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .demo-card .dh { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); }
+  .btn-accent {
+    align-self: flex-start;
+    background: var(--accent);
+    color: var(--on-accent);
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: filter 140ms ease;
+  }
+  .btn-accent:hover { filter: brightness(1.06); }
+  .pill {
+    align-self: flex-start;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .link-demo { color: var(--accent-soft); font-weight: 600; }
+  .bar-demo { height: 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; }
+  .bar-demo > span { display: block; height: 100%; width: 68%; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); }
+
+  /* Confidence ramp */
+  .ramp { display: flex; flex-direction: column; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; }
+  .ramp-bar { height: 26px; border-radius: 8px; background: linear-gradient(90deg, var(--slow-key-color), var(--fast-key-color)); border: 1px solid var(--line); }
+  .ramp-scale { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .ramp-keys { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ckey {
+    width: 42px; height: 44px;
+    display: grid; place-items: center;
+    border-radius: 10px;
+    font-family: var(--font-mono); font-weight: 700; font-size: 15px; text-transform: uppercase;
+    color: var(--on-confidence);
+    border: 1px solid color-mix(in oklch, var(--text) 12%, transparent);
+  }
+
+  /* Theme grid */
+  .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 14px; }
+  .tcard {
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    font-family: var(--font-display);
+    transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  }
+  .tcard:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -28px rgba(0,0,0,0.8); }
+  .tcard.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .tcard .preview {
+    height: 96px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--bg);
+    background-image: radial-gradient(120px 80px at 85% -10%, var(--glow-1), transparent 70%);
+  }
+  .tcard .pv-top { display: flex; gap: 6px; align-items: center; }
+  .tcard .pv-dot { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); }
+  .tcard .pv-lines { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .tcard .pv-line { height: 6px; border-radius: 3px; }
+  .tcard .pv-panel { display: flex; gap: 6px; }
+  .tcard .pv-chip { height: 18px; border-radius: 5px; flex: 1; border: 1px solid var(--line); background: var(--panel); }
+  .tcard .meta { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px; border-top: 1px solid var(--line); }
+  .tcard .tlabel { font-size: 13.5px; font-weight: 600; }
+  .tcard .tscheme { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); }
+  .tcard .defbadge { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent-line); border-radius: 999px; padding: 2px 7px; }
+
+  /* In-context mock */
+  .context { display: flex; flex-direction: column; gap: 16px; }
+  .board {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 38px 34px;
+    font-family: var(--font-mono);
+    font-size: 30px;
+    line-height: 1.85;
+    letter-spacing: 0.5px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: none;
+    box-shadow: 0 24px 60px -30px rgba(0,0,0,0.9), inset 0 1px 0 color-mix(in oklch, var(--text) 5%, transparent);
+  }
+  .board::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; border-radius: 18px 18px 0 0; background: linear-gradient(90deg, transparent, var(--accent-line), transparent); }
+  .ch { color: var(--untyped); }
+  .ch.hit { color: var(--hit); }
+  .ch.cursor { color: var(--text); position: relative; }
+  .ch.cursor::before { content: ''; position: absolute; pointer-events: none; left: -0.1em; right: -0.1em; top: 50%; height: 1.18em; transform: translateY(-50%); border: 2px solid var(--accent); border-radius: 5px; }
+  .kbrow { display: flex; gap: 9px; justify-content: center; flex-wrap: wrap; }
+  .key {
+    width: 46px; height: 48px;
+    display: grid; place-items: center;
+    border-radius: 11px;
+    font-family: var(--font-mono); font-size: 16px; font-weight: 700; text-transform: uppercase;
+    color: var(--text);
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--key-edge);
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--text) 6%, transparent), 0 2px 0 rgba(0,0,0,0.22);
+  }
+  .cards-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; }
+  @media (max-width: 640px) { .cards-strip { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 13px 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat .sl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .stat .sv { font-family: var(--font-mono); font-size: 20px; font-weight: 700; }
+  .stat .sv.accent { color: var(--accent); }
+  .stat .sv.hit { color: var(--hit); }
+
+  .foot { color: var(--muted); font-size: 12.5px; font-family: var(--font-mono); text-align: center; padding-top: 12px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">typr<span class="caret">_</span><span class="tag">color&nbsp;system</span></div>
+    <div class="switcher">
+      <span class="scheme-badge" id="schemeBadge">dark scheme</span>
+      <select class="theme-select" id="themeSelect" aria-label="Active theme"></select>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero" id="top">
+      <span class="eyebrow">typr design system · foundation 01</span>
+      <h1>One color model.<br />Ten themes. Zero drift.</h1>
+      <p>
+        Every typr theme is generated from <b>8 signature hex colors</b>, converted into
+        <b>23 perceptually-uniform OKLCH tokens</b> — surfaces, text, accent, feedback and effects.
+        Components only ever reference the tokens, so swapping a theme retones the entire product
+        with guaranteed contrast. Switch the theme above and watch every swatch and the live
+        interface below update in lockstep.
+      </p>
+      <div class="provenance">
+        <span class="plabel" id="provLabel">Amber — 8 signature source colors → 23 tokens</span>
+        <div class="hexrow" id="hexRow"></div>
+      </div>
+    </div>
+
+    <section id="surfaces">
+      <div class="sec-head">
+        <h2>Surfaces &amp; structure</h2>
+        <p>The elevation stack. <code>bg</code> is the page; <code>panel</code> / <code>panel-2</code> lift cards and controls; the <code>line</code> pair draws borders and dividers; <code>key-edge</code> is the dark underside of a keycap.</p>
+      </div>
+      <div class="tokens" id="grid-surfaces"></div>
+    </section>
+
+    <section id="text">
+      <div class="sec-head">
+        <h2>Text &amp; reading</h2>
+        <p>Three reading weights. <code>text</code> is primary copy, <code>muted</code> is secondary/labels, and <code>untyped</code> is the dimmed-but-legible color for characters you haven't typed yet — brighter than muted on purpose.</p>
+      </div>
+      <div class="textcard" id="textCard"></div>
+    </section>
+
+    <section id="accent">
+      <div class="sec-head">
+        <h2>Accent system</h2>
+        <p>A single hue does all the lifting, in five calibrated strengths. <code>on-accent</code> is the contrast-safe text color the generator picks (dark text on light accents, near-white otherwise) so accent buttons stay readable in every theme.</p>
+      </div>
+      <div class="tokens" id="grid-accent"></div>
+      <div class="accent-demo">
+        <div class="demo-card">
+          <span class="dh">In use</span>
+          <button class="btn-accent">Start session</button>
+          <span class="pill">th → drilling</span>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:var(--text)">Read the full <a href="#" class="link-demo" onclick="return false">analysis breakdown</a> for this run.</p>
+          <div class="bar-demo"><span></span></div>
+        </div>
+        <div class="demo-card">
+          <span class="dh">Strengths</span>
+          <div class="tokens" id="grid-accent-mini" style="grid-template-columns:1fr 1fr;gap:10px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="feedback">
+      <div class="sec-head">
+        <h2>Feedback &amp; the confidence ramp</h2>
+        <p><code>hit</code> and <code>miss</code> mark correct and incorrect keystrokes. The same two colors anchor the <b>confidence ramp</b> — per-key mastery is mixed perceptually in OKLCH between <code>slow-key-color</code> (miss) and <code>fast-key-color</code> (hit), so the heatmap always matches the active theme.</p>
+      </div>
+      <div class="tokens" id="grid-feedback"></div>
+      <div class="ramp">
+        <div class="ramp-bar"></div>
+        <div class="ramp-scale"><span>0% · slow / weak</span><span>50%</span><span>100% · fast / mastered</span></div>
+        <div class="ramp-keys" id="rampKeys"></div>
+      </div>
+    </section>
+
+    <section id="effects">
+      <div class="sec-head">
+        <h2>Effects &amp; geometry</h2>
+        <p>Atmosphere tokens shared across themes. Two ambient <code>glow</code> washes sit behind the page, a film <code>grain</code> adds texture (lighter on light themes), and a single <code>radius</code> keeps every corner consistent.</p>
+      </div>
+      <div class="tokens" id="grid-effects"></div>
+    </section>
+
+    <section id="themes">
+      <div class="sec-head">
+        <h2>The ten themes</h2>
+        <p>Six dark (focus / low-light) and four light (daytime / reading &amp; writing). <b style="color:var(--text)">Defaults: One Dark (dark) &middot; Paper (light)</b> &mdash; the rest are opt-in. Click any card to make it active everywhere on this page.</p>
+      </div>
+      <div class="theme-grid" id="themeGrid"></div>
+    </section>
+
+    <section id="context">
+      <div class="sec-head">
+        <h2>Themes in real context</h2>
+        <p>The same tokens, wearing the actual typr practice surface — the typing board, the keycap heatmap, and the stats strip. This is where you feel whether a palette reads well as a focused, low-friction typing experience.</p>
+      </div>
+      <div class="context">
+        <div class="board" id="boardMock"></div>
+        <div class="kbrow" id="kbMock"></div>
+        <div class="cards-strip">
+          <div class="stat"><span class="sl">Speed</span><span class="sv accent">68 wpm</span></div>
+          <div class="stat"><span class="sl">Accuracy</span><span class="sv hit">97.4%</span></div>
+          <div class="stat"><span class="sl">Unlocked</span><span class="sv">18 / 26</span></div>
+          <div class="stat"><span class="sl">Drilling</span><span class="sv">th</span></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="foot">typr-tokens.css · generated from canonical palettes by scripts/gen-themes.mjs · do not edit tokens by hand</p>
+  </main>
+
+<script>
+  // ---- Theme registry (id, label, scheme + 8 canonical source hexes) ----
+  const THEMES = [
+    { id:'amber', label:'Amber', scheme:'dark', hex:{ bg:'#0a0b0e', panel:'#14171d', line:'#242a34', text:'#eef1f6', muted:'#828d9c', accent:'#ffb000', hit:'#74e0a0', miss:'#ff6b6b' } },
+    { id:'dracula', label:'Dracula', scheme:'dark', hex:{ bg:'#282a36', panel:'#343746', line:'#44475a', text:'#f8f8f2', muted:'#6272a4', accent:'#bd93f9', hit:'#50fa7b', miss:'#ff5555' } },
+    { id:'tokyo-night', label:'Tokyo Night', scheme:'dark', hex:{ bg:'#1a1b26', panel:'#24283b', line:'#414868', text:'#c0caf5', muted:'#565f89', accent:'#7aa2f7', hit:'#9ece6a', miss:'#f7768e' } },
+    { id:'nord', label:'Nord', scheme:'dark', hex:{ bg:'#2e3440', panel:'#3b4252', line:'#434c5e', text:'#d8dee9', muted:'#6c7689', accent:'#88c0d0', hit:'#a3be8c', miss:'#bf616a' } },
+    { id:'catppuccin-mocha', label:'Catppuccin Mocha', scheme:'dark', hex:{ bg:'#1e1e2e', panel:'#292a3d', line:'#45475a', text:'#cdd6f4', muted:'#7f849c', accent:'#cba6f7', hit:'#a6e3a1', miss:'#f38ba8' } },
+    { id:'one-dark', label:'One Dark', scheme:'dark', hex:{ bg:'#282c34', panel:'#31363f', line:'#3b4048', text:'#abb2bf', muted:'#5c6370', accent:'#61afef', hit:'#98c379', miss:'#e06c75' } },
+    { id:'paper', label:'Paper (sepia)', scheme:'light', hex:{ bg:'#f3ead6', panel:'#faf4e6', line:'#e4d9bf', text:'#433a2a', muted:'#8a7c61', accent:'#b5762a', hit:'#5f8b3a', miss:'#c0533b' } },
+    { id:'solarized-light', label:'Solarized Light', scheme:'light', hex:{ bg:'#fdf6e3', panel:'#eee8d5', line:'#d9d2bc', text:'#073642', muted:'#93a1a1', accent:'#268bd2', hit:'#859900', miss:'#dc322f' } },
+    { id:'github-light', label:'GitHub Light', scheme:'light', hex:{ bg:'#ffffff', panel:'#f6f8fa', line:'#d0d7de', text:'#1f2328', muted:'#656d76', accent:'#0969da', hit:'#1a7f37', miss:'#cf222e' } },
+    { id:'catppuccin-latte', label:'Catppuccin Latte', scheme:'light', hex:{ bg:'#eff1f5', panel:'#e6e9ef', line:'#ccd0da', text:'#4c4f69', muted:'#8c8fa1', accent:'#8839ef', hit:'#40a02b', miss:'#d20f39' } },
+  ];
+
+  // ---- Token specs per section ----
+  const SURFACES = [
+    { v:'--bg', role:'Page background', alpha:false },
+    { v:'--panel', role:'Card / control surface', alpha:false },
+    { v:'--panel-2', role:'Raised surface, inset wells', alpha:false },
+    { v:'--line', role:'Borders & dividers', alpha:false },
+    { v:'--line-2', role:'Stronger / hover border', alpha:false },
+    { v:'--key-edge', role:'Keycap bottom edge', alpha:false },
+  ];
+  const ACCENT = [
+    { v:'--accent', role:'Primary brand accent', alpha:false },
+    { v:'--accent-soft', role:'Hover / emphasis text', alpha:false },
+    { v:'--accent-dim', role:'Tint fills & chips', alpha:true },
+    { v:'--accent-line', role:'Accent borders / rules', alpha:true },
+    { v:'--on-accent', role:'Text on accent fills', alpha:false },
+  ];
+  const FEEDBACK = [
+    { v:'--hit', role:'Correct keystroke', alpha:false },
+    { v:'--miss', role:'Error keystroke', alpha:false },
+    { v:'--fast-key-color', role:'Ramp end · mastered', alpha:false },
+    { v:'--slow-key-color', role:'Ramp start · weak', alpha:false },
+  ];
+  const EFFECTS = [
+    { v:'--glow-1', role:'Ambient accent wash', alpha:true },
+    { v:'--glow-2', role:'Ambient hit wash', alpha:true },
+  ];
+
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  function swatchHTML(spec) {
+    const showAlpha = spec.alpha ? '<span class="alpha-grid"></span>' : '';
+    return `
+      <div class="token" data-var="${spec.v}">
+        <div class="swatch">${showAlpha}<span class="fill" style="background:var(${spec.v})"></span></div>
+        <div class="token-meta">
+          <span class="token-name">${spec.v}</span>
+          <span class="token-role">${spec.role}</span>
+          <span class="token-val" data-val="${spec.v}"></span>
+        </div>
+      </div>`;
+  }
+
+  function renderGrid(id, specs) {
+    document.getElementById(id).innerHTML = specs.map(swatchHTML).join('');
+  }
+
+  function renderTextCard() {
+    const rows = [
+      { v:'--text', label:'Primary text', sample:'The quick brown fox jumps' },
+      { v:'--muted', label:'Muted / labels', sample:'Secondary copy and field labels' },
+      { v:'--untyped', label:'Untyped glyphs', sample:'characters you have not typed yet' },
+    ];
+    document.getElementById('textCard').innerHTML = rows.map(r => `
+      <div class="textrow">
+        <span class="sample" style="color:var(${r.v})">${r.sample}</span>
+        <span class="tn">${r.v}</span>
+        <span class="tv" data-val="${r.v}"></span>
+      </div>`).join('');
+  }
+
+  function renderRampKeys() {
+    const keys = ['q','z','x','e','t','a','o','n'];
+    const el = document.getElementById('rampKeys');
+    el.innerHTML = keys.map((k,i) => {
+      const pct = Math.round((i/(keys.length-1))*100);
+      const bg = `color-mix(in oklch, var(--fast-key-color) ${pct}%, var(--slow-key-color))`;
+      return `<span class="ckey" style="background:${bg}" title="${pct}% confidence">${k}</span>`;
+    }).join('');
+  }
+
+  function renderThemeGrid() {
+    const el = document.getElementById('themeGrid');
+    el.innerHTML = THEMES.map(t => `
+      <button class="tcard" data-theme="${t.id}" data-pick="${t.id}">
+        <div class="preview">
+          <div class="pv-top">
+            <span class="pv-dot"></span>
+            <span class="pv-lines">
+              <span class="pv-line" style="background:var(--text);width:70%"></span>
+              <span class="pv-line" style="background:var(--muted);width:45%"></span>
+            </span>
+          </div>
+          <div class="pv-panel"><span class="pv-chip"></span><span class="pv-chip"></span><span class="pv-chip" style="background:var(--accent-dim);border-color:var(--accent-line)"></span></div>
+        </div>
+        <span class="meta"><span class="tlabel">${t.label}</span>${(t.id==='one-dark'||t.id==='paper') ? '<span class="defbadge">default '+t.scheme+'</span>' : '<span class="tscheme">'+t.scheme+'</span>'}</span>
+      </button>`).join('');
+    el.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => applyTheme(b.dataset.pick)));
+  }
+
+  function renderMock() {
+    const text = 'the rhythm of practice ';
+    const cursorAt = 12; // index of current char
+    const board = document.getElementById('boardMock');
+    board.innerHTML = [...text].map((c,i) => {
+      const cls = i < cursorAt ? 'ch hit' : i === cursorAt ? 'ch cursor' : 'ch';
+      const ch = c === ' ' ? ' ' : c;
+      return `<span class="${cls}">${ch}</span>`;
+    }).join('');
+    const keys = [
+      ['q',0.2],['w',0.55],['e',0.9],['r',0.7],['t',0.35],['y',0.6],['u',0.8],['i',0.85],['o',0.95],['p',0.5]
+    ];
+    document.getElementById('kbMock').innerHTML = keys.map(([k,c]) => {
+      const pct = Math.round(c*100);
+      return `<span class="key" style="border-bottom-color:color-mix(in oklch, var(--fast-key-color) ${pct}%, var(--slow-key-color))">${k}</span>`;
+    }).join('');
+  }
+
+  function updateValues() {
+    document.querySelectorAll('[data-val]').forEach(el => { el.textContent = css(el.dataset.val); });
+  }
+
+  function renderProvenance(t) {
+    document.getElementById('provLabel').textContent = `${t.label} — 8 signature source colors → 23 tokens`;
+    const order = ['bg','panel','line','text','muted','accent','hit','miss'];
+    document.getElementById('hexRow').innerHTML = order.map(k => `
+      <span class="hexchip">
+        <span class="dot" style="background:${t.hex[k]}"></span>
+        <span class="hxname">${k}</span>
+        <span class="hxval">${t.hex[k]}</span>
+      </span>`).join('');
+  }
+
+  function applyTheme(id) {
+    const t = THEMES.find(x => x.id === id) || THEMES[0];
+    document.documentElement.setAttribute('data-theme', t.id);
+    document.getElementById('themeSelect').value = t.id;
+    document.getElementById('schemeBadge').textContent = t.scheme + ' scheme';
+    renderProvenance(t);
+    document.querySelectorAll('.tcard').forEach(c => c.classList.toggle('active', c.dataset.pick === t.id));
+    // value labels read computed vars — wait a frame for the cascade.
+    requestAnimationFrame(updateValues);
+    try { localStorage.setItem('typr-ds-theme', t.id); } catch (e) {}
+  }
+
+  function buildSelect() {
+    const sel = document.getElementById('themeSelect');
+    const dark = THEMES.filter(t => t.scheme === 'dark');
+    const light = THEMES.filter(t => t.scheme === 'light');
+    const grp = (label, arr) => `<optgroup label="${label}">${arr.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}</optgroup>`;
+    sel.innerHTML = grp('Dark', dark) + grp('Light', light);
+    sel.addEventListener('change', () => applyTheme(sel.value));
+  }
+
+  // ---- Boot ----
+  renderGrid('grid-surfaces', SURFACES);
+  renderGrid('grid-accent', ACCENT);
+  renderGrid('grid-accent-mini', ACCENT.slice(2));
+  renderGrid('grid-feedback', FEEDBACK);
+  renderGrid('grid-effects', EFFECTS);
+  renderTextCard();
+  renderRampKeys();
+  renderThemeGrid();
+  renderMock();
+  buildSelect();
+
+  let start = 'one-dark';
+  try { const s = localStorage.getItem('typr-ds-theme'); if (s && THEMES.some(t => t.id === s)) start = s; } catch (e) {}
+  applyTheme(start);
+</script>
+</body>
+</html>
