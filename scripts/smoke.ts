@@ -31,7 +31,9 @@ assert(plan.included.length === 6, `start with 6 letters (got ${plan.included.le
 const letters = plan.included.map((cp) => String.fromCodePoint(cp)).join('');
 assert(letters === 'etaoin', `first 6 are "etaoin" (got "${letters}")`);
 const allowed = new Set(plan.included);
-const onlyAllowed = Array.from(plan.text).every((ch) => ch === ' ' || allowed.has(ch.codePointAt(0)!));
+const onlyAllowed = Array.from(plan.text).every(
+  (ch) => ch === ' ' || allowed.has(ch.codePointAt(0)!),
+);
 assert(onlyAllowed, 'generated text uses only unlocked letters');
 assert(plan.focus !== null, 'a focus key is chosen');
 console.log('     text:', JSON.stringify(plan.text));
@@ -56,7 +58,10 @@ for (const cp of plan.included) {
 }
 const offGate = guided.computeIncluded(decayStats, { ...settings, recoverKeys: false });
 const onGate = guided.computeIncluded(decayStats, { ...settings, recoverKeys: true });
-assert(offGate.length === 6 && onGate.length === 6, 'below target on all keys -> no unlock either way');
+assert(
+  offGate.length === 6 && onGate.length === 6,
+  'below target on all keys -> no unlock either way',
+);
 
 console.log('4) TextInput aggregation (clean run)');
 const ti = new TextInput('the and tea', { stopOnError: true });
@@ -69,7 +74,10 @@ const res = ti.result(t, 'en');
 assert(ti.completed, 'completes on full input');
 assert(res.length === 11, `length 11 (got ${res.length})`);
 assert(res.errors === 0, `no errors (got ${res.errors})`);
-assert(res.speed > 0, `speed computed (${Math.round(res.speed)} cpm / ${Math.round(res.speed / 5)} wpm)`);
+assert(
+  res.speed > 0,
+  `speed computed (${Math.round(res.speed)} cpm / ${Math.round(res.speed / 5)} wpm)`,
+);
 
 console.log('5) stopOnError holds the cursor and counts the miss');
 const ti2 = new TextInput('the', { stopOnError: true });
@@ -172,7 +180,12 @@ console.log('12) natural-word lessons over-sample the weak transition (real-cont
 const fullStats = new KeyStatsMap();
 for (const ch of 'etaoinshrdlcumwfgypbvkjxqz') {
   for (let i = 0; i < 3; i++) {
-    fullStats.ingest({ codePoint: ch.codePointAt(0)!, hitCount: 5, missCount: 0, timeToType: fast });
+    fullStats.ingest({
+      codePoint: ch.codePointAt(0)!,
+      hitCount: 5,
+      missCount: 0,
+      timeToType: fast,
+    });
   }
 }
 const bsTH = new BigramStatsMap();
@@ -183,7 +196,12 @@ function thRate(bigramTargeting: boolean): number {
   let th = 0;
   let total = 0;
   for (let k = 0; k < 40; k++) {
-    const p = guided.plan(fullStats, { ...settings, naturalWords: true, bigramTargeting }, Math.random, bsTH);
+    const p = guided.plan(
+      fullStats,
+      { ...settings, naturalWords: true, bigramTargeting },
+      Math.random,
+      bsTH,
+    );
     for (let i = 1; i < p.text.length; i++) if (p.text[i - 1] === 't' && p.text[i] === 'h') th += 1;
     total += p.text.length;
   }
@@ -191,7 +209,10 @@ function thRate(bigramTargeting: boolean): number {
 }
 const onTH = thRate(true);
 const offTH = thRate(false);
-assert(onTH > offTH, `natural-word targeting raises t→h frequency (on=${onTH.toFixed(4)} > off=${offTH.toFixed(4)})`);
+assert(
+  onTH > offTH,
+  `natural-word targeting raises t→h frequency (on=${onTH.toFixed(4)} > off=${offTH.toFixed(4)})`,
+);
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
 process.exit(failures === 0 ? 0 : 1);

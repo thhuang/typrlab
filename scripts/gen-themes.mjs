@@ -44,17 +44,138 @@ const lighten = ([L, C, H], d) => [clamp(L + d, 0, 1), C, H];
 // id, label, scheme, and the signature hexes typr needs.
 const THEMES = [
   // --- Dark ---
-  { id: 'amber', label: 'Amber', scheme: 'dark', def: true, bg: '#0a0b0e', panel: '#14171d', line: '#242a34', text: '#eef1f6', muted: '#828d9c', accent: '#ffb000', hit: '#74e0a0', miss: '#ff6b6b' },
-  { id: 'dracula', label: 'Dracula', scheme: 'dark', bg: '#282a36', panel: '#343746', line: '#44475a', text: '#f8f8f2', muted: '#6272a4', accent: '#bd93f9', hit: '#50fa7b', miss: '#ff5555' },
-  { id: 'tokyo-night', label: 'Tokyo Night', scheme: 'dark', bg: '#1a1b26', panel: '#24283b', line: '#414868', text: '#c0caf5', muted: '#565f89', accent: '#7aa2f7', hit: '#9ece6a', miss: '#f7768e' },
-  { id: 'nord', label: 'Nord', scheme: 'dark', bg: '#2e3440', panel: '#3b4252', line: '#434c5e', text: '#d8dee9', muted: '#6c7689', accent: '#88c0d0', hit: '#a3be8c', miss: '#bf616a' },
-  { id: 'catppuccin-mocha', label: 'Catppuccin Mocha', scheme: 'dark', bg: '#1e1e2e', panel: '#292a3d', line: '#45475a', text: '#cdd6f4', muted: '#7f849c', accent: '#cba6f7', hit: '#a6e3a1', miss: '#f38ba8' },
-  { id: 'one-dark', label: 'One Dark', scheme: 'dark', bg: '#282c34', panel: '#31363f', line: '#3b4048', text: '#abb2bf', muted: '#5c6370', accent: '#61afef', hit: '#98c379', miss: '#e06c75' },
+  {
+    id: 'amber',
+    label: 'Amber',
+    scheme: 'dark',
+    def: true,
+    bg: '#0a0b0e',
+    panel: '#14171d',
+    line: '#242a34',
+    text: '#eef1f6',
+    muted: '#828d9c',
+    accent: '#ffb000',
+    hit: '#74e0a0',
+    miss: '#ff6b6b',
+  },
+  {
+    id: 'dracula',
+    label: 'Dracula',
+    scheme: 'dark',
+    bg: '#282a36',
+    panel: '#343746',
+    line: '#44475a',
+    text: '#f8f8f2',
+    muted: '#6272a4',
+    accent: '#bd93f9',
+    hit: '#50fa7b',
+    miss: '#ff5555',
+  },
+  {
+    id: 'tokyo-night',
+    label: 'Tokyo Night',
+    scheme: 'dark',
+    bg: '#1a1b26',
+    panel: '#24283b',
+    line: '#414868',
+    text: '#c0caf5',
+    muted: '#565f89',
+    accent: '#7aa2f7',
+    hit: '#9ece6a',
+    miss: '#f7768e',
+  },
+  {
+    id: 'nord',
+    label: 'Nord',
+    scheme: 'dark',
+    bg: '#2e3440',
+    panel: '#3b4252',
+    line: '#434c5e',
+    text: '#d8dee9',
+    muted: '#6c7689',
+    accent: '#88c0d0',
+    hit: '#a3be8c',
+    miss: '#bf616a',
+  },
+  {
+    id: 'catppuccin-mocha',
+    label: 'Catppuccin Mocha',
+    scheme: 'dark',
+    bg: '#1e1e2e',
+    panel: '#292a3d',
+    line: '#45475a',
+    text: '#cdd6f4',
+    muted: '#7f849c',
+    accent: '#cba6f7',
+    hit: '#a6e3a1',
+    miss: '#f38ba8',
+  },
+  {
+    id: 'one-dark',
+    label: 'One Dark',
+    scheme: 'dark',
+    bg: '#282c34',
+    panel: '#31363f',
+    line: '#3b4048',
+    text: '#abb2bf',
+    muted: '#5c6370',
+    accent: '#61afef',
+    hit: '#98c379',
+    miss: '#e06c75',
+  },
   // --- Light ---
-  { id: 'paper', label: 'Paper', scheme: 'light', bg: '#f3ead6', panel: '#faf4e6', line: '#e4d9bf', text: '#433a2a', muted: '#8a7c61', accent: '#b5762a', hit: '#5f8b3a', miss: '#c0533b' },
-  { id: 'solarized-light', label: 'Solarized Light', scheme: 'light', bg: '#fdf6e3', panel: '#eee8d5', line: '#d9d2bc', text: '#073642', muted: '#93a1a1', accent: '#268bd2', hit: '#859900', miss: '#dc322f' },
-  { id: 'github-light', label: 'GitHub Light', scheme: 'light', bg: '#ffffff', panel: '#f6f8fa', line: '#d0d7de', text: '#1f2328', muted: '#656d76', accent: '#0969da', hit: '#1a7f37', miss: '#cf222e' },
-  { id: 'catppuccin-latte', label: 'Catppuccin Latte', scheme: 'light', bg: '#eff1f5', panel: '#e6e9ef', line: '#ccd0da', text: '#4c4f69', muted: '#8c8fa1', accent: '#8839ef', hit: '#40a02b', miss: '#d20f39' },
+  {
+    id: 'paper',
+    label: 'Paper',
+    scheme: 'light',
+    bg: '#f3ead6',
+    panel: '#faf4e6',
+    line: '#e4d9bf',
+    text: '#433a2a',
+    muted: '#8a7c61',
+    accent: '#b5762a',
+    hit: '#5f8b3a',
+    miss: '#c0533b',
+  },
+  {
+    id: 'solarized-light',
+    label: 'Solarized Light',
+    scheme: 'light',
+    bg: '#fdf6e3',
+    panel: '#eee8d5',
+    line: '#d9d2bc',
+    text: '#073642',
+    muted: '#93a1a1',
+    accent: '#268bd2',
+    hit: '#859900',
+    miss: '#dc322f',
+  },
+  {
+    id: 'github-light',
+    label: 'GitHub Light',
+    scheme: 'light',
+    bg: '#ffffff',
+    panel: '#f6f8fa',
+    line: '#d0d7de',
+    text: '#1f2328',
+    muted: '#656d76',
+    accent: '#0969da',
+    hit: '#1a7f37',
+    miss: '#cf222e',
+  },
+  {
+    id: 'catppuccin-latte',
+    label: 'Catppuccin Latte',
+    scheme: 'light',
+    bg: '#eff1f5',
+    panel: '#e6e9ef',
+    line: '#ccd0da',
+    text: '#4c4f69',
+    muted: '#8c8fa1',
+    accent: '#8839ef',
+    hit: '#40a02b',
+    miss: '#d20f39',
+  },
 ];
 
 function tokens(t) {
@@ -70,7 +191,8 @@ function tokens(t) {
   const untyped = [clamp((muted[0] + text[0]) / 2, 0, 1), muted[1], muted[2]];
   const accentSoft = [clamp(accent[0] + (light ? -0.08 : 0.1), 0, 1), accent[1] * 0.95, accent[2]];
   // Cursor/active text must contrast the accent: dark text on a light accent, else near-white.
-  const onAccent = accent[0] > 0.68 ? [0.2, Math.min(accent[1], 0.05), accent[2]] : [0.985, 0.012, accent[2]];
+  const onAccent =
+    accent[0] > 0.68 ? [0.2, Math.min(accent[1], 0.05), accent[2]] : [0.985, 0.012, accent[2]];
   const keyEdge = setL(panel, panel[0] - 0.05);
   return [
     ['color-scheme', t.scheme],
@@ -165,4 +287,6 @@ const out = [
 ].join('\n\n');
 
 writeFileSync(new URL('../src/theme.css', import.meta.url), out);
-console.log(`Wrote src/theme.css — ${THEMES.length} themes (${THEMES.filter((t) => t.scheme === 'dark').length} dark, ${THEMES.filter((t) => t.scheme === 'light').length} light)`);
+console.log(
+  `Wrote src/theme.css — ${THEMES.length} themes (${THEMES.filter((t) => t.scheme === 'dark').length} dark, ${THEMES.filter((t) => t.scheme === 'light').length} light)`,
+);

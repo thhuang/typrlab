@@ -2,14 +2,16 @@
   "name": "typr",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "description": "An adaptive typing trainer that drills your weakest keys and transitions.",
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -p tsconfig.json && vite build",
-    "preview": "vite preview --port 4173",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test:smoke": "tsx scripts/smoke.ts"
   },
   "dependencies": {
@@ -25,15 +27,18 @@
     "@fontsource/source-code-pro": "^5.2.7",
     "@fontsource/space-grotesk": "^5.2.10",
     "@fontsource/ubuntu-mono": "^5.2.8",
+    "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/node": "^20.14.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
+    "prettier": "^3.8.3",
     "tsx": "^4.19.2",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "typescript": "^5.6.3"
   }
 }

@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+public
+package-lock.json
+next-env.d.ts
+docs
+src/core/words.ts
+src/theme.css

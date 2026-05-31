@@ -30,7 +30,9 @@ export function SettingsView({ settings, update, onClear }: Props) {
         <div className="srow">
           <div className="slabel">
             <span className="sname">Target speed</span>
-            <span className="sdesc">New letters unlock once every active key reaches this speed.</span>
+            <span className="sdesc">
+              New letters unlock once every active key reaches this speed.
+            </span>
           </div>
           <div className="sctrl rangewrap">
             <input
@@ -87,7 +89,9 @@ export function SettingsView({ settings, update, onClear }: Props) {
         <div className="srow">
           <div className="slabel">
             <span className="sname">Theme</span>
-            <span className="sdesc">Light and dark palettes. Light suits bright rooms; dark suits dim ones.</span>
+            <span className="sdesc">
+              Light and dark palettes. Light suits bright rooms; dark suits dim ones.
+            </span>
           </div>
           <div className="sctrl">
             <select
@@ -118,9 +122,9 @@ export function SettingsView({ settings, update, onClear }: Props) {
           <div className="slabel">
             <span className="sname">Typing font</span>
             <span className="sdesc">
-              Practice text only. Pick what's comfortable — research shows typeface barely
-              affects reading speed; the default monospace just keeps similar characters
-              (l/I/1, 0/O) easy to tell apart.
+              Practice text only. Pick what’s comfortable — research shows typeface barely affects
+              reading speed; the default monospace just keeps similar characters (l/I/1, 0/O) easy
+              to tell apart.
             </span>
           </div>
           <div className="sctrl">
@@ -159,8 +163,8 @@ export function SettingsView({ settings, update, onClear }: Props) {
           <div className="slabel">
             <span className="sname">Text size</span>
             <span className="sdesc">
-              The lever that actually matters for reading — size affects speed and comprehension
-              far more than typeface does.
+              The lever that actually matters for reading — size affects speed and comprehension far
+              more than typeface does.
             </span>
           </div>
           <div className="sctrl rangewrap">
@@ -224,7 +228,11 @@ export function SettingsView({ settings, update, onClear }: Props) {
                 </button>
               </div>
             ) : (
-              <button type="button" className="danger-btn ghost" onClick={() => setConfirming(true)}>
+              <button
+                type="button"
+                className="danger-btn ghost"
+                onClick={() => setConfirming(true)}
+              >
                 Clear…
               </button>
             )}
