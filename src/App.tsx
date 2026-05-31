@@ -134,6 +134,11 @@ export default function App() {
     document.documentElement.style.setProperty('--font-board', fontStack(settings.font));
   }, [settings.font]);
 
+  // Apply the practice text size.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--board-size', `${settings.textSize}px`);
+  }, [settings.textSize]);
+
   function updateSettings(patch: Partial<Settings>) {
     setSettings((prev) => {
       const next = { ...prev, ...patch };

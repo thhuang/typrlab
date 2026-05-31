@@ -38,6 +38,8 @@ export interface Settings {
   cursorStyle: 'box' | 'underline' | 'bar' | 'block';
   /** Typing-surface font id (see src/ui/fonts.ts). */
   font: string;
+  /** Practice text size in px (size is the evidence-backed lever, not typeface). */
+  textSize: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -53,4 +55,5 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'paper',
   cursorStyle: 'box',
   font: 'jetbrains-mono',
+  textSize: 32,
 };

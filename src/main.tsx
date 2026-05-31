@@ -25,8 +25,8 @@ async function boot() {
       localStorage.setItem('typr.settings', JSON.stringify(s));
     }
   }
-  // Apply the persisted (or default) theme + font before first paint (no flash).
-  let saved: { theme?: string; font?: string } = {};
+  // Apply the persisted (or default) theme + font + size before first paint (no flash).
+  let saved: { theme?: string; font?: string; textSize?: number } = {};
   try {
     saved = JSON.parse(localStorage.getItem('typr.settings') || '{}');
   } catch {
@@ -34,6 +34,10 @@ async function boot() {
   }
   document.documentElement.setAttribute('data-theme', saved.theme || DEFAULT_SETTINGS.theme);
   document.documentElement.style.setProperty('--font-board', fontStack(saved.font || DEFAULT_SETTINGS.font));
+  document.documentElement.style.setProperty(
+    '--board-size',
+    `${saved.textSize || DEFAULT_SETTINGS.textSize}px`,
+  );
 
   createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

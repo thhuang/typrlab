@@ -21,7 +21,7 @@ export const FONTS: FontDef[] = [
   { id: 'ibm-plex-mono', label: 'IBM Plex Mono', category: 'mono', stack: `'IBM Plex Mono'${MONO}` },
   // Sans-serif.
   { id: 'lexend', label: 'Lexend', category: 'sans', stack: `'Lexend'${SANS}` },
-  { id: 'atkinson', label: 'Atkinson Hyperlegible', category: 'sans', stack: `'Atkinson Hyperlegible'${SANS}` },
+  { id: 'atkinson', label: 'Atkinson Hyperlegible (low-vision)', category: 'sans', stack: `'Atkinson Hyperlegible'${SANS}` },
   { id: 'inter', label: 'Inter', category: 'sans', stack: `'Inter'${SANS}` },
   // Serif.
   { id: 'literata', label: 'Literata', category: 'serif', stack: `'Literata'${SERIF}` },
