@@ -56,7 +56,7 @@ export const DEFAULT_SETTINGS: Settings = {
   layout: 'en',
   theme: 'paper',
   cursorStyle: 'box',
-  font: 'jetbrains-mono',
+  font: 'atkinson',
   textSize: 32,
   practiceView: 'coach',
 };

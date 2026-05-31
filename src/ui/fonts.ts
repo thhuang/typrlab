@@ -2,8 +2,10 @@
 // you read/type), via the --font-board CSS variable. All are self-hosted
 // (Fontsource, loaded in src/fonts-load.ts); the browser only downloads the one
 // actually in use. The picker is comfort/preference — typeface barely affects
-// reading speed (see docs/font-research.md). Default: JetBrains Mono (a
-// disambiguated monospace: clear l/I/1 · 0/O, no reading penalty).
+// reading speed (see docs/font-research.md). Default: Atkinson Hyperlegible (an
+// accessibility-first, highly legible sans). The default is set in
+// DEFAULT_SETTINGS.font (not by array order); FONTS[0] is only the fontStack /
+// resolveFontId fallback for an unknown id.
 export type FontCategory = 'mono' | 'sans' | 'serif';
 
 export interface FontDef {
@@ -18,8 +20,8 @@ const SANS = ', ui-sans-serif, system-ui, sans-serif';
 const SERIF = ', ui-serif, Georgia, Cambria, serif';
 
 export const FONTS: FontDef[] = [
-  // Monospace — fixed width, best for typing accuracy. Default first (also the
-  // fallback in fontStack), so an unknown/retired saved font lands here.
+  // Monospace — fixed width, best for typing accuracy. FONTS[0] is the
+  // fontStack / resolveFontId fallback for an unknown / retired saved id.
   {
     id: 'jetbrains-mono',
     label: 'JetBrains Mono',

@@ -45,10 +45,11 @@ npm run build        # production build
   theme-aware confidence ramp (each theme's own red→green, mixed in OKLCH).
 - **Adjustable text size** (the evidence-backed lever for reading performance) and a
   **typing-font picker** — 9 **self-hosted** fonts (no CDN), three per category:
-  monospace (default — **JetBrains Mono**, a disambiguated face with clear l/I/1 ·
-  0/O; plus Cascadia Code, Source Code Pro), sans, and serif. Typeface is largely
-  _preference_ — research shows it barely affects reading speed; size and personal
-  fit matter more (see [`docs/font-research.md`](docs/font-research.md)).
+  monospace (JetBrains Mono, Cascadia Code, Source Code Pro), sans (default —
+  **Atkinson Hyperlegible**, an accessibility-first legible face), and serif.
+  Typeface is largely _preference_ — research shows it barely affects reading speed;
+  size and personal fit matter more
+  (see [`docs/font-research.md`](docs/font-research.md)).
 
 ### Analysis
 
