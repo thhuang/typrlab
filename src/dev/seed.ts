@@ -1,9 +1,11 @@
-// Dev-only: seed a realistic practice history so the Analysis view can be
-// demoed/screenshotted without typing 40 lessons by hand. Dynamically imported by
-// useTypingSession only when `process.env.NODE_ENV === 'development'` and the URL
-// hash contains "seed" — so it is stripped from production builds.
+// Dev-only seeders for demoing/screenshotting without typing dozens of lessons
+// by hand. Dynamically imported by useTypingSession only when
+// `process.env.NODE_ENV === 'development'` and the URL hash asks for a seed
+// (`#seed` → seedDemo, `#seedfull` → seedFull) — so this is stripped from
+// production builds.
 import type { BigramEntry, HistogramEntry, LessonResult } from '../core/types';
 import { computeMetrics } from '../core/result';
+import { speedToTime } from '../core/target';
 
 // from, to, base ms, ms improvement per lesson. th/er stay slow on purpose.
 const BIGRAMS: Array<[string, string, number, number]> = [
@@ -60,4 +62,43 @@ export function seedDemo(): void {
   localStorage.setItem('typr.history', JSON.stringify(results));
   // Demo with a 60 wpm (300 CPM) target so weak keys show real projections.
   localStorage.setItem('typr.settings', JSON.stringify({ targetSpeed: 300 }));
+}
+
+// Fully-mastered history: every letter unlocked and comfortably above target.
+// Used to exercise the "all keys at target" states (e.g. the Coach rail's
+// empty "Weakest keys" panel), which the normal seedDemo never reaches because
+// it keeps a couple of keys weak.
+export function seedFull(): void {
+  const target = 300; // CPM
+  const fast = Math.round(speedToTime(target) * 0.6); // ~1.7x target → confidence > 1
+  const letters = 'etaoinshrdlcumwfgypbvkjxqz'.split('');
+  const results: LessonResult[] = [];
+  const N = 12;
+  let ts = 1_700_000_000_000;
+
+  for (let i = 0; i < N; i++) {
+    const histogram: HistogramEntry[] = letters.map((ch) => ({
+      codePoint: ch.codePointAt(0)!,
+      hitCount: 6,
+      missCount: 0,
+      timeToType: fast,
+    }));
+    const length = histogram.reduce((a, h) => a + h.hitCount, 0);
+    const time = histogram.reduce((a, h) => a + h.hitCount * h.timeToType, 0);
+    const metrics = computeMetrics(length, time, 0, histogram.length);
+    ts += 90_000;
+    results.push({
+      timeStamp: ts,
+      layout: 'en',
+      length,
+      time,
+      errors: 0,
+      ...metrics,
+      histogram,
+      bigrams: [],
+    });
+  }
+
+  localStorage.setItem('typr.history', JSON.stringify(results));
+  localStorage.setItem('typr.settings', JSON.stringify({ targetSpeed: target }));
 }
