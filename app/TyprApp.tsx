@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTypingSession } from '@/hooks/useTypingSession';
 import { TypingBoard } from '@/ui/TypingBoard';
 import { Keyboard } from '@/ui/Keyboard';
-import { StatsPanel } from '@/ui/StatsPanel';
+import { CoachRail } from '@/ui/CoachRail';
 import { Analysis } from '@/ui/Analysis';
 import { SettingsView } from '@/ui/SettingsView';
 
@@ -28,7 +28,6 @@ export default function TyprApp() {
     plan,
     position,
     hasError,
-    last,
     stats,
     bigrams,
     startNext,
@@ -51,11 +50,6 @@ export default function TyprApp() {
 
   const includedSet = new Set(plan?.included ?? []);
   const focusCp = plan?.focus ?? null;
-  const focusChar = focusCp !== null ? String.fromCodePoint(focusCp) : null;
-  const bigramFocus = plan?.bigramFocus ?? null;
-  const drillLabel = bigramFocus
-    ? `${String.fromCodePoint(bigramFocus[0])}→${String.fromCodePoint(bigramFocus[1])}`
-    : (focusChar ?? '—');
 
   return (
     <div className="app">
@@ -91,36 +85,30 @@ export default function TyprApp() {
             </button>
           </div>
 
-          <main className="stage">
-            {plan && (
-              <TypingBoard
-                text={plan.text}
-                position={position}
-                hasError={hasError}
-                cursorStyle={settings.cursorStyle}
+          <main className="practice-coach">
+            <div className="coach-main">
+              {plan && (
+                <TypingBoard
+                  text={plan.text}
+                  position={position}
+                  hasError={hasError}
+                  cursorStyle={settings.cursorStyle}
+                />
+              )}
+              <Keyboard
+                stats={stats}
+                targetSpeed={settings.targetSpeed}
+                included={includedSet}
+                focus={focusCp}
+                recoverKeys={settings.recoverKeys}
               />
-            )}
-            <Keyboard
-              stats={stats}
-              targetSpeed={settings.targetSpeed}
-              included={includedSet}
-              focus={focusCp}
-              recoverKeys={settings.recoverKeys}
-            />
-            <p className="hint">
-              Just start typing — a wrong key holds the cursor until you fix it. Drilling:{' '}
-              <b>{drillLabel}</b>
-              {bigramFocus ? <span className="muted"> (weak transition)</span> : null}
-            </p>
+              <p className="hint hint-left">
+                Continuous flow — finishing a line generates the next automatically. A wrong key
+                holds the cursor until you fix it.
+              </p>
+            </div>
+            {plan && <CoachRail plan={plan} stats={stats} bigrams={bigrams} settings={settings} />}
           </main>
-
-          <StatsPanel
-            last={last}
-            history={history}
-            settings={settings}
-            unlocked={includedSet.size}
-            focus={focusChar}
-          />
         </>
       ) : view === 'analysis' ? (
         <Analysis
