@@ -1,7 +1,7 @@
 // The typing engine — a plain class (NOT React state) that processes
 // keystrokes synchronously. Implements keybr's stopOnError behaviour and
 // per-keystroke timing, then aggregates a lesson into a LessonResult.
-import type { CodePoint, HistogramEntry, LessonResult } from './types';
+import type { BigramEntry, CodePoint, HistogramEntry, LessonResult } from './types';
 import { computeMetrics } from './result';
 
 interface Step {
@@ -121,12 +121,36 @@ export class TextInput {
       });
     }
 
+    // Per-transition (digraph) timing: consecutive counted steps. The interval
+    // recorded on step i IS the time to type `to` given the preceding `from`.
+    const byBigram = new Map<string, { from: CodePoint; to: CodePoint; hit: number; times: number[] }>();
+    for (let i = 1; i < counted.length; i++) {
+      const from = counted[i - 1]!.codePoint;
+      const to = counted[i]!.codePoint;
+      const dt = counted[i]!.time;
+      const key = `${from},${to}`;
+      let e = byBigram.get(key);
+      if (!e) {
+        e = { from, to, hit: 0, times: [] };
+        byBigram.set(key, e);
+      }
+      e.hit += 1;
+      if (dt >= MIN_KEY_MS && dt <= MAX_KEY_MS) e.times.push(dt);
+    }
+    const bigrams: BigramEntry[] = [];
+    for (const e of byBigram.values()) {
+      const mean = e.times.length
+        ? Math.round(e.times.reduce((a, b) => a + b, 0) / e.times.length)
+        : 0;
+      bigrams.push({ from: e.from, to: e.to, hitCount: e.hit, timeToType: mean });
+    }
+
     const length = this.chars.length;
     const time = counted.reduce((a, s) => a + s.time, 0);
     const errors = Array.from(this.misses.values()).reduce((a, b) => a + b, 0);
     const distinct = new Set(counted.map((s) => s.codePoint)).size;
     const metrics = computeMetrics(length, time, errors, distinct);
 
-    return { timeStamp, layout, length, time, errors, ...metrics, histogram };
+    return { timeStamp, layout, length, time, errors, ...metrics, histogram, bigrams };
   }
 }

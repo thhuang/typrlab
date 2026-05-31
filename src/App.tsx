@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react';
 import type { LessonResult } from './core/types';
 import type { Settings } from './core/settings';
 import { KeyStatsMap } from './core/keyStats';
+import { BigramStatsMap } from './core/bigramStats';
 import { PhoneticModel } from './core/phonetic';
 import { GuidedLesson, type LessonPlan } from './core/guided';
 import { TextInput } from './core/textInput';
@@ -29,6 +30,7 @@ export default function App() {
   settingsRef.current = settings;
 
   const statsRef = useRef(new KeyStatsMap());
+  const bigramsRef = useRef(new BigramStatsMap());
   const guidedRef = useRef<GuidedLesson | null>(null);
   const inputRef = useRef<TextInput | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -51,7 +53,7 @@ export default function App() {
   const startNext = useCallback(() => {
     const g = guidedRef.current;
     if (!g) return;
-    const p = g.plan(statsRef.current, settingsRef.current);
+    const p = g.plan(statsRef.current, settingsRef.current, Math.random, bigramsRef.current);
     setPlan(p);
     inputRef.current = new TextInput(p.text, { stopOnError: settingsRef.current.stopOnError });
     setPosition(0);
@@ -66,8 +68,13 @@ export default function App() {
     guidedRef.current = new GuidedLesson(model, WORDS);
     const h = loadHistory();
     const stats = new KeyStatsMap();
-    for (const r of h) stats.ingestResult(r);
+    const bigrams = new BigramStatsMap();
+    for (const r of h) {
+      stats.ingestResult(r);
+      bigrams.ingestResult(r);
+    }
     statsRef.current = stats;
+    bigramsRef.current = bigrams;
     setHistory(h);
     startNext();
   }, [startNext]);
@@ -97,6 +104,7 @@ export default function App() {
         setLast(r);
         if (isValidResult(r)) {
           statsRef.current.ingestResult(r);
+          bigramsRef.current.ingestResult(r);
           setHistory((prev) => appendHistory(prev, r));
         }
         startNext();
@@ -125,6 +133,7 @@ export default function App() {
   function onClear() {
     clearHistory();
     statsRef.current = new KeyStatsMap();
+    bigramsRef.current = new BigramStatsMap();
     setHistory([]);
     setLast(null);
     startNext();
@@ -154,8 +163,13 @@ export default function App() {
         };
         const h = Array.isArray(parsed.history) ? parsed.history : [];
         const stats = new KeyStatsMap();
-        for (const r of h) stats.ingestResult(r);
+        const bigrams = new BigramStatsMap();
+        for (const r of h) {
+          stats.ingestResult(r);
+          bigrams.ingestResult(r);
+        }
         statsRef.current = stats;
+        bigramsRef.current = bigrams;
         setHistory(h);
         saveHistory(h);
         if (parsed.settings) {
@@ -177,6 +191,10 @@ export default function App() {
   const includedSet = new Set(plan?.included ?? []);
   const focusCp = plan?.focus ?? null;
   const focusChar = focusCp !== null ? String.fromCodePoint(focusCp) : null;
+  const bigramFocus = plan?.bigramFocus ?? null;
+  const drillLabel = bigramFocus
+    ? `${String.fromCodePoint(bigramFocus[0])}→${String.fromCodePoint(bigramFocus[1])}`
+    : (focusChar ?? '—');
 
   return (
     <div className="app">
@@ -225,6 +243,14 @@ export default function App() {
             <label className="chk">
               <input
                 type="checkbox"
+                checked={settings.bigramTargeting}
+                onChange={(e) => updateSettings({ bigramTargeting: e.target.checked })}
+              />
+              bigram targeting
+            </label>
+            <label className="chk">
+              <input
+                type="checkbox"
                 checked={settings.naturalWords}
                 onChange={(e) => updateSettings({ naturalWords: e.target.checked })}
               />
@@ -257,7 +283,8 @@ export default function App() {
             />
             <p className="hint">
               Just start typing — a wrong key holds the cursor until you fix it. Drilling:{' '}
-              <b>{focusChar ?? '—'}</b>
+              <b>{drillLabel}</b>
+              {bigramFocus ? <span className="muted"> (weak transition)</span> : null}
             </p>
           </main>
 
@@ -272,6 +299,7 @@ export default function App() {
       ) : (
         <Analysis
           stats={statsRef.current}
+          bigrams={bigramsRef.current}
           settings={settings}
           history={history}
           onExport={onExport}

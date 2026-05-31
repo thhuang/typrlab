@@ -4,21 +4,25 @@
 import type { LessonResult } from '../core/types';
 import type { Settings } from '../core/settings';
 import { KeyStatsMap } from '../core/keyStats';
+import { BigramStatsMap } from '../core/bigramStats';
 import { timeToSpeed } from '../core/target';
 import { projectLessonsToTarget } from '../core/learning';
 import { LineChart } from './LineChart';
 
 interface Props {
   stats: KeyStatsMap;
+  bigrams: BigramStatsMap;
   settings: Settings;
   history: LessonResult[];
   onExport: () => void;
   onImportClick: () => void;
 }
 
+const SPACE_CP = 0x20;
+
 const wpm = (cpm: number) => Math.round(cpm / 5);
 
-export function Analysis({ stats, settings, history, onExport, onImportClick }: Props) {
+export function Analysis({ stats, bigrams, settings, history, onExport, onImportClick }: Props) {
   const curve = history.map((r) => r.speed / 5); // WPM per lesson
   const bestWpm = history.length ? Math.max(...history.map((r) => wpm(r.speed))) : 0;
   const avgWpm = history.length
@@ -49,6 +53,18 @@ export function Analysis({ stats, settings, history, onExport, onImportClick }: 
       };
     })
     .sort((a, b) => a.eff - b.eff);
+
+  const bigramRows = bigrams
+    .all()
+    .filter((b) => b.timeToType !== null && b.from !== SPACE_CP && b.to !== SPACE_CP)
+    .map((b) => ({
+      label: `${String.fromCodePoint(b.from)}→${String.fromCodePoint(b.to)}`,
+      wpm: wpm(b.timeToType ? timeToSpeed(b.timeToType) : 0),
+      conf: bigrams.confidence(b.from, b.to, settings.targetSpeed),
+      samples: b.samples,
+    }))
+    .sort((a, b) => a.conf - b.conf)
+    .slice(0, 8);
 
   return (
     <section className="analysis">
@@ -105,6 +121,40 @@ export function Analysis({ stats, settings, history, onExport, onImportClick }: 
               <tr>
                 <td colSpan={5} className="muted pad">
                   No key data yet — type a lesson.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="acard">
+        <div className="acard-head">
+          <span>Transitions to drill</span>
+          <span className="muted">slowest digraphs · typr targets these, keybr can't see them</span>
+        </div>
+        <table className="ktable">
+          <thead>
+            <tr>
+              <th>Transition</th>
+              <th>Speed</th>
+              <th>Confidence</th>
+              <th>Samples</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bigramRows.map((r) => (
+              <tr key={r.label} className={r.conf >= 1 ? 'reached' : ''}>
+                <td className="kcell">{r.label}</td>
+                <td>{r.wpm} wpm</td>
+                <td>{Math.round(Math.min(1, r.conf) * 100)}%</td>
+                <td>{r.samples}</td>
+              </tr>
+            ))}
+            {bigramRows.length === 0 && (
+              <tr>
+                <td colSpan={4} className="muted pad">
+                  No transition data yet — type a few lessons.
                 </td>
               </tr>
             )}

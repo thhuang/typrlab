@@ -16,6 +16,15 @@ export interface HistogramEntry {
   timeToType: number;
 }
 
+/** Per-transition (digraph) tallies for a single completed lesson. */
+export interface BigramEntry {
+  from: CodePoint;
+  to: CodePoint;
+  hitCount: number;
+  /** Mean ms for this transition this lesson (the inter-key interval). */
+  timeToType: number;
+}
+
 /** The immutable record produced by one finished lesson. */
 export interface LessonResult {
   timeStamp: number;
@@ -35,4 +44,6 @@ export interface LessonResult {
   /** Composite score (faster + fewer errors + richer text => higher). */
   score: number;
   histogram: HistogramEntry[];
+  /** Per-transition timings (optional; absent in pre-bigram history). */
+  bigrams?: BigramEntry[];
 }

@@ -24,6 +24,12 @@ export interface Settings {
    * fast-but-sloppy key unlocks the next letter prematurely. Default on.
    */
   accuracyAware: boolean;
+  /**
+   * typr improvement: once enough data exists, drill the weakest *transition*
+   * (digraph) rather than only the weakest single key. keybr models single
+   * keys only. Default on.
+   */
+  bigramTargeting: boolean;
   /** Keyboard layout id (informational for now). */
   layout: string;
 }
@@ -36,5 +42,6 @@ export const DEFAULT_SETTINGS: Settings = {
   dailyGoalMinutes: 30,
   stopOnError: true,
   accuracyAware: true,
+  bigramTargeting: true,
   layout: 'en',
 };

@@ -43,13 +43,19 @@ The deep technical study this is built from lives in [`docs/keybr-explainer.md`]
 - **Actionable Analysis view** — instead of keybr's stale, baked-in "you beat X%"
   percentile, typr shows a learning curve plus a weakest-first **keys-to-drill**
   table with per-key speed, accuracy, confidence, and **projected lessons-to-target**.
+- **Bigram-aware targeting** — keybr only models single keys, so a slow
+  *transition* (a same-finger digraph like `ed`, or `th`/`er`) hides inside an
+  otherwise-fine per-key average. typr measures per-transition timing, finds the
+  weakest digraph among your unlocked letters, and drills it (seeds + boosts that
+  transition in generated text). Surfaced as a "Transitions to drill" table.
+  Toggle: `bigram targeting` (default on).
 - **Data export / import** — full JSON portability of your history + settings,
   which keybr does not offer.
 
 ### Next
 
 - Per-key learning heatmap + key-speed histogram in the Analysis view.
-- Larger/real phonetic models per language; bigram-aware weak-spot targeting.
+- Larger/real phonetic models per language.
 - Code / numbers / punctuation modes.
 
 ## Core concepts (planned)

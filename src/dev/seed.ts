@@ -2,8 +2,18 @@
 // demoed/screenshotted without typing 40 lessons by hand. Loaded only when
 // `import.meta.env.DEV` is true and the URL hash contains "seed" — never ships
 // in a production build.
-import type { HistogramEntry, LessonResult } from '../core/types';
+import type { BigramEntry, HistogramEntry, LessonResult } from '../core/types';
 import { computeMetrics } from '../core/result';
+
+// from, to, base ms, ms improvement per lesson. th/er stay slow on purpose.
+const BIGRAMS: Array<[string, string, number, number]> = [
+  ['t', 'h', 330, 1.1],
+  ['e', 'r', 320, 1.0],
+  ['i', 'n', 180, 3.0],
+  ['o', 'n', 180, 3.0],
+  ['a', 't', 185, 2.8],
+  ['h', 'e', 175, 3.0],
+];
 
 export function seedDemo(): void {
   const letters = 'etaoinshrd'.split('');
@@ -25,8 +35,17 @@ export function seedDemo(): void {
     const errors = histogram.reduce((a, h) => a + h.missCount, 0);
     const time = histogram.reduce((a, h) => a + h.hitCount * h.timeToType, 0);
     const metrics = computeMetrics(length, time, errors, histogram.length);
+    const unlockedSet = new Set(unlocked);
+    const bigrams: BigramEntry[] = BIGRAMS.filter(
+      ([f, t]) => unlockedSet.has(f) && unlockedSet.has(t),
+    ).map(([f, t, base, imp]) => ({
+      from: f.codePointAt(0)!,
+      to: t.codePointAt(0)!,
+      hitCount: 5,
+      timeToType: Math.round(Math.max(70, base - imp * i)),
+    }));
     ts += 90_000;
-    results.push({ timeStamp: ts, layout: 'en', length, time, errors, ...metrics, histogram });
+    results.push({ timeStamp: ts, layout: 'en', length, time, errors, ...metrics, histogram, bigrams });
   }
 
   localStorage.setItem('typr.history', JSON.stringify(results));
