@@ -1140,12 +1140,19 @@
   color: var(--on-accent);
 }
 
-/* Preview */
+/* Preview — the animated line. Reserve two text lines and vertically center, so
+   a fresh random line that wraps differently can't resize the box (no layout
+   shift of the controls below it, even on a phone). */
 .settings-preview {
+  display: flex;
+  align-items: center;
   text-align: center;
   font-size: var(--board-size, 32px);
   padding: 28px 20px;
-  min-height: 0;
+  min-height: calc(var(--board-size, 32px) * 1.85 * 2 + 56px);
+}
+.settings-preview-line {
+  width: 100%;
 }
 
 /* Danger / confirm */
