@@ -32,9 +32,9 @@ export class GuidedLesson {
   }
 
   private chosenConfidence(cp: CodePoint, stats: KeyStatsMap, s: Settings): number {
-    return s.recoverKeys
-      ? stats.confidence(cp, s.targetSpeed)
-      : stats.bestConfidence(cp, s.targetSpeed);
+    // recoverKeys => gate on live confidence, else best-ever (keybr's rule).
+    // accuracyAware folds in accuracy (typr's improvement over keybr).
+    return stats.effectiveConfidence(cp, s.targetSpeed, !s.recoverKeys, s.accuracyAware);
   }
 
   /** The set of letters active in the current lesson. */

@@ -46,6 +46,14 @@ export function appendHistory(history: LessonResult[], r: LessonResult): LessonR
   return next;
 }
 
+export function saveHistory(history: LessonResult[]): void {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-HISTORY_CAP)));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function clearHistory(): void {
   try {
     localStorage.removeItem(HISTORY_KEY);

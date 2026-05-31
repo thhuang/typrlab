@@ -26,7 +26,7 @@ npm run build        # typecheck + production build
 
 The deep technical study this is built from lives in [`docs/keybr-explainer.md`](docs/keybr-explainer.md) and [`BUILD_NOTES.md`](BUILD_NOTES.md).
 
-### Implemented so far
+### Implemented (keybr baseline)
 
 - Guided lessons over a dynamically expanding letter set (starts at `etaoin`).
 - Stop-on-error typing with per-keystroke timing and outlier clamping.
@@ -34,11 +34,23 @@ The deep technical study this is built from lives in [`docs/keybr-explainer.md`]
 - Phonetic pseudo-words + natural-words mode; weakest key over-sampled.
 - Live keyboard heatmap, post-lesson gauges, daily-goal bar, persistent history.
 
-### Next ("better than keybr")
+### Better than keybr (shipped)
 
-- A full analysis page (learning curve, per-key learning heatmap, speed histogram).
+- **Accuracy-aware unlocking** — keybr's confidence is speed-only, so a key typed
+  fast but sloppily unlocks the next letter prematurely (typos are excluded from
+  its timing). typr folds accuracy into confidence, so a key must be fast **and**
+  accurate to bank/unlock. Toggle: `accuracy-aware` (default on).
+- **Actionable Analysis view** — instead of keybr's stale, baked-in "you beat X%"
+  percentile, typr shows a learning curve plus a weakest-first **keys-to-drill**
+  table with per-key speed, accuracy, confidence, and **projected lessons-to-target**.
+- **Data export / import** — full JSON portability of your history + settings,
+  which keybr does not offer.
+
+### Next
+
+- Per-key learning heatmap + key-speed histogram in the Analysis view.
 - Larger/real phonetic models per language; bigram-aware weak-spot targeting.
-- Code/numbers/punctuation modes; richer post-lesson insight ("drill this next").
+- Code / numbers / punctuation modes.
 
 ## Core concepts (planned)
 

@@ -6,6 +6,7 @@ import { TextInput } from '../src/core/textInput';
 import { DEFAULT_SETTINGS } from '../src/core/settings';
 import { WORDS } from '../src/core/words';
 import { speedToTime } from '../src/core/target';
+import { projectLessonsToTarget } from '../src/core/learning';
 
 let failures = 0;
 function assert(cond: unknown, msg: string) {
@@ -79,6 +80,26 @@ ti2.onInput('h', 1200);
 ti2.onInput('e', 1300);
 const r2 = ti2.result(1400, 'en');
 assert(ti2.completed && r2.errors === 1, 'recovers after correction, 1 error counted');
+
+console.log('6) typr improvement: accuracy-aware unlocking');
+const sloppy = new KeyStatsMap();
+for (let i = 0; i < 3; i++) {
+  for (const cp of plan.included) {
+    // fast (2x target) but only 50% accurate
+    sloppy.ingest({ codePoint: cp, hitCount: 5, missCount: 5, timeToType: fast });
+  }
+}
+const incAware = guided.computeIncluded(sloppy, { ...settings, accuracyAware: true });
+const incBlind = guided.computeIncluded(sloppy, { ...settings, accuracyAware: false });
+assert(incAware.length === 6, 'fast-but-sloppy keys do NOT unlock when accuracy-aware (typr)');
+assert(incBlind.length === 7, 'same keys DO unlock with speed-only gating (keybr-style)');
+
+console.log('7) learning-rate projection');
+const improving = [80, 95, 110, 125, 140, 155, 170];
+const p = projectLessonsToTarget(improving, 200);
+assert(p !== null && p > 0, `projects lessons-to-target for an improving key (got ${p})`);
+const flat = [150, 150, 150, 150, 150];
+assert(projectLessonsToTarget(flat, 200) === null, 'no projection when a key is not improving');
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
 process.exit(failures === 0 ? 0 : 1);
