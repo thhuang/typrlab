@@ -191,7 +191,7 @@
   padding: 40px 34px;
   min-height: 120px;
   font-family: var(--font-board, var(--font-mono));
-  font-size: 32px;
+  font-size: var(--board-size, 32px);
   line-height: 1.85;
   letter-spacing: 0.5px;
   white-space: pre-wrap;
@@ -788,7 +788,7 @@
 }
 .settings-preview {
   text-align: center;
-  font-size: 26px;
+  font-size: var(--board-size, 32px);
   padding: 28px 20px;
   min-height: 0;
 }

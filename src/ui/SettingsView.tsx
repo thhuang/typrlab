@@ -117,7 +117,11 @@ export function SettingsView({ settings, update, onClear }: Props) {
         <div className="srow">
           <div className="slabel">
             <span className="sname">Typing font</span>
-            <span className="sdesc">Applies to the practice text only. Monospace aids accuracy; serif/sans for feel.</span>
+            <span className="sdesc">
+              Practice text only. Pick what's comfortable — research shows typeface barely
+              affects reading speed; the default monospace just keeps similar characters
+              (l/I/1, 0/O) easy to tell apart.
+            </span>
           </div>
           <div className="sctrl">
             <select
@@ -148,6 +152,27 @@ export function SettingsView({ settings, update, onClear }: Props) {
                 ))}
               </optgroup>
             </select>
+          </div>
+        </div>
+
+        <div className="srow">
+          <div className="slabel">
+            <span className="sname">Text size</span>
+            <span className="sdesc">
+              The lever that actually matters for reading — size affects speed and comprehension
+              far more than typeface does.
+            </span>
+          </div>
+          <div className="sctrl rangewrap">
+            <input
+              type="range"
+              min={22}
+              max={44}
+              step={1}
+              value={settings.textSize}
+              onChange={(e) => update({ textSize: Number(e.target.value) })}
+            />
+            <span className="rangeval">{settings.textSize}px</span>
           </div>
         </div>
 
