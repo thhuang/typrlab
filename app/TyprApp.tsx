@@ -1,10 +1,11 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTypingSession } from '@/hooks/useTypingSession';
 import { TypingBoard } from '@/ui/TypingBoard';
 import { Keyboard } from '@/ui/Keyboard';
 import { CoachRail } from '@/ui/CoachRail';
+import { ZenView } from '@/ui/ZenView';
 import { Analysis } from '@/ui/Analysis';
 import { SettingsView } from '@/ui/SettingsView';
 
@@ -39,8 +40,22 @@ export default function TyprApp() {
   } = useTypingSession();
 
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const focusBtnRef = useRef<HTMLButtonElement | null>(null);
+  // Dev convenience: deep-link into focus mode with #focus (e.g. /#seed&focus).
+  const [focusMode, setFocusMode] = useState(
+    () =>
+      process.env.NODE_ENV === 'development' &&
+      typeof location !== 'undefined' &&
+      location.hash.includes('focus'),
+  );
 
-  // Capture keystrokes only while practicing.
+  // Leave focus mode and return focus to the control that opened it.
+  const exitFocus = useCallback(() => {
+    setFocusMode(false);
+    requestAnimationFrame(() => focusBtnRef.current?.focus());
+  }, []);
+
+  // Capture keystrokes only while practicing (focus mode is still the practice view).
   useEffect(() => {
     if (view !== 'practice') return;
     const handler = (e: KeyboardEvent) => processKey(e);
@@ -48,8 +63,32 @@ export default function TyprApp() {
     return () => window.removeEventListener('keydown', handler);
   }, [view, processKey]);
 
+  // Esc leaves focus mode.
+  useEffect(() => {
+    if (!focusMode) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') exitFocus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [focusMode, exitFocus]);
+
   const includedSet = new Set(plan?.included ?? []);
   const focusCp = plan?.focus ?? null;
+
+  // Zen focus mode replaces the whole practice screen with a calm, chrome-free view.
+  if (view === 'practice' && focusMode && plan) {
+    return (
+      <ZenView
+        plan={plan}
+        position={position}
+        hasError={hasError}
+        settings={settings}
+        history={history}
+        onExit={exitFocus}
+      />
+    );
+  }
 
   return (
     <div className="app">
@@ -80,6 +119,13 @@ export default function TyprApp() {
               Target {Math.round(settings.targetSpeed / 5)} wpm
             </span>
             <span className="spacer" />
+            <button
+              ref={focusBtnRef}
+              onClick={() => setFocusMode(true)}
+              title="Zen focus mode (Esc to exit)"
+            >
+              Focus
+            </button>
             <button onClick={() => startNext()} title="Skip lesson (Ctrl+→)">
               Skip
             </button>
