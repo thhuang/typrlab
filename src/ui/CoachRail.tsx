@@ -42,9 +42,11 @@ export function CoachRail({ plan, stats, bigrams, settings }: Props) {
       : 0;
   const ringPct = pct(drillConf);
 
-  // Four weakest active keys, lowest confidence first.
+  // Four weakest active keys, lowest confidence first — only those still below
+  // target (< 1), so a key at/above target never shows up in a "weakest" list.
   const weak = plan.included
     .map((cp) => ({ cp, c: keyConf(cp) }))
+    .filter((k) => k.c < 1)
     .sort((a, b) => a.c - b.c)
     .slice(0, 4);
 
@@ -85,20 +87,24 @@ export function CoachRail({ plan, stats, bigrams, settings }: Props) {
 
       <section className="coach-card">
         <p className="coach-h">Weakest keys</p>
-        <div className="coach-weak">
-          {weak.map(({ cp, c }) => (
-            <div className="coach-weakrow" key={cp}>
-              <span className="coach-key">{chr(cp)}</span>
-              <div className="coach-track">
-                <div
-                  className="coach-fill"
-                  style={{ width: `${pct(c)}%`, background: confidenceColor(c) }}
-                />
+        {weak.length > 0 ? (
+          <div className="coach-weak">
+            {weak.map(({ cp, c }) => (
+              <div className="coach-weakrow" key={cp}>
+                <span className="coach-key">{chr(cp)}</span>
+                <div className="coach-track">
+                  <div
+                    className="coach-fill"
+                    style={{ width: `${pct(c)}%`, background: confidenceColor(c) }}
+                  />
+                </div>
+                <span className="coach-val">{pct(c)}%</span>
               </div>
-              <span className="coach-val">{pct(c)}%</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="coach-note">All active keys at target — keep going.</p>
+        )}
       </section>
 
       <section className="coach-card">
