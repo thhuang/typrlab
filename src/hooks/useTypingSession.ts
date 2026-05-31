@@ -41,14 +41,20 @@ export interface TypingSession {
   importData: (file: File) => void;
 }
 
-/** Dev-only: apply #seed / #theme= / #font= / #cursor= hash hooks for previews. */
+/** Dev-only: apply #seed / #seedfull / #theme= / #font= / #cursor= hash hooks for previews. */
 async function applyDevHash(): Promise<void> {
   if (process.env.NODE_ENV !== 'development' || typeof location === 'undefined') return;
   try {
     const hash = location.hash;
-    if (hash.includes('seed') && !localStorage.getItem('typr.history')) {
-      const { seedDemo } = await import('@/dev/seed');
-      seedDemo();
+    // #seedfull = fully-mastered history (must be checked before #seed, which it contains).
+    if (!localStorage.getItem('typr.history')) {
+      if (hash.includes('seedfull')) {
+        const { seedFull } = await import('@/dev/seed');
+        seedFull();
+      } else if (hash.includes('seed')) {
+        const { seedDemo } = await import('@/dev/seed');
+        seedDemo();
+      }
     }
     const grab = (re: RegExp) => hash.match(re)?.[1];
     const t = grab(/theme=([a-z0-9-]+)/);
