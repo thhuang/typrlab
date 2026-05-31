@@ -14,7 +14,7 @@ export function KeyboardHeatmap({ values }: { values: Map<CodePoint, number> }) 
             const cp = ch.codePointAt(0)!;
             const v = values.get(cp);
             const style =
-              v == null ? {} : { background: confidenceColor(v), color: v > 0.55 ? '#08121a' : '#fff' };
+              v == null ? {} : { background: confidenceColor(v), color: 'var(--on-confidence)' };
             return (
               <div
                 key={ch}

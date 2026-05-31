@@ -34,6 +34,8 @@ export interface Settings {
   layout: string;
   /** Active color theme id (see src/ui/themes.ts). */
   theme: string;
+  /** Typing cursor indicator style. */
+  cursorStyle: 'box' | 'underline' | 'bar' | 'block';
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -47,4 +49,5 @@ export const DEFAULT_SETTINGS: Settings = {
   bigramTargeting: true,
   layout: 'en',
   theme: 'amber',
+  cursorStyle: 'box',
 };

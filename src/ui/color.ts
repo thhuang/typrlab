@@ -1,25 +1,8 @@
-// Confidence -> color ramp (red = slow, green = at/above target), matching
-// keybr's --slow-key-color (#cc0000) -> --fast-key-color (#60d788).
-
-interface Rgb {
-  r: number;
-  g: number;
-  b: number;
-}
-
-function hexToRgb(hex: string): Rgb {
-  const n = parseInt(hex.slice(1), 16);
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-}
-
-// Refined confidence ramp endpoints (kept in sync with the CSS custom props).
-const SLOW = hexToRgb('#ff5d5d');
-const FAST = hexToRgb('#5fd38a');
-
+// Confidence -> color. The ramp endpoints are each theme's own red/green
+// (--slow-key-color / --fast-key-color), mixed perceptually in OKLCH by the
+// browser, so the confidence colors match whatever theme is active and stay
+// readable on light themes. Returns a CSS color value for inline styles.
 export function confidenceColor(confidence: number): string {
-  const t = Math.max(0, Math.min(1, confidence));
-  const r = Math.round(SLOW.r + (FAST.r - SLOW.r) * t);
-  const g = Math.round(SLOW.g + (FAST.g - SLOW.g) * t);
-  const b = Math.round(SLOW.b + (FAST.b - SLOW.b) * t);
-  return `rgb(${r}, ${g}, ${b})`;
+  const pct = Math.max(0, Math.min(1, confidence)) * 100;
+  return `color-mix(in oklch, var(--fast-key-color) ${pct.toFixed(1)}%, var(--slow-key-color))`;
 }

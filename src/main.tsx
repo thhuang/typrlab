@@ -10,12 +10,14 @@ async function boot() {
     const { seedDemo } = await import('./dev/seed');
     seedDemo();
   }
-  // Dev-only theme override via #...theme=<id> (for previews/screenshots).
+  // Dev-only overrides via #...theme=<id>&cursor=<style> (for previews).
   if (import.meta.env.DEV) {
-    const m = location.hash.match(/theme=([a-z0-9-]+)/);
-    if (m) {
+    const theme = location.hash.match(/theme=([a-z0-9-]+)/);
+    const cursor = location.hash.match(/cursor=([a-z]+)/);
+    if (theme || cursor) {
       const s = JSON.parse(localStorage.getItem('typr.settings') || '{}');
-      s.theme = m[1];
+      if (theme) s.theme = theme[1];
+      if (cursor) s.cursorStyle = cursor[1];
       localStorage.setItem('typr.settings', JSON.stringify(s));
     }
   }
