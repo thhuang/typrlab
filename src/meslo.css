@@ -1,0 +1,9 @@
+/* Self-hosted Meslo LG (not on Fontsource). Apache-2.0, by André Berg —
+   see docs/ATTRIBUTION.md. The woff2 lives in public/fonts/. */
+@font-face {
+  font-family: 'Meslo LG';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/meslo-lg.woff2') format('woff2');
+}

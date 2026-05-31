@@ -18,7 +18,10 @@ export const FONTS: FontDef[] = [
   // Monospace — fixed width, best for typing accuracy.
   { id: 'jetbrains-mono', label: 'JetBrains Mono', category: 'mono', stack: `'JetBrains Mono'${MONO}` },
   { id: 'fira-code', label: 'Fira Code', category: 'mono', stack: `'Fira Code'${MONO}` },
-  { id: 'ibm-plex-mono', label: 'IBM Plex Mono', category: 'mono', stack: `'IBM Plex Mono'${MONO}` },
+  { id: 'ubuntu-mono', label: 'Ubuntu Mono', category: 'mono', stack: `'Ubuntu Mono'${MONO}` },
+  { id: 'source-code-pro', label: 'Source Code Pro', category: 'mono', stack: `'Source Code Pro'${MONO}` },
+  { id: 'cascadia-code', label: 'Cascadia Code', category: 'mono', stack: `'Cascadia Code'${MONO}` },
+  { id: 'meslo', label: 'Meslo LG', category: 'mono', stack: `'Meslo LG'${MONO}` },
   // Sans-serif.
   { id: 'lexend', label: 'Lexend', category: 'sans', stack: `'Lexend'${SANS}` },
   { id: 'atkinson', label: 'Atkinson Hyperlegible (low-vision)', category: 'sans', stack: `'Atkinson Hyperlegible'${SANS}` },

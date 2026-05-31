@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { DEFAULT_SETTINGS } from './core/settings';
 import { fontStack } from './ui/fonts';
+import './fonts-load';
 import './theme.css';
 import './app.css';
 

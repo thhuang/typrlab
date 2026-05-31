@@ -32,3 +32,15 @@ Trillion-Word Corpus** via the `first20hours/google-10000-english` list
 (<https://github.com/first20hours/google-10000-english>, "usa-no-swears" variant).
 Word-frequency rankings are factual data; the list is filtered to plain a–z words
 and used to train the phonetic model and as the natural-words pool.
+
+## Fonts
+
+typr **self-hosts all fonts** (no external CDN). The UI font and the selectable
+typing fonts are bundled via [Fontsource](https://fontsource.org/) (each under its
+own SIL Open Font License or Apache-2.0): Space Grotesk, JetBrains Mono, Fira Code,
+Ubuntu Mono, Source Code Pro, Cascadia Code, Inter, Lexend, Atkinson Hyperlegible,
+Literata, Merriweather, and Lora.
+
+**Meslo LG** (Apache-2.0, © André Berg; derived from Apple's Menlo) is self-hosted
+directly from `public/fonts/meslo-lg.woff2` (the slashed-zero build via
+[powerline/fonts](https://github.com/powerline/fonts)).
