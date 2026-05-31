@@ -21,10 +21,10 @@ import { TypingBoard } from './ui/TypingBoard';
 import { Keyboard } from './ui/Keyboard';
 import { StatsPanel } from './ui/StatsPanel';
 import { Analysis } from './ui/Analysis';
-import { DARK_THEMES, LIGHT_THEMES } from './ui/themes';
-import { fontStack, MONO_FONTS, SANS_FONTS, SERIF_FONTS } from './ui/fonts';
+import { fontStack } from './ui/fonts';
+import { SettingsView } from './ui/SettingsView';
 
-type View = 'practice' | 'analysis';
+type View = 'practice' | 'analysis' | 'settings';
 
 export default function App() {
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
@@ -38,9 +38,12 @@ export default function App() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const initRef = useRef(false);
 
-  const [view, setView] = useState<View>(() =>
-    typeof location !== 'undefined' && location.hash.includes('analysis') ? 'analysis' : 'practice',
-  );
+  const [view, setView] = useState<View>(() => {
+    const h = typeof location !== 'undefined' ? location.hash : '';
+    if (h.includes('settings')) return 'settings';
+    if (h.includes('analysis')) return 'analysis';
+    return 'practice';
+  });
   const viewRef = useRef(view);
   viewRef.current = view;
 
@@ -216,28 +219,6 @@ export default function App() {
           <span className="tag">adaptive</span>
         </div>
         <div className="header-right">
-          <select
-            className="theme-select"
-            value={settings.theme}
-            onChange={(e) => updateSettings({ theme: e.target.value })}
-            title="Color theme"
-            aria-label="Color theme"
-          >
-            <optgroup label="Dark">
-              {DARK_THEMES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Light">
-              {LIGHT_THEMES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </optgroup>
-          </select>
           <div className="viewtoggle">
             <button className={view === 'practice' ? 'active' : ''} onClick={() => setView('practice')}>
               Practice
@@ -251,108 +232,20 @@ export default function App() {
             >
               Analysis
             </button>
+            <button className={view === 'settings' ? 'active' : ''} onClick={() => setView('settings')}>
+              Settings
+            </button>
           </div>
         </div>
       </header>
 
       {view === 'practice' ? (
         <>
-          <div className="controls">
-            <label className="rng">
-              Target {Math.round(settings.targetSpeed / 5)} wpm
-              <input
-                type="range"
-                min={75}
-                max={500}
-                step={5}
-                value={settings.targetSpeed}
-                onChange={(e) => updateSettings({ targetSpeed: Number(e.target.value) })}
-              />
-            </label>
-            <label className="chk">
-              <input
-                type="checkbox"
-                checked={settings.accuracyAware}
-                onChange={(e) => updateSettings({ accuracyAware: e.target.checked })}
-              />
-              accuracy-aware
-            </label>
-            <label className="chk">
-              <input
-                type="checkbox"
-                checked={settings.bigramTargeting}
-                onChange={(e) => updateSettings({ bigramTargeting: e.target.checked })}
-              />
-              bigram targeting
-            </label>
-            <label className="chk">
-              <input
-                type="checkbox"
-                checked={settings.naturalWords}
-                onChange={(e) => updateSettings({ naturalWords: e.target.checked })}
-              />
-              natural words
-            </label>
-            <label className="chk">
-              <input
-                type="checkbox"
-                checked={settings.recoverKeys}
-                onChange={(e) => updateSettings({ recoverKeys: e.target.checked })}
-              />
-              recover keys
-            </label>
-            <label className="rng cursor-pick">
-              Cursor
-              <select
-                className="theme-select"
-                value={settings.cursorStyle}
-                onChange={(e) =>
-                  updateSettings({ cursorStyle: e.target.value as Settings['cursorStyle'] })
-                }
-                aria-label="Cursor style"
-              >
-                <option value="box">Box</option>
-                <option value="underline">Underline</option>
-                <option value="bar">Bar</option>
-                <option value="block">Block (reverse)</option>
-              </select>
-            </label>
-            <label className="rng cursor-pick">
-              Font
-              <select
-                className="theme-select"
-                value={settings.font}
-                onChange={(e) => updateSettings({ font: e.target.value })}
-                aria-label="Typing font"
-              >
-                <optgroup label="Monospace">
-                  {MONO_FONTS.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.label}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Sans-serif">
-                  {SANS_FONTS.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.label}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Serif">
-                  {SERIF_FONTS.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.label}
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
-            </label>
+          <div className="actions">
+            <span className="actions-target">Target {Math.round(settings.targetSpeed / 5)} wpm</span>
+            <span className="spacer" />
             <button onClick={() => startNext()} title="Skip lesson (Ctrl+→)">
               Skip
-            </button>
-            <button className="danger" onClick={onClear} title="Erase local progress">
-              Clear
             </button>
           </div>
 
@@ -387,7 +280,7 @@ export default function App() {
             focus={focusChar}
           />
         </>
-      ) : (
+      ) : view === 'analysis' ? (
         <Analysis
           stats={statsRef.current}
           bigrams={bigramsRef.current}
@@ -396,6 +289,8 @@ export default function App() {
           onExport={onExport}
           onImportClick={() => fileRef.current?.click()}
         />
+      ) : (
+        <SettingsView settings={settings} update={updateSettings} onClear={onClear} />
       )}
 
       <input
