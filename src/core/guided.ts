@@ -23,6 +23,12 @@ export interface LessonPlan {
   focus: CodePoint | null;
   /** Weakest transition being drilled this lesson, or null. */
   bigramFocus: [CodePoint, CodePoint] | null;
+  /**
+   * Progress toward growing the active set (for coaching UI): how many active
+   * keys are still below target — and thus blocking the next unlock — plus the
+   * next letter that will unlock, or null when every letter is already active.
+   */
+  nextUnlock: { remaining: number; nextKey: CodePoint | null };
 }
 
 export class GuidedLesson {
@@ -98,7 +104,22 @@ export class GuidedLesson {
 
     const filter: Filter = { allowed, focus: genFocus, boost };
     const text = this.generateLine(filter, s, rng);
-    return { text, included, focus: keyFocus, bigramFocus };
+
+    // Unlock progress, by the same gate computeIncluded uses: the next letter in
+    // frequency order, and how many active keys are still below target confidence.
+    const nextKey = included.length < this.letters.length ? this.letters[included.length]! : null;
+    let remaining = 0;
+    for (const cp of included) {
+      if (this.chosenConfidence(cp, stats, s) < 1) remaining += 1;
+    }
+
+    return {
+      text,
+      included,
+      focus: keyFocus,
+      bigramFocus,
+      nextUnlock: { remaining, nextKey },
+    };
   }
 
   private generateLine(filter: Filter, s: Settings, rng: () => number): string {

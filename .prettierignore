@@ -5,5 +5,6 @@ public
 package-lock.json
 next-env.d.ts
 docs
+design_handoff
 src/core/words.ts
 src/theme.css

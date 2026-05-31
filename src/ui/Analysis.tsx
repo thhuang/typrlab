@@ -38,7 +38,7 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
 
   const rows = stats
     .allStats()
-    .filter((s) => s.timeToType !== null)
+    .filter((s) => s.timeToType !== null && s.codePoint !== SPACE_CP)
     .map((s) => {
       const eff = stats.effectiveConfidence(
         s.codePoint,
@@ -99,7 +99,7 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
   // Per-key speed histogram (slowest first), bars tinted by confidence.
   const speedBars: Bar[] = stats
     .allStats()
-    .filter((s) => s.timeToType !== null)
+    .filter((s) => s.timeToType !== null && s.codePoint !== SPACE_CP)
     .map((s) => {
       const conf = stats.effectiveConfidence(
         s.codePoint,
