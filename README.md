@@ -15,7 +15,30 @@ keybr proved the model: don't make people copy random books — generate *pronou
 
 ## Status
 
-🚧 Early scaffolding. Stack and architecture are being decided from a deep technical study of how keybr works (practice flow, phonetic text generation, the adaptive unlock + target-speed mechanic, the per-key speed model, and the analysis charts). Build notes to follow.
+🟢 **Runnable MVP.** Stack: **React + TypeScript + Vite**, local-first (`localStorage`). The adaptive core is implemented and verified — the `timeToType`/`confidence` model, per-key EMA (α=0.1), the confidence-gated letter-unlock rule with weakest-key focus, an n-gram phonetic generator, and a live per-key confidence keyboard.
+
+```bash
+npm install
+npm run dev          # http://localhost:5173 — just start typing
+npm run test:smoke   # headless checks of the adaptive core
+npm run build        # typecheck + production build
+```
+
+The deep technical study this is built from lives in [`docs/keybr-explainer.md`](docs/keybr-explainer.md) and [`BUILD_NOTES.md`](BUILD_NOTES.md).
+
+### Implemented so far
+
+- Guided lessons over a dynamically expanding letter set (starts at `etaoin`).
+- Stop-on-error typing with per-keystroke timing and outlier clamping.
+- Adaptive unlocking gated on best/live confidence (`recover keys` toggle).
+- Phonetic pseudo-words + natural-words mode; weakest key over-sampled.
+- Live keyboard heatmap, post-lesson gauges, daily-goal bar, persistent history.
+
+### Next ("better than keybr")
+
+- A full analysis page (learning curve, per-key learning heatmap, speed histogram).
+- Larger/real phonetic models per language; bigram-aware weak-spot targeting.
+- Code/numbers/punctuation modes; richer post-lesson insight ("drill this next").
 
 ## Core concepts (planned)
 

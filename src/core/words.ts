@@ -1,0 +1,38 @@
+// A compact common-English word list. Doubles as (a) the corpus the phonetic
+// model trains on at startup and (b) the source of "natural words" lessons.
+// keybr trains an order-4 model on the top-10k frequency-weighted words and
+// ships it as a binary asset; for the MVP we train a smaller in-browser model.
+export const WORDS: string[] = [
+  'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'any', 'can',
+  'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him',
+  'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who',
+  'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use', 'her',
+  'about', 'after', 'again', 'their', 'there', 'these', 'thing', 'think',
+  'three', 'water', 'where', 'which', 'world', 'would', 'write', 'other',
+  'house', 'place', 'plant', 'point', 'right', 'small', 'sound', 'spell',
+  'still', 'study', 'great', 'group', 'large', 'learn', 'light', 'might',
+  'never', 'night', 'often', 'order', 'paper', 'party', 'piece', 'plain',
+  'power', 'quick', 'quiet', 'reach', 'ready', 'river', 'round', 'shape',
+  'share', 'sheet', 'shine', 'short', 'since', 'sleep', 'space', 'speak',
+  'speed', 'spend', 'start', 'state', 'steam', 'stone', 'store', 'story',
+  'table', 'teach', 'thank', 'those', 'today', 'touch', 'trade', 'train',
+  'under', 'until', 'value', 'voice', 'watch', 'whole', 'whose', 'woman',
+  'young', 'above', 'alone', 'along', 'among', 'began', 'being', 'below',
+  'black', 'bring', 'build', 'carry', 'catch', 'cause', 'check', 'class',
+  'clean', 'clear', 'climb', 'close', 'color', 'could', 'count', 'cover',
+  'cross', 'dance', 'dream', 'drink', 'drive', 'early', 'earth', 'eight',
+  'every', 'field', 'first', 'floor', 'focus', 'force', 'found', 'fresh',
+  'front', 'fruit', 'green', 'happy', 'heart', 'heavy', 'human', 'level',
+  'money', 'month', 'music', 'began', 'open', 'over', 'time', 'work',
+  'word', 'name', 'home', 'hand', 'help', 'high', 'keep', 'kind', 'know',
+  'last', 'late', 'lead', 'left', 'life', 'like', 'line', 'live', 'long',
+  'look', 'love', 'made', 'make', 'many', 'mean', 'mind', 'more', 'most',
+  'move', 'much', 'must', 'near', 'need', 'next', 'once', 'only', 'open',
+  'part', 'past', 'play', 'read', 'real', 'rest', 'same', 'seem', 'show',
+  'side', 'some', 'soon', 'sort', 'stop', 'sure', 'take', 'talk', 'tell',
+  'than', 'that', 'them', 'then', 'they', 'this', 'turn', 'very', 'wait',
+  'walk', 'want', 'well', 'went', 'were', 'what', 'when', 'will', 'with',
+  'year', 'your', 'each', 'find', 'from', 'give', 'good', 'just', 'come',
+  'down', 'even', 'feel', 'free', 'full', 'game', 'gave', 'goes', 'gone',
+  'idea', 'into', 'iron', 'item', 'join', 'jump', 'land', 'note', 'nine',
+];
