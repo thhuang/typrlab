@@ -207,9 +207,7 @@
   white-space: pre-wrap;
   word-break: break-word;
   user-select: none;
-  box-shadow:
-    0 24px 60px -30px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: var(--board-shadow);
 }
 .board::before {
   content: '';

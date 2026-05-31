@@ -220,6 +220,14 @@ function tokens(t) {
     ['--glow-1', css(accent, light ? 0.05 : 0.1)],
     ['--glow-2', css(hit, light ? 0.04 : 0.08)],
     ['--grain-opacity', light ? '0.02' : '0.04'],
+    // Floating-panel shadow for the board. Light themes need a far softer, tighter
+    // shadow than dark ones, or it smears onto the component below.
+    [
+      '--board-shadow',
+      light
+        ? '0 12px 28px -20px rgba(0, 0, 0, 0.13)'
+        : '0 18px 42px -26px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+    ],
   ];
 }
 
