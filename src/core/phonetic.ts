@@ -12,7 +12,11 @@ export interface Filter {
   allowed: Set<CodePoint>;
   /** The weakest key, seeded at word start so lessons over-sample it. */
   focus: CodePoint | null;
+  /** Optional weak transition to over-sample during the walk (digraph drilling). */
+  boost?: { from: CodePoint; to: CodePoint; factor?: number } | null;
 }
+
+const DEFAULT_BOOST = 6;
 
 const MIN_LEN = 3;
 const MAX_LEN = 10;
@@ -67,6 +71,7 @@ export class PhoneticModel {
     while (out.length < MAX_LEN) {
       const seg = this.table.get(ctx.join(','));
       const choices: Array<[CodePoint, number]> = [];
+      const last = out.length > 0 ? out[out.length - 1]! : null;
       if (seg) {
         for (const [cp, w] of seg) {
           if (cp === SPACE) {
@@ -74,7 +79,12 @@ export class PhoneticModel {
               choices.push([SPACE, w * Math.pow(SPACE_BOOST_BASE, out.length)]);
             }
           } else if (filter.allowed.has(cp)) {
-            choices.push([cp, w]);
+            // Over-sample the targeted weak transition wherever it can occur.
+            const boosted =
+              filter.boost && last === filter.boost.from && cp === filter.boost.to
+                ? w * (filter.boost.factor ?? DEFAULT_BOOST)
+                : w;
+            choices.push([cp, boosted]);
           }
         }
       }

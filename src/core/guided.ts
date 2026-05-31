@@ -7,6 +7,7 @@
 import type { CodePoint } from './types';
 import { PhoneticModel, type Filter } from './phonetic';
 import { KeyStatsMap } from './keyStats';
+import { BigramStatsMap } from './bigramStats';
 import type { Settings } from './settings';
 
 // English letters ordered by descending frequency (keybr orders per language).
@@ -18,7 +19,10 @@ const NATURAL_WORD_THRESHOLD = 15;
 export interface LessonPlan {
   text: string;
   included: CodePoint[];
+  /** Weakest single key (drives the keyboard highlight / unlock display). */
   focus: CodePoint | null;
+  /** Weakest transition being drilled this lesson, or null. */
+  bigramFocus: [CodePoint, CodePoint] | null;
 }
 
 export class GuidedLesson {
@@ -32,9 +36,9 @@ export class GuidedLesson {
   }
 
   private chosenConfidence(cp: CodePoint, stats: KeyStatsMap, s: Settings): number {
-    return s.recoverKeys
-      ? stats.confidence(cp, s.targetSpeed)
-      : stats.bestConfidence(cp, s.targetSpeed);
+    // recoverKeys => gate on live confidence, else best-ever (keybr's rule).
+    // accuracyAware folds in accuracy (typr's improvement over keybr).
+    return stats.effectiveConfidence(cp, s.targetSpeed, !s.recoverKeys, s.accuracyAware);
   }
 
   /** The set of letters active in the current lesson. */
@@ -66,12 +70,35 @@ export class GuidedLesson {
     return best;
   }
 
-  plan(stats: KeyStatsMap, s: Settings, rng: () => number = Math.random): LessonPlan {
+  plan(
+    stats: KeyStatsMap,
+    s: Settings,
+    rng: () => number = Math.random,
+    bigrams?: BigramStatsMap,
+  ): LessonPlan {
     const included = this.computeIncluded(stats, s);
-    const focus = this.pickFocus(included, stats, s);
-    const filter: Filter = { allowed: new Set(included), focus };
+    const keyFocus = this.pickFocus(included, stats, s);
+    const allowed = new Set(included);
+
+    // Default: seed/over-sample the weakest single key (keybr behaviour).
+    let genFocus = keyFocus;
+    let boost: Filter['boost'] = null;
+    let bigramFocus: [CodePoint, CodePoint] | null = null;
+
+    // Better: if a weak transition exists among unlocked letters, drill that
+    // digraph instead — seed its first letter and boost the transition.
+    if (s.bigramTargeting && bigrams) {
+      const weak = bigrams.weakest(allowed, s.targetSpeed);
+      if (weak) {
+        bigramFocus = [weak.from, weak.to];
+        genFocus = weak.from;
+        boost = { from: weak.from, to: weak.to };
+      }
+    }
+
+    const filter: Filter = { allowed, focus: genFocus, boost };
     const text = this.generateLine(filter, s, rng);
-    return { text, included, focus };
+    return { text, included, focus: keyFocus, bigramFocus };
   }
 
   private generateLine(filter: Filter, s: Settings, rng: () => number): string {
@@ -106,7 +133,11 @@ export class GuidedLesson {
       }
       if (ok) out.push(w);
     }
-    if (filter.focus !== null) {
+    if (filter.boost) {
+      // Bubble words containing the targeted digraph to the front.
+      const bg = String.fromCodePoint(filter.boost.from) + String.fromCodePoint(filter.boost.to);
+      out.sort((a, b) => (b.includes(bg) ? 1 : 0) - (a.includes(bg) ? 1 : 0));
+    } else if (filter.focus !== null) {
       const f = String.fromCodePoint(filter.focus);
       // Bubble words containing the focus letter to the front.
       out.sort((a, b) => (b.includes(f) ? 1 : 0) - (a.includes(f) ? 1 : 0));

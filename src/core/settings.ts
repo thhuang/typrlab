@@ -18,6 +18,18 @@ export interface Settings {
   dailyGoalMinutes: number;
   /** Hold the cursor on a wrong key until corrected (keybr default true). */
   stopOnError: boolean;
+  /**
+   * typr improvement over keybr: require a key to be both fast AND accurate
+   * before it counts toward unlocking. keybr's confidence is speed-only, so a
+   * fast-but-sloppy key unlocks the next letter prematurely. Default on.
+   */
+  accuracyAware: boolean;
+  /**
+   * typr improvement: once enough data exists, drill the weakest *transition*
+   * (digraph) rather than only the weakest single key. keybr models single
+   * keys only. Default on.
+   */
+  bigramTargeting: boolean;
   /** Keyboard layout id (informational for now). */
   layout: string;
 }
@@ -29,5 +41,7 @@ export const DEFAULT_SETTINGS: Settings = {
   naturalWords: true,
   dailyGoalMinutes: 30,
   stopOnError: true,
+  accuracyAware: true,
+  bigramTargeting: true,
   layout: 'en',
 };

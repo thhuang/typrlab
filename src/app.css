@@ -216,3 +216,181 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* View toggle */
+.viewtoggle {
+  display: inline-flex;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 3px;
+}
+.viewtoggle button {
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.viewtoggle button.active {
+  background: var(--accent);
+  color: #07131f;
+}
+
+/* Analysis view */
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.analysis-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.analysis-toolbar h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.analysis-toolbar .spacer {
+  flex: 1;
+}
+.analysis-toolbar button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.analysis-toolbar button:hover {
+  border-color: var(--accent);
+}
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+.pad {
+  padding: 14px;
+}
+
+.acard {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.acard-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Chart */
+.chart {
+  display: block;
+  width: 100%;
+  height: 170px;
+}
+.chart-axis {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chart-trend {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  opacity: 0.7;
+}
+.chart-line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.chart-dot {
+  fill: var(--fast-key-color);
+}
+.chart-label {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+/* Keys-to-drill table */
+.ktable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.ktable th,
+.ktable td {
+  text-align: left;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.ktable th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.ktable tbody tr:last-child td {
+  border-bottom: 0;
+}
+.ktable .kcell {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 15px;
+}
+.ktable tr.reached {
+  color: var(--muted);
+}
+.ktable tr.reached .kcell {
+  color: var(--hit);
+}
+
+/* Learning heatmap */
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+.hm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hm-label {
+  width: 14px;
+  flex: 0 0 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+.hm-cells {
+  display: flex;
+  gap: 2px;
+}
+.hm-cell {
+  width: 12px;
+  height: 16px;
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}

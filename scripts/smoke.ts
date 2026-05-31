@@ -2,10 +2,12 @@
 import { PhoneticModel } from '../src/core/phonetic';
 import { GuidedLesson } from '../src/core/guided';
 import { KeyStatsMap } from '../src/core/keyStats';
+import { BigramStatsMap } from '../src/core/bigramStats';
 import { TextInput } from '../src/core/textInput';
 import { DEFAULT_SETTINGS } from '../src/core/settings';
 import { WORDS } from '../src/core/words';
 import { speedToTime } from '../src/core/target';
+import { projectLessonsToTarget } from '../src/core/learning';
 
 let failures = 0;
 function assert(cond: unknown, msg: string) {
@@ -79,6 +81,92 @@ ti2.onInput('h', 1200);
 ti2.onInput('e', 1300);
 const r2 = ti2.result(1400, 'en');
 assert(ti2.completed && r2.errors === 1, 'recovers after correction, 1 error counted');
+
+console.log('6) typr improvement: accuracy-aware unlocking');
+const sloppy = new KeyStatsMap();
+for (let i = 0; i < 3; i++) {
+  for (const cp of plan.included) {
+    // fast (2x target) but only 50% accurate
+    sloppy.ingest({ codePoint: cp, hitCount: 5, missCount: 5, timeToType: fast });
+  }
+}
+const incAware = guided.computeIncluded(sloppy, { ...settings, accuracyAware: true });
+const incBlind = guided.computeIncluded(sloppy, { ...settings, accuracyAware: false });
+assert(incAware.length === 6, 'fast-but-sloppy keys do NOT unlock when accuracy-aware (typr)');
+assert(incBlind.length === 7, 'same keys DO unlock with speed-only gating (keybr-style)');
+
+console.log('7) learning-rate projection');
+const improving = [80, 95, 110, 125, 140, 155, 170];
+const p = projectLessonsToTarget(improving, 200);
+assert(p !== null && p > 0, `projects lessons-to-target for an improving key (got ${p})`);
+const flat = [150, 150, 150, 150, 150];
+assert(projectLessonsToTarget(flat, 200) === null, 'no projection when a key is not improving');
+
+console.log('8) bigram capture: TextInput records transitions');
+const tib = new TextInput('the the', { stopOnError: true });
+let tb = 1000;
+for (const ch of 'the the') {
+  tib.onInput(ch, tb);
+  tb += 100;
+}
+const resb = tib.result(tb, 'en');
+const th = resb.bigrams?.find(
+  (b) => b.from === 't'.codePointAt(0)! && b.to === 'h'.codePointAt(0)!,
+);
+assert(!!th && th.hitCount >= 1, 'records the t→h transition');
+
+console.log('9) bigram model: weakest transition is the slow one');
+const bs = new BigramStatsMap();
+for (let i = 0; i < 3; i++) {
+  bs.ingest({ from: 'a'.codePointAt(0)!, to: 'b'.codePointAt(0)!, hitCount: 3, timeToType: 120 });
+  bs.ingest({ from: 'c'.codePointAt(0)!, to: 'd'.codePointAt(0)!, hitCount: 3, timeToType: 400 });
+}
+const allowedABCD = new Set(['a', 'b', 'c', 'd'].map((c) => c.codePointAt(0)!));
+const weak = bs.weakest(allowedABCD, 300);
+assert(
+  !!weak && weak.from === 'c'.codePointAt(0)! && weak.to === 'd'.codePointAt(0)!,
+  'weakest transition is the slow c→d',
+);
+
+console.log('10) generation boost over-samples the targeted digraph');
+const makeRng = (seed: number) => {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+};
+const model2 = new PhoneticModel(WORDS, 3);
+const allowedSet = new Set('etaoinshrd'.split('').map((c) => c.codePointAt(0)!));
+function countDigraph(filter: any, from: string, to: string, count: number, r: () => number) {
+  let c = 0;
+  for (let k = 0; k < count; k++) {
+    const w = model2.nextWord(filter, r);
+    for (let j = 1; j < w.length; j++) if (w[j - 1] === from && w[j] === to) c += 1;
+  }
+  return c;
+}
+const baseFilter = { allowed: allowedSet, focus: null, boost: null };
+const boostFilter = {
+  allowed: allowedSet,
+  focus: null,
+  boost: { from: 't'.codePointAt(0)!, to: 'h'.codePointAt(0)! },
+};
+const noBoost = countDigraph(baseFilter, 't', 'h', 600, makeRng(7));
+const withBoost = countDigraph(boostFilter, 't', 'h', 600, makeRng(7));
+assert(withBoost > noBoost, `boost raises t→h frequency (no=${noBoost}, boost=${withBoost})`);
+
+console.log('11) guided drills the weakest transition');
+const bs2 = new BigramStatsMap();
+for (let i = 0; i < 4; i++) {
+  bs2.ingest({ from: 'a'.codePointAt(0)!, to: 'o'.codePointAt(0)!, hitCount: 3, timeToType: 500 });
+}
+const planB = guided.plan(stats, { ...settings, bigramTargeting: true }, () => 0.5, bs2);
+const bf = planB.bigramFocus;
+assert(
+  bf !== null && String.fromCodePoint(bf[0]) + String.fromCodePoint(bf[1]) === 'ao',
+  'guided sets bigramFocus to the weak a→o transition',
+);
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
 process.exit(failures === 0 ? 0 : 1);
