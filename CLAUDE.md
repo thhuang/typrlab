@@ -7,15 +7,18 @@ Repo `thhuang/typrlab`; live at **https://typrlab.com** (Cloudflare Pages projec
 
 ## Git workflow (always)
 
-- **Never push to `main`.** Branch → commit → PR → self-merge → sync:
+- **Never push to `main`.** Branch → commit → PR → wait for green CI → self-merge → sync:
   ```
   git checkout -b <branch>
   # …changes…
   git commit            # trailer below
   gh pr create
+  gh pr checks --watch  # main is protected: the CI `check` must pass before merge
   gh pr merge --merge --delete-branch
   git checkout main && git pull --ff-only
   ```
+- `main` is **protected**: PR required (0 approvals — solo self-merge), the CI `check`
+  must be green to merge, no force-push/deletion. Admins may bypass in a pinch.
 - Commit messages **end with**: `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
 - PR bodies **end with**: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
 
