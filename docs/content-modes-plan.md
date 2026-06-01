@@ -68,8 +68,8 @@ Plus **modifiers** (apply to adaptive/words text, like keybr): `% capitals`,
 
 - **Adaptive selection of *real* content.** keybr's Word/Book modes are static; typr can
   pick the word/quote/snippet **richest in your weak keys/bigrams**. (Already prototyped:
-  the natural-words path now over-samples your weak transition ~90× — extend the same idea
-  to quotes/snippets.)
+  the natural-words path now over-samples your weak transition by roughly an order of
+  magnitude (smoke test #12 measures ~25–30×) — extend the same idea to quotes/snippets.)
 - **Unified cross-mode analytics.** Per-key & per-transition stats accumulate across every
   mode, so Code practice still improves your letter heatmap and vice-versa. Optionally tag
   results by mode for filtering.

@@ -29,6 +29,9 @@ export function ZenView({ plan, position, hasError, settings, history, onExit }:
     centerRef.current?.focus();
   }, []);
 
+  // Only the adaptive stream has a drill target; words/numbers/custom are ungated,
+  // so the eyebrow names the mode instead of claiming "guided · drilling —".
+  const adaptive = settings.contentMode === 'adaptive';
   const bf = plan.bigramFocus;
   const drill = bf ? `${chr(bf[0])}→${chr(bf[1])}` : plan.focus != null ? chr(plan.focus) : '—';
 
@@ -62,7 +65,13 @@ export function ZenView({ plan, position, hasError, settings, history, onExit }:
 
       <main className="zen-center" aria-label="Zen focus practice" tabIndex={-1} ref={centerRef}>
         <span className="zen-eyebrow">
-          guided · drilling <b>{drill}</b>
+          {adaptive ? (
+            <>
+              guided · drilling <b>{drill}</b>
+            </>
+          ) : (
+            settings.contentMode
+          )}
         </span>
 
         <TypingBoard

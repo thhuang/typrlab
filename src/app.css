@@ -299,6 +299,19 @@
   display: flex;
   gap: 9px;
 }
+/* Visually-hidden but available to assistive tech (e.g. the app-shell <h1>). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .key {
   width: 48px;
   height: 50px;
@@ -313,9 +326,10 @@
   background: linear-gradient(180deg, var(--panel-2), var(--panel));
   border: 1px solid var(--line);
   border-bottom: 2px solid var(--key-edge);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 2px 0 rgba(0, 0, 0, 0.22);
+  /* Token-driven keycap depth: the border-bottom (--key-edge) carries the raised
+     edge on every theme; a faint token sheen replaces the old hardcoded white/black
+     shadow that didn't adapt to light palettes. */
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--text) 6%, transparent);
   transition:
     transform 110ms ease,
     filter 110ms ease;
@@ -818,7 +832,9 @@
   transition: background 120ms ease;
 }
 .ktable tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  /* Token-based tint so the hover reads on both light and dark themes
+     (a hardcoded white overlay vanished on the light palettes). */
+  background: color-mix(in oklch, var(--text) 5%, transparent);
 }
 .ktable .kcell {
   font-weight: 700;

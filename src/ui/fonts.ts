@@ -4,8 +4,8 @@
 // actually in use. The picker is comfort/preference — typeface barely affects
 // reading speed (see docs/font-research.md). Default: Atkinson Hyperlegible (an
 // accessibility-first, highly legible sans). The default is set in
-// DEFAULT_SETTINGS.font (not by array order); FONTS[0] is only the fontStack /
-// resolveFontId fallback for an unknown id.
+// DEFAULT_SETTINGS.font (not by array order) and mirrored here as DEFAULT_FONT_ID,
+// which is the fontStack / resolveFontId fallback for an unknown / retired id.
 export type FontCategory = 'mono' | 'sans' | 'serif';
 
 export interface FontDef {
@@ -20,8 +20,8 @@ const SANS = ', ui-sans-serif, system-ui, sans-serif';
 const SERIF = ', ui-serif, Georgia, Cambria, serif';
 
 export const FONTS: FontDef[] = [
-  // Monospace — fixed width, best for typing accuracy. FONTS[0] is the
-  // fontStack / resolveFontId fallback for an unknown / retired saved id.
+  // Monospace — fixed width, best for typing accuracy. (The fallback for an
+  // unknown/retired id is DEFAULT_FONT_ID below, not FONTS[0].)
   {
     id: 'jetbrains-mono',
     label: 'JetBrains Mono',
@@ -59,12 +59,18 @@ export const MONO_FONTS = FONTS.filter((f) => f.category === 'mono');
 export const SANS_FONTS = FONTS.filter((f) => f.category === 'sans');
 export const SERIF_FONTS = FONTS.filter((f) => f.category === 'serif');
 
+// The product default — keep in sync with DEFAULT_SETTINGS.font. Used as the
+// fallback for an unknown/retired saved id so the board and picker land on the
+// real default rather than whichever font happens to be FONTS[0].
+export const DEFAULT_FONT_ID = 'atkinson';
+const DEFAULT_FONT = FONTS.find((f) => f.id === DEFAULT_FONT_ID) ?? FONTS[0]!;
+
 export function fontStack(id: string): string {
-  return (FONTS.find((f) => f.id === id) ?? FONTS[0]!).stack;
+  return (FONTS.find((f) => f.id === id) ?? DEFAULT_FONT).stack;
 }
 
 /** Coerce a (possibly retired) saved font id to a valid one, so the picker and
- *  the board never disagree after a shelf change. Falls back to the default. */
+ *  the board never disagree after a shelf change. Falls back to DEFAULT_FONT_ID. */
 export function resolveFontId(id: string): string {
-  return FONTS.some((f) => f.id === id) ? id : FONTS[0]!.id;
+  return FONTS.some((f) => f.id === id) ? id : DEFAULT_FONT_ID;
 }
