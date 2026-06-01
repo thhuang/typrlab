@@ -4,11 +4,12 @@ import { GuidedLesson } from '../src/core/guided';
 import { KeyStatsMap } from '../src/core/keyStats';
 import { BigramStatsMap } from '../src/core/bigramStats';
 import { TextInput } from '../src/core/textInput';
-import { DEFAULT_SETTINGS } from '../src/core/settings';
+import { DEFAULT_SETTINGS, type Settings } from '../src/core/settings';
 import { WORDS } from '../src/core/words';
 import { speedToTime } from '../src/core/target';
 import { projectLessonsToTarget } from '../src/core/learning';
 import { orderedLetters, type KeyOrder } from '../src/core/keyOrder';
+import { nextLesson, type ContentMode } from '../src/core/content';
 
 let failures = 0;
 function assert(cond: unknown, msg: string) {
@@ -245,6 +246,45 @@ for (let i = 1, run = 1; i < six.length; i++) {
 assert(
   maxRun < 3,
   `balanced first six (${six.join('')}) alternate hands, no 3 in a row (maxRun=${maxRun})`,
+);
+
+console.log('14) content modes');
+const lessonFor = (mode: ContentMode, extra: Partial<Settings> = {}) =>
+  nextLesson({
+    guided,
+    stats: new KeyStatsMap(),
+    bigrams: new BigramStatsMap(),
+    settings: { ...settings, contentMode: mode, ...extra },
+    rng: makeRng(1),
+  });
+const adaptiveL = lessonFor('adaptive');
+assert(
+  adaptiveL.included.length >= 6,
+  `adaptive mode keeps a target (${adaptiveL.included.length} letters)`,
+);
+const wordsL = lessonFor('words');
+assert(wordsL.included.length === 0 && wordsL.text.length > 0, 'words mode: text but no target');
+assert(
+  /^[a-z ]+$/.test(wordsL.text),
+  `words text is lowercase words ("${wordsL.text.slice(0, 28)}")`,
+);
+const numL = lessonFor('numbers', { numberGroupSize: 3, numberGroupCount: 5 });
+assert(/^[0-9 ]+$/.test(numL.text), `numbers mode is digit groups ("${numL.text}")`);
+const groups = numL.text.split(' ');
+assert(groups.length === 5 && groups.every((g) => g.length === 3), 'numbers: 5 groups of 3 digits');
+const SRC = new Set('alpha beta gamma delta epsilon zeta theta'.split(' '));
+const custL = lessonFor('custom', { customText: 'alpha beta gamma delta epsilon zeta theta' });
+assert(
+  custL.included.length === 0 && custL.text.split(' ').every((w) => SRC.has(w)),
+  'custom mode draws only from the pasted text',
+);
+assert(
+  /[A-Z]/.test(lessonFor('words', { capitalsPct: 100 }).text),
+  'capitals modifier capitalises words',
+);
+assert(
+  /[.,?!;:]/.test(lessonFor('words', { punctuationPct: 100 }).text),
+  'punctuation modifier adds punctuation',
 );
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);

@@ -1,6 +1,7 @@
 // User settings. Defaults mirror keybr's verified defaults so behaviour
 // matches the reference unless deliberately changed.
 import type { KeyOrder } from './keyOrder';
+import type { ContentMode } from './content';
 
 export interface Settings {
   /** Target typing speed in CPM. keybr default 175 CPM (= 35 WPM). */
@@ -49,6 +50,16 @@ export interface Settings {
   textSize: number;
   /** Practice layout: 'coach' (focus rail) or 'instrument' (full stat strip). */
   practiceView: 'coach' | 'instrument';
+  /** What you practice on: adaptive stream, real words, numbers, or your own text. */
+  contentMode: ContentMode;
+  /** Custom-mode source text (chunked into practice lines). */
+  customText: string;
+  /** Numbers mode: digits per group, and groups per line. */
+  numberGroupSize: number;
+  numberGroupCount: number;
+  /** Modifiers for the adaptive/words streams: % of words capitalised / punctuated. */
+  capitalsPct: number;
+  punctuationPct: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -67,4 +78,10 @@ export const DEFAULT_SETTINGS: Settings = {
   font: 'atkinson',
   textSize: 32,
   practiceView: 'coach',
+  contentMode: 'adaptive',
+  customText: '',
+  numberGroupSize: 3,
+  numberGroupCount: 6,
+  capitalsPct: 0,
+  punctuationPct: 0,
 };

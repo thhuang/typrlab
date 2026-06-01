@@ -51,6 +51,18 @@ const KEY_ORDERS: Array<{ id: Settings['keyOrder']; label: string; desc: string 
   },
 ];
 
+// What you practice on. Non-adaptive modes drop the unlock/focus targeting.
+const MODES: Array<{ id: Settings['contentMode']; label: string; desc: string }> = [
+  {
+    id: 'adaptive',
+    label: 'Adaptive',
+    desc: 'The guided stream — unlocks letters as you reach target speed.',
+  },
+  { id: 'words', label: 'Words', desc: 'Real words from the frequency bank, ungated.' },
+  { id: 'numbers', label: 'Numbers', desc: 'Random digit groups — drill the number row.' },
+  { id: 'custom', label: 'Custom', desc: 'Practice your own pasted text.' },
+];
+
 type GroupProps = { settings: Settings; update: Props['update'] };
 
 export function SettingsView({ settings, update, onClear }: Props) {
@@ -113,9 +125,121 @@ function PracticeGroup({ settings, update }: GroupProps) {
 
       <div className="srow">
         <div className="slabel">
+          <span className="sname">Practice mode</span>
+          <span className="sdesc">{MODES.find((m) => m.id === settings.contentMode)?.desc}</span>
+        </div>
+        <div className="sctrl segmented">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              className={`seg${settings.contentMode === m.id ? ' active' : ''}`}
+              onClick={() => update({ contentMode: m.id })}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {settings.contentMode === 'numbers' && (
+        <>
+          <div className="srow">
+            <div className="slabel">
+              <span className="sname">Digits per group</span>
+            </div>
+            <div className="sctrl rangewrap">
+              <input
+                type="range"
+                min={1}
+                max={8}
+                step={1}
+                value={settings.numberGroupSize}
+                onChange={(e) => update({ numberGroupSize: Number(e.target.value) })}
+              />
+              <span className="rangeval">{settings.numberGroupSize}</span>
+            </div>
+          </div>
+          <div className="srow">
+            <div className="slabel">
+              <span className="sname">Groups per line</span>
+            </div>
+            <div className="sctrl rangewrap">
+              <input
+                type="range"
+                min={1}
+                max={12}
+                step={1}
+                value={settings.numberGroupCount}
+                onChange={(e) => update({ numberGroupCount: Number(e.target.value) })}
+              />
+              <span className="rangeval">{settings.numberGroupCount}</span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {settings.contentMode === 'custom' && (
+        <div className="srow srow-block">
+          <div className="slabel">
+            <span className="sname">Your text</span>
+            <span className="sdesc">Pasted text is split into practice lines.</span>
+          </div>
+          <textarea
+            className="settings-textarea"
+            value={settings.customText}
+            onChange={(e) => update({ customText: e.target.value })}
+            rows={3}
+            placeholder="Paste text to practice…"
+            aria-label="Custom practice text"
+          />
+        </div>
+      )}
+
+      {(settings.contentMode === 'adaptive' || settings.contentMode === 'words') && (
+        <>
+          <div className="srow">
+            <div className="slabel">
+              <span className="sname">Capitals</span>
+              <span className="sdesc">Capitalise this share of words.</span>
+            </div>
+            <div className="sctrl rangewrap">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={settings.capitalsPct}
+                onChange={(e) => update({ capitalsPct: Number(e.target.value) })}
+              />
+              <span className="rangeval">{settings.capitalsPct}%</span>
+            </div>
+          </div>
+          <div className="srow">
+            <div className="slabel">
+              <span className="sname">Punctuation</span>
+              <span className="sdesc">Add punctuation to this share of words.</span>
+            </div>
+            <div className="sctrl rangewrap">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={settings.punctuationPct}
+                onChange={(e) => update({ punctuationPct: Number(e.target.value) })}
+              />
+              <span className="rangeval">{settings.punctuationPct}%</span>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="srow">
+        <div className="slabel">
           <span className="sname">Target speed</span>
           <span className="sdesc">
-            New letters unlock once every active key reaches this speed.
+            Your goal speed. In Adaptive mode, new letters unlock once every active key reaches it.
           </span>
         </div>
         <div className="sctrl rangewrap">
@@ -131,49 +255,57 @@ function PracticeGroup({ settings, update }: GroupProps) {
         </div>
       </div>
 
-      <div className="srow">
-        <div className="slabel">
-          <span className="sname">Key introduction order</span>
-          <span className="sdesc">{KEY_ORDERS.find((k) => k.id === settings.keyOrder)?.desc}</span>
-        </div>
-        <div className="sctrl segmented">
-          {KEY_ORDERS.map((k) => (
-            <button
-              key={k.id}
-              type="button"
-              className={`seg${settings.keyOrder === k.id ? ' active' : ''}`}
-              onClick={() => update({ keyOrder: k.id })}
-            >
-              {k.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Unlock/targeting controls only matter for the adaptive stream. */}
+      {settings.contentMode === 'adaptive' && (
+        <>
+          <div className="srow">
+            <div className="slabel">
+              <span className="sname">Key introduction order</span>
+              <span className="sdesc">
+                {KEY_ORDERS.find((k) => k.id === settings.keyOrder)?.desc}
+              </span>
+            </div>
+            <div className="sctrl segmented">
+              {KEY_ORDERS.map((k) => (
+                <button
+                  key={k.id}
+                  type="button"
+                  className={`seg${settings.keyOrder === k.id ? ' active' : ''}`}
+                  onClick={() => update({ keyOrder: k.id })}
+                >
+                  {k.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      <Toggle
-        label="Accuracy-aware unlocking"
-        desc="A key must be typed fast AND accurately before it counts toward unlocking the next letter."
-        checked={settings.accuracyAware}
-        onChange={(v) => update({ accuracyAware: v })}
-      />
-      <Toggle
-        label="Bigram targeting"
-        desc="Also drill your slowest transitions (digraphs like th, er), not just single keys."
-        checked={settings.bigramTargeting}
-        onChange={(v) => update({ bigramTargeting: v })}
-      />
-      <Toggle
-        label="Natural words"
-        desc="Prefer real dictionary words over phonetic pseudo-words once enough letters are unlocked."
-        checked={settings.naturalWords}
-        onChange={(v) => update({ naturalWords: v })}
-      />
-      <Toggle
-        label="Recover keys"
-        desc="Require keys to stay above target speed; a key that decays re-locks further progress until you recover it."
-        checked={settings.recoverKeys}
-        onChange={(v) => update({ recoverKeys: v })}
-      />
+          <Toggle
+            label="Accuracy-aware unlocking"
+            desc="A key must be typed fast AND accurately before it counts toward unlocking the next letter."
+            checked={settings.accuracyAware}
+            onChange={(v) => update({ accuracyAware: v })}
+          />
+          <Toggle
+            label="Bigram targeting"
+            desc="Also drill your slowest transitions (digraphs like th, er), not just single keys."
+            checked={settings.bigramTargeting}
+            onChange={(v) => update({ bigramTargeting: v })}
+          />
+          <Toggle
+            label="Natural words"
+            desc="Prefer real dictionary words over phonetic pseudo-words once enough letters are unlocked."
+            checked={settings.naturalWords}
+            onChange={(v) => update({ naturalWords: v })}
+          />
+          <Toggle
+            label="Recover keys"
+            desc="Require keys to stay above target speed; a key that decays re-locks further progress until you recover it."
+            checked={settings.recoverKeys}
+            onChange={(v) => update({ recoverKeys: v })}
+          />
+        </>
+      )}
+
       <Toggle
         label="Stop cursor on error"
         desc="Hold the cursor on a wrong key until you correct it. If off, single mistakes are forgiven and the cursor keeps moving."

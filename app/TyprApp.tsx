@@ -18,6 +18,13 @@ const PATHS: Record<View, string> = {
   settings: '/settings',
 };
 
+// Hints for the non-adaptive content modes (no unlock/focus; keyboard hidden).
+const MODE_HINTS: Record<string, string> = {
+  words: 'Words — real words from your frequency bank. Just type.',
+  numbers: 'Numbers — random digit groups. Set group size/count in Settings.',
+  custom: 'Custom — your own pasted text. Set it in Settings → Practice.',
+};
+
 export default function TyprApp() {
   const pathname = usePathname();
   const router = useRouter();
@@ -83,6 +90,9 @@ export default function TyprApp() {
   const drillLabel = bigramFocus
     ? `${String.fromCodePoint(bigramFocus[0])}→${String.fromCodePoint(bigramFocus[1])}`
     : (focusChar ?? '—');
+  // Non-adaptive modes have no unlock/focus target → hide the keyboard, Coach rail,
+  // and the Coach/Instrument layout toggle; show the board + a mode hint.
+  const adaptive = settings.contentMode === 'adaptive';
 
   // Zen focus mode replaces the whole practice screen with a calm, chrome-free view.
   if (view === 'practice' && focusMode && plan) {
@@ -123,19 +133,21 @@ export default function TyprApp() {
       {view === 'practice' ? (
         <>
           <div className="actions">
-            <div className="segmented" role="group" aria-label="Practice layout">
-              {(['coach', 'instrument'] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  className={`seg${settings.practiceView === v ? ' active' : ''}`}
-                  aria-pressed={settings.practiceView === v}
-                  onClick={() => setPracticeView(v)}
-                >
-                  {v[0].toUpperCase() + v.slice(1)}
-                </button>
-              ))}
-            </div>
+            {adaptive && (
+              <div className="segmented" role="group" aria-label="Practice layout">
+                {(['coach', 'instrument'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`seg${settings.practiceView === v ? ' active' : ''}`}
+                    aria-pressed={settings.practiceView === v}
+                    onClick={() => setPracticeView(v)}
+                  >
+                    {v[0].toUpperCase() + v.slice(1)}
+                  </button>
+                ))}
+              </div>
+            )}
             <span className="actions-target">
               Target {Math.round(settings.targetSpeed / 5)} wpm
             </span>
@@ -152,7 +164,19 @@ export default function TyprApp() {
             </button>
           </div>
 
-          {settings.practiceView === 'instrument' ? (
+          {!adaptive ? (
+            <main className="stage">
+              {plan && (
+                <TypingBoard
+                  text={plan.text}
+                  position={position}
+                  hasError={hasError}
+                  cursorStyle={settings.cursorStyle}
+                />
+              )}
+              <p className="hint">{MODE_HINTS[settings.contentMode]}</p>
+            </main>
+          ) : settings.practiceView === 'instrument' ? (
             <div className="practice-instrument">
               <main className="stage">
                 {plan && (

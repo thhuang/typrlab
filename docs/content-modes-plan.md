@@ -1,8 +1,20 @@
 # Content modes — design & phased plan
 
-Today typr has exactly one content source: the **Adaptive (Guided)** stream. This
-plan adds selectable *content modes* (Words, Numbers, Custom, Quotes, Code…) without
-disturbing the adaptive core.
+> **Status:** Phase 1 **shipped** — **Words, Numbers, Custom** modes + **capitals/punctuation**
+> modifiers are live (Settings → Practice → "Practice mode"). Phases 2–3 below remain planned.
+
+typr's original single content source was the **Adaptive (Guided)** stream. This plan adds
+selectable *content modes* (Words, Numbers, Custom, Quotes, Code…) without disturbing the
+adaptive core.
+
+### Implementation note (Phase 1, as built)
+
+The shipped code is `src/core/content.ts` (`nextLesson(ctx)`), wired into `useTypingSession`.
+It **deviates** from the `Lesson { target }` / `ContentSource` sketch below: rather than a new
+type, non-adaptive lessons reuse `LessonPlan` with an **empty target** (`included: []`,
+`focus: null`, `bigramFocus: null`, `nextUnlock {0,null}`) via a `plain()` helper — so the
+on-screen keyboard, Coach rail, and Coach/Instrument toggle hide when there's no target, without
+churning `CoachRail`/`ZenView`. Per-key stats still accumulate across every mode.
 
 ## Architecture (the key idea)
 
@@ -64,9 +76,9 @@ Plus **modifiers** (apply to adaptive/words text, like keybr): `% capitals`,
 
 ## Phased plan
 
-- **Phase 1 (low effort, high value):** `ContentSource` abstraction + `mode` setting +
-  mode selector UI. Ship **Words, Numbers, Custom**. Add **capitals/punctuation modifiers**.
-  Keyboard hidden for custom/words-without-letters; shown for adaptive.
+- **Phase 1 — ✅ shipped:** source layer (`src/core/content.ts`) + `contentMode` setting + the
+  Settings **Practice mode** selector. **Words, Numbers, Custom** + **capitals/punctuation
+  modifiers** are live; the keyboard/rail hide in non-adaptive modes.
 - **Phase 2:** **Quotes/prose** corpus (public-domain) + adaptive real-content selection.
   Capitals/punctuation polish.
 - **Phase 3:** **Code mode** + the **symbol/number keyboard** + symbol stats in Analysis.

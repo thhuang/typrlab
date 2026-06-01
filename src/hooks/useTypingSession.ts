@@ -8,6 +8,7 @@ import { KeyStatsMap } from '@/core/keyStats';
 import { BigramStatsMap } from '@/core/bigramStats';
 import { PhoneticModel } from '@/core/phonetic';
 import { GuidedLesson, type LessonPlan } from '@/core/guided';
+import { nextLesson } from '@/core/content';
 import { TextInput } from '@/core/textInput';
 import { isValidResult } from '@/core/result';
 import { WORDS } from '@/core/words';
@@ -43,7 +44,7 @@ export interface TypingSession {
   importData: (file: File) => void;
 }
 
-/** Dev-only: apply #seed / #seedfull / #theme= / #font= / #cursor= / #view= hash hooks for previews. */
+/** Dev-only: apply #seed / #seedfull / #theme= / #font= / #cursor= / #view= / #mode= hash hooks for previews. */
 async function applyDevHash(): Promise<void> {
   if (process.env.NODE_ENV !== 'development' || typeof location === 'undefined') return;
   try {
@@ -63,12 +64,14 @@ async function applyDevHash(): Promise<void> {
     const f = grab(/font=([a-z0-9-]+)/);
     const c = grab(/cursor=([a-z]+)/);
     const v = grab(/view=(coach|instrument)/);
-    if (t || f || c || v) {
+    const m = grab(/mode=(adaptive|words|numbers|custom)/);
+    if (t || f || c || v || m) {
       const s = JSON.parse(localStorage.getItem('typr.settings') || '{}');
       if (t) s.theme = t;
       if (f) s.font = f;
       if (c) s.cursorStyle = c;
       if (v) s.practiceView = v;
+      if (m) s.contentMode = m;
       localStorage.setItem('typr.settings', JSON.stringify(s));
     }
   } catch {
@@ -105,7 +108,13 @@ export function useTypingSession(): TypingSession {
   const startNext = useCallback(() => {
     const g = guidedRef.current;
     if (!g) return;
-    const p = g.plan(statsRef.current, settingsRef.current, Math.random, bigramsRef.current);
+    const p = nextLesson({
+      guided: g,
+      stats: statsRef.current,
+      bigrams: bigramsRef.current,
+      settings: settingsRef.current,
+      rng: Math.random,
+    });
     setPlan(p);
     inputRef.current = new TextInput(p.text, { stopOnError: settingsRef.current.stopOnError });
     setPosition(0);
