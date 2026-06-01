@@ -3,7 +3,7 @@
 // pattern). The typing font is applied by a React effect (its default falls back
 // cleanly via CSS, so any swap is unnoticeable).
 const CODE = `(function(){try{
-  var s = JSON.parse(localStorage.getItem('typr.settings') || '{}');
+  var s = JSON.parse(localStorage.getItem('typrlab.settings') || localStorage.getItem('typr.settings') || '{}');
   document.documentElement.setAttribute('data-theme', s.theme || 'paper');
   document.documentElement.style.setProperty('--board-size', (s.textSize || 32) + 'px');
 }catch(e){}})();`;

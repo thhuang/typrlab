@@ -5,13 +5,35 @@
 import type { LessonResult } from './types';
 import { type Settings, DEFAULT_SETTINGS } from './settings';
 
-const SETTINGS_KEY = 'typr.settings';
-const HISTORY_KEY = 'typr.history';
+const SETTINGS_KEY = 'typrlab.settings';
+const HISTORY_KEY = 'typrlab.history';
 const HISTORY_CAP = 2000;
+
+// Pre-rebrand keys (the product was renamed typr → typrlab). Kept for a one-time,
+// non-destructive migration so existing local data survives the rename.
+const LEGACY_SETTINGS_KEY = 'typr.settings';
+const LEGACY_HISTORY_KEY = 'typr.history';
+
+// Read a key, transparently migrating from its pre-rebrand counterpart the first
+// time (copies legacy → current; leaves the legacy copy in place as a backstop).
+function readMigrated(key: string, legacyKey: string): string | null {
+  const current = localStorage.getItem(key);
+  if (current != null) return current;
+  const legacy = localStorage.getItem(legacyKey);
+  if (legacy != null) {
+    try {
+      localStorage.setItem(key, legacy);
+    } catch {
+      /* storage unavailable — still return the legacy value */
+    }
+    return legacy;
+  }
+  return null;
+}
 
 export function loadSettings(): Settings {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
+    const raw = readMigrated(SETTINGS_KEY, LEGACY_SETTINGS_KEY);
     if (!raw) return { ...DEFAULT_SETTINGS };
     return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) };
   } catch {
@@ -29,7 +51,7 @@ export function saveSettings(s: Settings): void {
 
 export function loadHistory(): LessonResult[] {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
+    const raw = readMigrated(HISTORY_KEY, LEGACY_HISTORY_KEY);
     return raw ? (JSON.parse(raw) as LessonResult[]) : [];
   } catch {
     return [];

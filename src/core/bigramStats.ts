@@ -1,4 +1,4 @@
-// Per-transition (digraph) performance model — typr's edge over keybr, which
+// Per-transition (digraph) performance model — typrlab's edge over keybr, which
 // only models single keys. A slow transition (e.g. a same-finger bigram) hides
 // inside an otherwise-fine per-key average; tracking it lets us drill the real
 // bottleneck. Same EMA (alpha = 0.1) and confidence definition as per-key stats.

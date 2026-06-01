@@ -1,4 +1,4 @@
-// Generates src/core/words.ts — typr's word bank used both to train the phonetic
+// Generates src/core/words.ts — typrlab's word bank used both to train the phonetic
 // model and as the natural-words pool. Source: the top frequency words of the
 // Google Web Trillion-Word Corpus (first20hours/google-10000-english, the
 // "usa-no-swears" variant). Word-frequency data is factual; we filter for typing

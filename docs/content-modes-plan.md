@@ -3,7 +3,7 @@
 > **Status:** Phase 1 **shipped** — **Words, Numbers, Custom** modes + **capitals/punctuation**
 > modifiers are live (Settings → Practice → "Practice mode"). Phases 2–3 below remain planned.
 
-typr's original single content source was the **Adaptive (Guided)** stream. This plan adds
+typrlab's original single content source was the **Adaptive (Guided)** stream. This plan adds
 selectable *content modes* (Words, Numbers, Custom, Quotes, Code…) without disturbing the
 adaptive core.
 
@@ -66,7 +66,7 @@ Plus **modifiers** (apply to adaptive/words text, like keybr): `% capitals`,
 
 ## Where this beats keybr
 
-- **Adaptive selection of *real* content.** keybr's Word/Book modes are static; typr can
+- **Adaptive selection of *real* content.** keybr's Word/Book modes are static; typrlab can
   pick the word/quote/snippet **richest in your weak keys/bigrams**. (Already prototyped:
   the natural-words path now over-samples your weak transition by roughly an order of
   magnitude (smoke test #12 measures ~25–30×) — extend the same idea to quotes/snippets.)

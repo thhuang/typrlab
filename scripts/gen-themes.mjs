@@ -2,10 +2,10 @@
 // OKLCH (sRGB -> linear -> OKLab -> OKLCH, Björn Ottosson's matrices) so the
 // design tokens are perceptually-uniform and exact. Run: node scripts/gen-themes.mjs
 //
-// typr serves programmers AND writers/students/professionals, so the set spans
+// typrlab serves programmers AND writers/students/professionals, so the set spans
 // popular dark dev themes and calm, reading-friendly LIGHT themes (incl. a warm
 // sepia "Paper"). Light vs dark is environment/person dependent — users choose.
-// Palettes are each project's canonical colors; only the tokens typr needs are
+// Palettes are each project's canonical colors; only the tokens typrlab needs are
 // taken, and surface/edge/soft variants are derived by nudging OKLCH lightness.
 import { writeFileSync } from 'node:fs';
 
@@ -41,7 +41,7 @@ const css = ([L, C, H], a) =>
 const setL = ([, C, H], nl) => [clamp(nl, 0, 1), C, H];
 const lighten = ([L, C, H], d) => [clamp(L + d, 0, 1), C, H];
 
-// id, label, scheme, and the signature hexes typr needs.
+// id, label, scheme, and the signature hexes typrlab needs.
 const THEMES = [
   // --- Dark ---
   {

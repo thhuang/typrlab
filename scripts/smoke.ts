@@ -94,7 +94,7 @@ ti2.onInput('e', 1300);
 const r2 = ti2.result(1400, 'en');
 assert(ti2.completed && r2.errors === 1, 'recovers after correction, 1 error counted');
 
-console.log('6) typr improvement: accuracy-aware unlocking');
+console.log('6) typrlab improvement: accuracy-aware unlocking');
 const sloppy = new KeyStatsMap();
 for (let i = 0; i < 3; i++) {
   for (const cp of plan.included) {
@@ -104,7 +104,7 @@ for (let i = 0; i < 3; i++) {
 }
 const incAware = guided.computeIncluded(sloppy, { ...settings, accuracyAware: true });
 const incBlind = guided.computeIncluded(sloppy, { ...settings, accuracyAware: false });
-assert(incAware.length === 6, 'fast-but-sloppy keys do NOT unlock when accuracy-aware (typr)');
+assert(incAware.length === 6, 'fast-but-sloppy keys do NOT unlock when accuracy-aware (typrlab)');
 assert(incBlind.length === 7, 'same keys DO unlock with speed-only gating (keybr-style)');
 
 console.log('7) learning-rate projection');
