@@ -111,9 +111,10 @@ export default function TyprApp() {
   return (
     <div className="app">
       <header className="topbar">
+        <h1 className="sr-only">typr — adaptive typing trainer</h1>
         <div className="brand">
           typr<span className="caret">_</span>
-          <span className="tag">adaptive</span>
+          <span className="tag">{settings.contentMode}</span>
         </div>
         <div className="header-right">
           <nav className="viewtoggle">
@@ -121,6 +122,7 @@ export default function TyprApp() {
               <button
                 key={v}
                 className={view === v ? 'active' : ''}
+                aria-current={view === v ? 'page' : undefined}
                 onClick={() => router.push(PATHS[v])}
               >
                 {v[0].toUpperCase() + v.slice(1)}
@@ -148,9 +150,11 @@ export default function TyprApp() {
                 ))}
               </div>
             )}
-            <span className="actions-target">
-              Target {Math.round(settings.targetSpeed / 5)} wpm
-            </span>
+            {adaptive && (
+              <span className="actions-target">
+                Target {Math.round(settings.targetSpeed / 5)} wpm
+              </span>
+            )}
             <span className="spacer" />
             <button
               ref={focusBtnRef}

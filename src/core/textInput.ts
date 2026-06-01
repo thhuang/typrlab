@@ -55,7 +55,11 @@ export class TextInput {
       this.completed = true;
       return 'done';
     }
-    const cp = expected.codePointAt(0)!;
+    // Case-fold to the base key: the capitals modifier can uppercase a letter,
+    // but the adaptive gate, keyboard, and Analysis all track lowercase a–z, and
+    // `match` below is already case-insensitive — so credit 'E' to 'e'. Spaces,
+    // digits, and punctuation are unaffected.
+    const cp = expected.toLowerCase().codePointAt(0)!;
     const match = input.toLowerCase() === expected.toLowerCase();
 
     if (match) {

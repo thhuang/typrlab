@@ -247,6 +247,24 @@ assert(
   maxRun < 3,
   `balanced first six (${six.join('')}) alternate hands, no 3 in a row (maxRun=${maxRun})`,
 );
+// Out-of-enum policy (loadSettings spreads unvalidated JSON) must fall back, not crash.
+const bogusOrder = 'bogus' as KeyOrder;
+assert(
+  seqOf(bogusOrder) === 'etaoinshrdlcumwfgypbvkjxqz',
+  'unknown keyOrder falls back to the frequency order',
+);
+let orderThrew = false;
+let bogusIncluded = 0;
+try {
+  bogusIncluded = guided.plan(new KeyStatsMap(), { ...settings, keyOrder: bogusOrder }, rng)
+    .included.length;
+} catch {
+  orderThrew = true;
+}
+assert(
+  !orderThrew && bogusIncluded >= 6,
+  `guided.plan tolerates an unknown keyOrder (no throw, ${bogusIncluded} letters)`,
+);
 
 console.log('14) content modes');
 const lessonFor = (mode: ContentMode, extra: Partial<Settings> = {}) =>
@@ -285,6 +303,51 @@ assert(
 assert(
   /[.,?!;:]/.test(lessonFor('words', { punctuationPct: 100 }).text),
   'punctuation modifier adds punctuation',
+);
+assert(
+  lessonFor('custom', { customText: '' }).text ===
+    'paste your own text in settings to practice it here',
+  'custom mode with empty text shows the placeholder',
+);
+assert(
+  lessonFor('custom', { customText: 'hello' }).text === 'hello',
+  'custom mode with a single word returns just that word',
+);
+const clampGroups = lessonFor('numbers', { numberGroupSize: 99, numberGroupCount: 99 }).text.split(
+  ' ',
+);
+assert(
+  clampGroups.length === 12 && clampGroups.every((g) => g.length === 8),
+  `numbers clamps to 12 groups of 8 digits at the max (got ${clampGroups.length}×${clampGroups[0]?.length})`,
+);
+assert(
+  /[A-Z]/.test(lessonFor('adaptive', { capitalsPct: 100 }).text),
+  'capitals modifier also applies to the adaptive stream',
+);
+const constRngWords = nextLesson({
+  guided,
+  stats: new KeyStatsMap(),
+  bigrams: new BigramStatsMap(),
+  settings: { ...settings, contentMode: 'words' as ContentMode },
+  rng: () => 0, // pathological: always picks the same word — must still terminate
+});
+assert(constRngWords.text.length > 0, 'words mode terminates with a constant rng (bounded retry)');
+
+console.log('15) capitalized practice credits the lowercase base key (case-fold)');
+const tiCap = new TextInput('aEe', { stopOnError: true });
+let tcap = 1000;
+for (const ch of 'aee') {
+  tiCap.onInput(ch, tcap); // input matched case-insensitively; expected 'E' folds to 'e'
+  tcap += 120;
+}
+const resCap = tiCap.result(tcap, 'en');
+assert(
+  resCap.histogram.every((h) => h.codePoint !== 'E'.codePointAt(0)!),
+  'no phantom uppercase-E key recorded',
+);
+assert(
+  resCap.histogram.some((h) => h.codePoint === 'e'.codePointAt(0)!),
+  'uppercase E folds into the lowercase e key',
 );
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);

@@ -55,7 +55,7 @@ export function CoachRail({ plan, stats, bigrams, settings }: Props) {
   return (
     <aside className="coachrail" aria-label="Coaching">
       <section className="coach-card">
-        <p className="coach-h">Now drilling</p>
+        <h2 className="coach-h">Now drilling</h2>
         <div className="coach-bigram">
           {bf ? (
             <>
@@ -86,7 +86,7 @@ export function CoachRail({ plan, stats, bigrams, settings }: Props) {
       </section>
 
       <section className="coach-card">
-        <p className="coach-h">Weakest keys</p>
+        <h2 className="coach-h">Weakest keys</h2>
         {weak.length > 0 ? (
           <div className="coach-weak">
             {weak.map(({ cp, c }) => (
@@ -108,7 +108,7 @@ export function CoachRail({ plan, stats, bigrams, settings }: Props) {
       </section>
 
       <section className="coach-card">
-        <p className="coach-h">Next unlock</p>
+        <h2 className="coach-h">Next unlock</h2>
         {nextKey != null ? (
           // `remaining` is >= 1 whenever a next letter exists: the gate grows the
           // active set the moment every key reaches target, and the freshly

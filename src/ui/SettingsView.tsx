@@ -128,12 +128,13 @@ function PracticeGroup({ settings, update }: GroupProps) {
           <span className="sname">Practice mode</span>
           <span className="sdesc">{MODES.find((m) => m.id === settings.contentMode)?.desc}</span>
         </div>
-        <div className="sctrl segmented">
+        <div className="sctrl segmented" role="group" aria-label="Practice mode">
           {MODES.map((m) => (
             <button
               key={m.id}
               type="button"
               className={`seg${settings.contentMode === m.id ? ' active' : ''}`}
+              aria-pressed={settings.contentMode === m.id}
               onClick={() => update({ contentMode: m.id })}
             >
               {m.label}
@@ -265,12 +266,13 @@ function PracticeGroup({ settings, update }: GroupProps) {
                 {KEY_ORDERS.find((k) => k.id === settings.keyOrder)?.desc}
               </span>
             </div>
-            <div className="sctrl segmented">
+            <div className="sctrl segmented" role="group" aria-label="Key introduction order">
               {KEY_ORDERS.map((k) => (
                 <button
                   key={k.id}
                   type="button"
                   className={`seg${settings.keyOrder === k.id ? ' active' : ''}`}
+                  aria-pressed={settings.keyOrder === k.id}
                   onClick={() => update({ keyOrder: k.id })}
                 >
                   {k.label}
@@ -426,12 +428,13 @@ function AppearanceGroup({ settings, update, withPreview }: GroupProps & { withP
           <span className="sname">Cursor shape</span>
           <span className="sdesc">How the next character is indicated.</span>
         </div>
-        <div className="sctrl segmented">
+        <div className="sctrl segmented" role="group" aria-label="Cursor shape">
           {CURSORS.map((c) => (
             <button
               key={c.id}
               type="button"
               className={`seg${settings.cursorStyle === c.id ? ' active' : ''}`}
+              aria-pressed={settings.cursorStyle === c.id}
               onClick={() => update({ cursorStyle: c.id })}
             >
               {c.label}
