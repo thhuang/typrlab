@@ -74,7 +74,7 @@ export const DEFAULT_SETTINGS: Settings = {
   bigramTargeting: true,
   layout: 'en',
   theme: 'paper',
-  cursorStyle: 'box',
+  cursorStyle: 'underline',
   font: 'atkinson',
   textSize: 32,
   practiceView: 'coach',

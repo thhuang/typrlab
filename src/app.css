@@ -57,6 +57,19 @@
   font-family: var(--font-mono);
   font-weight: 800;
 }
+/* Blink the wordmark caret like a real typing cursor. Motion-safe via the same
+   opt-in pattern as the page-load reveal above — it animates only when motion is
+   allowed, and holds steady under prefers-reduced-motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .brand .caret {
+    animation: caret-blink 1.1s steps(1) infinite;
+  }
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
 .brand .tag {
   font-family: var(--font-mono);
   font-size: 10px;
