@@ -178,7 +178,14 @@ export default function TyprApp() {
                   cursorStyle={settings.cursorStyle}
                 />
               )}
-              <p className="hint">{MODE_HINTS[settings.contentMode]}</p>
+              <p className="hint">
+                {MODE_HINTS[settings.contentMode]}
+                <br />
+                <span className="dim">
+                  The keyboard heatmap and coach are adaptive-only — your per-key stats still build
+                  in every mode.
+                </span>
+              </p>
             </main>
           ) : settings.practiceView === 'instrument' ? (
             <div className="practice-instrument">
