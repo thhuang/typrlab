@@ -31,8 +31,8 @@ self-contained package below. Expect more packages over time.
 
 | # | Package | Status | Summary |
 |---|---|---|---|
-| 01 | `practice_settings_redesign` | ✅ Ready to implement | New Practice screen (recommended: **Coach**) + Settings (recommended: **Two-pane**). Static-frame prototypes on a canvas. |
-| 02 | Typography / font shelf | 🟡 Proposed — pending sign-off | A tighter, better-curated font set (e.g. Atkinson Hyperlegible Mono as default). Decision lab is `../Typeface Lab.html` at project root; will become a package once the shelf is locked. |
+| 01 | `practice_settings_redesign` | ✅ Shipped | All five directions live: **Coach** rail + **Two-pane** settings (PR #17), plus the **Zen** focus toggle (#21), **Instrument** layout (#22), and the **Single-column** settings fallback (#24). |
+| 02 | Typography / font shelf | ✅ Shipped | Curated 9-font shelf, ≥3 per category (PR #26); default settled on **Atkinson Hyperlegible** (#26–#28). |
 
 ## Conventions for every handoff
 
