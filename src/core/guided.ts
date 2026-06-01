@@ -49,7 +49,7 @@ export class GuidedLesson {
 
   private chosenConfidence(cp: CodePoint, stats: KeyStatsMap, s: Settings): number {
     // recoverKeys => gate on live confidence, else best-ever (keybr's rule).
-    // accuracyAware folds in accuracy (typr's improvement over keybr).
+    // accuracyAware folds in accuracy (typrlab's improvement over keybr).
     return stats.effectiveConfidence(cp, s.targetSpeed, !s.recoverKeys, s.accuracyAware);
   }
 

@@ -23,7 +23,7 @@ const chr = (cp: number) => String.fromCodePoint(cp);
 
 export function ZenView({ plan, position, hasError, settings, history, onExit }: Props) {
   // Move focus into the focus screen on enter, so keyboard/AT users have an
-  // anchor and the view change is announced (TyprApp restores focus on exit).
+  // anchor and the view change is announced (TyprlabApp restores focus on exit).
   const centerRef = useRef<HTMLElement>(null);
   useEffect(() => {
     centerRef.current?.focus();
@@ -56,7 +56,7 @@ export function ZenView({ plan, position, hasError, settings, history, onExit }:
     <div className="zen">
       <header className="zen-top">
         <div className="brand">
-          typrlab<span className="caret">_</span>
+          typr<span className="caret">_</span>lab
         </div>
         <button type="button" className="zen-exit" onClick={onExit} title="Exit focus (Esc)">
           exit focus

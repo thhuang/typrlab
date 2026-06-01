@@ -1,7 +1,7 @@
 # Font choice & reading/typing performance — what the evidence says
 
 A deep, adversarially-verified research pass (109 agents) on whether typeface choice
-actually affects on-screen reading/typing, to ground typr's font decisions. Every
+actually affects on-screen reading/typing, to ground typrlab's font decisions. Every
 finding below survived 3-vote verification; confidence and sources noted.
 
 ## Headline
@@ -43,17 +43,17 @@ specific styles.
    (Atkinson-Hyperlegible-style). — Rello & Baeza-Yates 2016.
    <https://www.superarladislexia.org/pdf/2016-Luz%20Rello-Fonts-taccess.pdf>
 
-## Implications for typr
+## Implications for typrlab
 
 - **Default:** a clean, well-sized, conventional font. A disambiguated **monospace** is
   well justified for a *typing* trainer: no reading penalty (finding 2), helps dyslexic
   readers (finding 7), and clear l/I/1·0/O glyphs reduce wrong-key recognition errors.
-  typr instead defaults to **Atkinson Hyperlegible** — an accessibility-first, highly
+  typrlab instead defaults to **Atkinson Hyperlegible** — an accessibility-first, highly
   legible (proportional) face — to prioritise broad legibility; the monospaces
   (JetBrains Mono, which also powers the UI `--font-mono`, plus Cascadia Code and
   Source Code Pro) stay one tap away for anyone who prefers fixed-width.
 - **The real lever is SIZE** → offer an adjustable **text size** (the one change the
-  evidence most strongly supports). typr's board is already ~24px+, above the 18pt floor.
+  evidence most strongly supports). typrlab's board is already ~24px+, above the 18pt floor.
 - **Font picker = comfort/preference, not performance.** Keep it, but don't claim speed
   or accuracy gains (finding 3). Honest copy.
 - **Don't widen letter-spacing** as a "readability" feature (finding 5).

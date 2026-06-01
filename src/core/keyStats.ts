@@ -3,7 +3,7 @@
 // minimum of the *smoothed* values (bestTimeToType), a smoothed accuracy, and
 // a capped series of smoothed samples for trend/projection.
 //
-// typr improvement: `effectiveConfidence` folds accuracy into the speed ratio,
+// typrlab improvement: `effectiveConfidence` folds accuracy into the speed ratio,
 // so a fast-but-sloppy key cannot bank confidence the way it can on keybr.
 import type { CodePoint, HistogramEntry, LessonResult } from './types';
 import { confidence as confidenceOf } from './target';

@@ -1,4 +1,4 @@
-// All of typr's stateful logic — the engine, per-key/transition stats, lesson
+// All of typrlab's stateful logic — the engine, per-key/transition stats, lesson
 // generation, persistence, keystroke handling, and settings — lives here, so the
 // route component stays thin and presentational. Browser-only (runs client-side).
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -50,7 +50,7 @@ async function applyDevHash(): Promise<void> {
   try {
     const hash = location.hash;
     // #seedfull = fully-mastered history (must be checked before #seed, which it contains).
-    if (!localStorage.getItem('typr.history')) {
+    if (!localStorage.getItem('typrlab.history')) {
       if (hash.includes('seedfull')) {
         const { seedFull } = await import('@/dev/seed');
         seedFull();
@@ -66,13 +66,13 @@ async function applyDevHash(): Promise<void> {
     const v = grab(/view=(coach|instrument)/);
     const m = grab(/mode=(adaptive|words|numbers|custom)/);
     if (t || f || c || v || m) {
-      const s = JSON.parse(localStorage.getItem('typr.settings') || '{}');
+      const s = JSON.parse(localStorage.getItem('typrlab.settings') || '{}');
       if (t) s.theme = t;
       if (f) s.font = f;
       if (c) s.cursorStyle = c;
       if (v) s.practiceView = v;
       if (m) s.contentMode = m;
-      localStorage.setItem('typr.settings', JSON.stringify(s));
+      localStorage.setItem('typrlab.settings', JSON.stringify(s));
     }
   } catch {
     /* ignore dev hash errors */
@@ -232,7 +232,7 @@ export function useTypingSession(): TypingSession {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'typr-data.json';
+    a.download = 'typrlab-data.json';
     a.click();
     URL.revokeObjectURL(url);
   }, [history]);

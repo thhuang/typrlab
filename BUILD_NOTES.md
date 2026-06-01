@@ -1,6 +1,6 @@
-# BUILD NOTES FOR typr
+# BUILD NOTES FOR typrlab
 
-> **Note (kept in sync):** This is the _original_ build plan. typr ultimately adopted
+> **Note (kept in sync):** This is the _original_ build plan. typrlab ultimately adopted
 > **Next.js (App Router)** instead of Vite — to keep future sync/payments and SEO pages
 > additive — see the [README](README.md) for the current stack and structure. The data
 > model, algorithms, and analysis design below were implemented largely as written.

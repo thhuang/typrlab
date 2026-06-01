@@ -25,7 +25,7 @@ const MODE_HINTS: Record<string, string> = {
   custom: 'Custom — your own pasted text. Set it in Settings → Practice.',
 };
 
-export default function TyprApp() {
+export default function TyprlabApp() {
   const pathname = usePathname();
   const router = useRouter();
   const view: View =
@@ -113,7 +113,7 @@ export default function TyprApp() {
       <header className="topbar">
         <h1 className="sr-only">typrlab — adaptive typing trainer</h1>
         <div className="brand">
-          typrlab<span className="caret">_</span>
+          typr<span className="caret">_</span>lab
           <span className="tag">{settings.contentMode}</span>
         </div>
         <div className="header-right">

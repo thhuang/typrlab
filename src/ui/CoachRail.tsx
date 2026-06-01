@@ -1,5 +1,5 @@
 // Coach rail — the adaptive engine made visible. Sits beside the board in the
-// practice view and answers "what is typr drilling, and why?": the current
+// practice view and answers "what is typrlab drilling, and why?": the current
 // target (weak transition or key) with a confidence ring, your four weakest
 // keys, and how close you are to unlocking the next letter. Purely
 // presentational — every value comes from useTypingSession (plan + live stats);

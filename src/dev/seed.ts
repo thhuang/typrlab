@@ -59,9 +59,9 @@ export function seedDemo(): void {
     });
   }
 
-  localStorage.setItem('typr.history', JSON.stringify(results));
+  localStorage.setItem('typrlab.history', JSON.stringify(results));
   // Demo with a 60 wpm (300 CPM) target so weak keys show real projections.
-  localStorage.setItem('typr.settings', JSON.stringify({ targetSpeed: 300 }));
+  localStorage.setItem('typrlab.settings', JSON.stringify({ targetSpeed: 300 }));
 }
 
 // Fully-mastered history: every letter unlocked and comfortably above target.
@@ -99,6 +99,6 @@ export function seedFull(): void {
     });
   }
 
-  localStorage.setItem('typr.history', JSON.stringify(results));
-  localStorage.setItem('typr.settings', JSON.stringify({ targetSpeed: target }));
+  localStorage.setItem('typrlab.history', JSON.stringify(results));
+  localStorage.setItem('typrlab.settings', JSON.stringify({ targetSpeed: target }));
 }

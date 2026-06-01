@@ -24,7 +24,7 @@ Pairs with Cloudflare Registrar (where `typrlab.com` is registered), so the cust
 domain is one click with no manual DNS records.
 
 1. **Cloudflare dashboard → Workers & Pages → Create → Pages → Connect to Git**, and
-   pick the `typr` repo.
+   pick the `typrlab` repo.
 2. **Build settings:**
    - Framework preset: **Next.js (Static HTML Export)** _(or "None" — the values below are what matter)_
    - Build command: `npm run build`

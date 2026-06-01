@@ -1,4 +1,4 @@
-// The Analysis view — typr's answer to keybr's /profile, focused on *action*
+// The Analysis view — typrlab's answer to keybr's /profile, focused on *action*
 // rather than a vanity percentile: a learning curve plus a weakest-keys-first
 // table with per-key speed, accuracy, confidence, and projected lessons-to-target.
 import type { LessonResult } from '../core/types';
