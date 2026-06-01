@@ -73,6 +73,22 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
     .sort((a, b) => a.conf - b.conf)
     .slice(0, 8);
 
+  // Heatmap row order: letters a–z by frequency, then digits, then other symbols.
+  // Numbers mode and the punctuation modifier track those keys too, so they belong
+  // here alongside letters. (Uppercase code points from pre-case-fold history are
+  // excluded; the lowercase letter rows carry the data.)
+  const isLetterCp = (cp: number) => (cp >= 0x61 && cp <= 0x7a) || (cp >= 0x41 && cp <= 0x5a);
+  const isDigitCp = (cp: number) => cp >= 0x30 && cp <= 0x39;
+  const nonLetterCps = stats
+    .allStats()
+    .filter((s) => s.timeToType !== null && s.codePoint !== SPACE_CP && !isLetterCp(s.codePoint))
+    .map((s) => s.codePoint);
+  const displayCps = [
+    ...Array.from(FREQ_ORDER).map((ch) => ch.codePointAt(0)!),
+    ...nonLetterCps.filter(isDigitCp).sort((a, b) => a - b),
+    ...nonLetterCps.filter((cp) => !isDigitCp(cp)).sort((a, b) => a - b),
+  ];
+
   // Per-key learning heatmap: replay history, and for each lesson snapshot the
   // running confidence of ONLY the keys actually typed in that lesson — so a
   // column reflects that lesson's content. (A key practiced in a single
@@ -85,8 +101,7 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
     const typedThisLesson = new Set<number>();
     for (const h of r.histogram) if (h.hitCount > 0) typedThisLesson.add(h.codePoint);
     const snap = new Map<number, number>();
-    for (const ch of FREQ_ORDER) {
-      const cp = ch.codePointAt(0)!;
+    for (const cp of displayCps) {
       if (!typedThisLesson.has(cp)) continue;
       const st = replay.get(cp);
       if (st && st.timeToType !== null) snap.set(cp, replay.confidence(cp, settings.targetSpeed));
@@ -94,8 +109,7 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
     columns.push(snap);
   }
   const shownColumns = columns.slice(Math.max(0, columns.length - HEATMAP_MAX_COLS));
-  const heatRows: HeatRow[] = Array.from(FREQ_ORDER)
-    .map((ch) => ch.codePointAt(0)!)
+  const heatRows: HeatRow[] = displayCps
     .filter((cp) => replay.get(cp)?.timeToType != null)
     .map((cp) => ({
       label: String.fromCodePoint(cp),
