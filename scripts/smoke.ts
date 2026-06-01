@@ -8,6 +8,7 @@ import { DEFAULT_SETTINGS } from '../src/core/settings';
 import { WORDS } from '../src/core/words';
 import { speedToTime } from '../src/core/target';
 import { projectLessonsToTarget } from '../src/core/learning';
+import { orderedLetters, type KeyOrder } from '../src/core/keyOrder';
 
 let failures = 0;
 function assert(cond: unknown, msg: string) {
@@ -22,7 +23,9 @@ function assert(cond: unknown, msg: string) {
 const model = new PhoneticModel(WORDS, 3);
 const guided = new GuidedLesson(model, WORDS);
 const stats = new KeyStatsMap();
-const settings = { ...DEFAULT_SETTINGS };
+// Engine-mechanics checks (1–12) assume the legacy FREQUENCY order so the expected
+// letters are stable; the order policies themselves are tested in (13).
+const settings = { ...DEFAULT_SETTINGS, keyOrder: 'frequency' as const };
 const rng = () => 0.42; // deterministic
 
 console.log('1) initial lesson');
@@ -212,6 +215,36 @@ const offTH = thRate(false);
 assert(
   onTH > offTH,
   `natural-word targeting raises t→h frequency (on=${onTH.toFixed(4)} > off=${offTH.toFixed(4)})`,
+);
+
+console.log('13) key-introduction order policies');
+const seqOf = (p: KeyOrder) =>
+  orderedLetters(p)
+    .map((cp) => String.fromCodePoint(cp))
+    .join('');
+const AZ = 'abcdefghijklmnopqrstuvwxyz';
+for (const p of ['frequency', 'home-row', 'balanced'] as KeyOrder[]) {
+  const seq = seqOf(p);
+  const isPerm = seq.length === 26 && [...seq].sort().join('') === AZ;
+  assert(isPerm, `${p}: permutation of all 26 letters (got "${seq}")`);
+}
+assert(seqOf('frequency') === 'etaoinshrdlcumwfgypbvkjxqz', 'frequency equals the legacy order');
+assert(
+  seqOf('home-row').slice(0, 6) === 'ashdlf',
+  `home-row starts a,s,h,d,l,f (got ${seqOf('home-row').slice(0, 6)})`,
+);
+assert(DEFAULT_SETTINGS.keyOrder === 'balanced', `DEFAULT_SETTINGS.keyOrder === 'balanced'`);
+// balanced: the first six letters alternate hands — no three consecutive same-hand.
+const LEFT = new Set('qwertasdfgzxcvb');
+const six = [...seqOf('balanced').slice(0, 6)];
+let maxRun = 1;
+for (let i = 1, run = 1; i < six.length; i++) {
+  run = LEFT.has(six[i]!) === LEFT.has(six[i - 1]!) ? run + 1 : 1;
+  maxRun = Math.max(maxRun, run);
+}
+assert(
+  maxRun < 3,
+  `balanced first six (${six.join('')}) alternate hands, no 3 in a row (maxRun=${maxRun})`,
 );
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
