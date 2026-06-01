@@ -166,7 +166,10 @@ export function useTypingSession(): TypingSession {
       setHasError(input.hasErrorAtCursor);
 
       if (fb === 'done') {
-        const r = input.result(e.timeStamp, settingsRef.current.layout);
+        // Record a WALL-CLOCK completion time (Date.now()) — `e.timeStamp` is a
+        // page-relative DOMHighResTimeStamp, useless for the practice calendar.
+        // The per-keystroke timing above still uses the relative `e.timeStamp`.
+        const r = input.result(Date.now(), settingsRef.current.layout);
         setLast(r);
         if (isValidResult(r)) {
           statsRef.current.ingestResult(r);

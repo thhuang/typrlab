@@ -722,229 +722,11 @@
   white-space: nowrap;
 }
 
-/* ---------- Analysis ---------- */
-.analysis {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.analysis-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.analysis-toolbar h2 {
-  margin: 0;
-  font-size: 20px;
-  letter-spacing: -0.3px;
-}
-.analysis-toolbar .spacer {
-  flex: 1;
-}
-.analysis-toolbar button {
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 8px 15px;
-  font-family: var(--font-display);
-  font-size: 13px;
-  cursor: pointer;
-  transition:
-    border-color 140ms ease,
-    transform 140ms ease;
-}
-.analysis-toolbar button:hover {
-  border-color: var(--accent-line);
-  transform: translateY(-1px);
-}
-.muted {
-  color: var(--muted);
-  font-size: 12px;
-}
-.pad {
-  padding: 16px;
-}
-.acard {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-  transition: border-color 160ms ease;
-}
-.acard:hover {
-  border-color: var(--line-2);
-}
-.acard-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--line);
-  font-weight: 600;
-  font-size: 14px;
-}
-
-/* Line chart */
+/* Line chart (shared SVG primitive; dashboard-specific classes live in the
+   Analysis dashboard section below). */
 .chart {
   display: block;
   width: 100%;
-  height: 180px;
-}
-.chart-axis {
-  stroke: var(--line);
-  stroke-width: 1;
-}
-.chart-trend {
-  stroke: var(--muted);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 4;
-  opacity: 0.65;
-}
-.chart-line {
-  stroke: var(--accent);
-  stroke-width: 2.5;
-  vector-effect: non-scaling-stroke;
-}
-.chart-dot {
-  fill: var(--accent-soft);
-}
-.chart-label {
-  fill: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
-}
-
-/* Tables */
-.ktable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-.ktable th,
-.ktable td {
-  text-align: left;
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-.ktable th {
-  font-family: var(--font-display);
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--muted);
-  font-weight: 600;
-}
-.ktable tbody tr:last-child td {
-  border-bottom: 0;
-}
-.ktable tbody tr {
-  transition: background 120ms ease;
-}
-.ktable tbody tr:hover {
-  /* Token-based tint so the hover reads on both light and dark themes
-     (a hardcoded white overlay vanished on the light palettes). */
-  background: color-mix(in oklch, var(--text) 5%, transparent);
-}
-.ktable .kcell {
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 15px;
-  color: var(--accent-soft);
-}
-.ktable tr.reached {
-  color: var(--muted);
-}
-.ktable tr.reached .kcell {
-  color: var(--hit);
-}
-
-/* Learning heatmap */
-.heatmap {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 16px 18px;
-  overflow-x: auto;
-}
-.hm-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.hm-label {
-  width: 14px;
-  flex: 0 0 14px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-align: center;
-}
-.hm-cells {
-  display: flex;
-  gap: 2px;
-}
-.hm-cell {
-  width: 12px;
-  height: 16px;
-  border-radius: 2px;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-/* Bar chart */
-.barchart {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 16px 18px;
-}
-.bar-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.bar-label {
-  width: 14px;
-  flex: 0 0 14px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--accent-soft);
-  font-size: 13px;
-}
-.bar-track {
-  flex: 1;
-  height: 14px;
-  background: var(--panel-2);
-  border-radius: 5px;
-  overflow: hidden;
-}
-.bar-fill {
-  height: 100%;
-  border-radius: 5px;
-  transition: width 240ms ease;
-}
-.bar-value {
-  width: 68px;
-  text-align: right;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 13px;
-  color: var(--text);
-}
-
-/* Accuracy keyboard heatmap */
-.kb-heatmap-wrap {
-  display: flex;
-  justify-content: center;
-  padding: 22px 18px 26px;
 }
 
 /* ---------- Practice actions row ---------- */
@@ -1253,4 +1035,349 @@
     align-items: flex-start;
     gap: 10px;
   }
+}
+
+/* ============================ Analysis dashboard ============================ */
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+}
+.pagehead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pagehead h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+.pagehead p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.dash-actions {
+  display: flex;
+  gap: 8px;
+}
+.dash-actions button {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 140ms ease;
+}
+.dash-actions button:hover {
+  border-color: var(--line-2);
+}
+
+/* KPI scorecards */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .kpis {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 540px) {
+  .kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi .kl {
+  font-size: 10.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.kpi .kv {
+  font-family: var(--font-mono);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi .kv .u {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  margin-left: 3px;
+}
+.kpi .kd {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.kpi .kd.up {
+  color: var(--hit);
+}
+.kpi .kd.down {
+  color: var(--miss);
+}
+.kpi .kd.flat {
+  color: var(--muted);
+}
+.kpi.hero {
+  background: linear-gradient(160deg, var(--accent-dim), transparent 70%);
+  border-color: var(--accent-line);
+}
+.kpi.hero .kv {
+  color: var(--accent);
+}
+.spark {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  opacity: 0.5;
+}
+
+/* Panels */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.panel > .ph {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  flex-wrap: wrap;
+}
+.panel .ph h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.panel .ph .sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.legend {
+  display: flex;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.grid-keys {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 860px) {
+  .grid2,
+  .grid-keys {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Chart gridlines / axis / goal (LineChart) */
+.chart-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chart-axis-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--muted);
+}
+.chart-goal {
+  stroke: var(--hit);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+  opacity: 0.7;
+}
+
+/* Dashboard tables */
+.dtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.dtable th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 0 9px;
+  border-bottom: 1px solid var(--line);
+}
+.dtable td {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+.dtable tbody tr:last-child td {
+  border-bottom: 0;
+}
+.dtable .tdr {
+  text-align: right;
+  color: var(--muted);
+}
+.kc {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+}
+.bg {
+  color: var(--accent-soft);
+}
+.minitrack {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  min-width: 60px;
+}
+.minifill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+.kbnote {
+  text-align: center;
+  margin: 10px 0 0;
+}
+.calnote {
+  margin: 12px 0 0;
+}
+
+/* Practice calendar */
+.cal {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.calmonths {
+  display: grid;
+  grid-template-columns: repeat(26, 13px);
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.calmonths span {
+  white-space: nowrap;
+}
+.calgrid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+}
+.cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: var(--panel-2);
+  border: 1px solid color-mix(in oklch, var(--line) 60%, transparent);
+}
+.caldays {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted);
+}
+.caldays span {
+  height: 13px;
+  line-height: 13px;
+}
+.callegend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.callegend .cell {
+  width: 11px;
+  height: 11px;
+}
+
+/* Per-key speed heatmap (Analysis): centered, with corner wpm labels. */
+.kb-heatmap {
+  align-items: center;
+  padding: 6px 0;
+}
+.kb-heatmap .key {
+  position: relative;
+}
+.kb-heatmap .key .mini {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 7px;
+  font-weight: 500;
+  opacity: 0.85;
 }

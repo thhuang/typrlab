@@ -10,6 +10,8 @@ import { speedToTime } from '../src/core/target';
 import { projectLessonsToTarget } from '../src/core/learning';
 import { orderedLetters, type KeyOrder } from '../src/core/keyOrder';
 import { nextLesson, type ContentMode } from '../src/core/content';
+import { analyze, isDatable } from '../src/core/analytics';
+import type { LessonResult } from '../src/core/types';
 
 let failures = 0;
 function assert(cond: unknown, msg: string) {
@@ -349,6 +351,199 @@ assert(
   resCap.histogram.some((h) => h.codePoint === 'e'.codePointAt(0)!),
   'uppercase E folds into the lowercase e key',
 );
+
+console.log('16) analytics aggregates on a seeded history');
+{
+  const DAY = 86_400_000;
+  const NOW = Date.UTC(2026, 0, 20, 12, 0, 0); // fixed noon → stable local days
+  const cp = (c: string) => c.codePointAt(0)!;
+  // Fixed per-lesson histogram/bigrams so EMA converges deterministically.
+  const HIST = [
+    { codePoint: cp('e'), hitCount: 8, missCount: 0, timeToType: 150 }, // fast
+    { codePoint: cp('q'), hitCount: 6, missCount: 4, timeToType: 400 }, // slow + sloppy
+    { codePoint: cp('z'), hitCount: 8, missCount: 0, timeToType: 450 }, // slowest
+  ];
+  const BG = [
+    { from: cp('t'), to: cp('h'), hitCount: 5, timeToType: 350 }, // slow transition
+    { from: cp('i'), to: cp('n'), hitCount: 5, timeToType: 150 }, // fast transition
+  ];
+  const aStats = new KeyStatsMap();
+  const aBigrams = new BigramStatsMap();
+  const real: LessonResult[] = [];
+  for (let i = 0; i < 12; i++) {
+    const speed = 200 + (220 * i) / 11; // CPM 200→420  (wpm 40→84)
+    const accuracy = 0.9 + (0.09 * i) / 11; // 0.90→0.99
+    const r: LessonResult = {
+      timeStamp: NOW - (11 - i) * DAY, // 12 consecutive days, ending today
+      layout: 'en',
+      length: 24,
+      time: 30_000, // 0.5 min each
+      errors: 1,
+      speed,
+      accuracy,
+      complexity: 3,
+      score: 1,
+      histogram: HIST,
+      bigrams: BG,
+    };
+    aStats.ingestResult(r);
+    aBigrams.ingestResult(r);
+    real.push(r);
+  }
+  // One legacy result with a page-relative (non-wall-clock) timeStamp.
+  const legacy: LessonResult = {
+    timeStamp: 50_000,
+    layout: 'en',
+    length: 24,
+    time: 30_000,
+    errors: 0,
+    speed: 100,
+    accuracy: 0.95,
+    complexity: 3,
+    score: 1,
+    histogram: [],
+  };
+  const history = [legacy, ...real];
+
+  const a = analyze({
+    history,
+    stats: aStats,
+    bigrams: aBigrams,
+    targetSpeed: 300,
+    included: new Set('etaoinshrd'.split('').map(cp)),
+    now: NOW,
+  });
+
+  assert(Math.round(a.scorecards.bestWpm) === 84, `bestWpm is 84 (got ${a.scorecards.bestWpm})`);
+  assert(
+    a.scorecards.lettersUnlocked === 10,
+    `lettersUnlocked counts a–z in included (got ${a.scorecards.lettersUnlocked})`,
+  );
+  assert(
+    a.scorecards.avgDeltaPct === null,
+    'avg delta is null below a full 20-lesson window (13 lessons here)',
+  );
+  const last = a.speed[a.speed.length - 1]!;
+  assert(
+    Math.abs(last.net - last.raw * 0.99) < 0.01,
+    'net wpm = raw × accuracy for the last lesson',
+  );
+  assert(a.speed.length === history.length, 'one speed point per lesson');
+  assert(
+    a.slowestKeys[0]?.ch === 'z' && a.slowestKeys[1]?.ch === 'q',
+    `slowest keys ordered z, q (got ${a.slowestKeys.map((s) => s.ch).join(',')})`,
+  );
+  assert(a.slowestKeys[0]!.deltaMs > 0, 'slowest key is slower than target (deltaMs > 0)');
+  assert(
+    a.lowestAccuracyKeys[0]?.ch === 'q',
+    `lowest-accuracy key is q (got ${a.lowestAccuracyKeys[0]?.ch})`,
+  );
+  assert(
+    a.slowestBigrams[0]?.from === 't' && a.slowestBigrams[0]?.to === 'h',
+    `slowest transition is t→h (got ${a.slowestBigrams[0]?.from}→${a.slowestBigrams[0]?.to})`,
+  );
+  assert(
+    a.keyboard.locked.has(cp('b')) && !a.keyboard.locked.has(cp('e')),
+    'unlearned letters render locked, unlocked ones do not',
+  );
+  assert(
+    isDatable(real[0]!) && !isDatable(legacy),
+    'wall-clock guard: real datable, legacy excluded',
+  );
+  assert(
+    a.calendar.activeDays === 12 && a.calendar.currentStreak === 12 && a.calendar.bestStreak === 12,
+    `calendar: 12 active days, streak 12 (got active=${a.calendar.activeDays}, streak=${a.calendar.currentStreak})`,
+  );
+  assert(
+    Math.round(a.calendar.totalMinutes) === 6,
+    `calendar totals datable minutes only (got ${a.calendar.totalMinutes})`,
+  );
+}
+
+console.log(
+  '17) analytics edge cases — streak gaps/grace, short-history deltas, consistency, empty',
+);
+{
+  const DAY = 86_400_000;
+  const NOW = Date.UTC(2026, 0, 20, 12, 0, 0);
+  const inc = new Set('etaoin'.split('').map((c) => c.codePointAt(0)!));
+  const empties = new KeyStatsMap();
+  const ebig = new BigramStatsMap();
+  const mk = (ts: number, speed: number, acc: number): LessonResult => ({
+    timeStamp: ts,
+    layout: 'en',
+    length: 24,
+    time: 30_000,
+    errors: 1,
+    speed,
+    accuracy: acc,
+    complexity: 3,
+    score: 1,
+    histogram: [],
+    bigrams: [],
+  });
+  const run = (history: LessonResult[]) =>
+    analyze({ history, stats: empties, bigrams: ebig, targetSpeed: 300, included: inc, now: NOW });
+
+  // (a) short history (<20): deltas are null (no full prior window).
+  const sa = run(Array.from({ length: 5 }, (_, i) => mk(NOW - (4 - i) * DAY, 200 + i * 20, 0.95)));
+  assert(
+    sa.scorecards.avgDeltaPct === null && sa.scorecards.accuracyDeltaPct === null,
+    'sub-20 history yields null avg/accuracy deltas',
+  );
+
+  // (b) 20 improving lessons: deltas present and positive (incl. accuracy delta).
+  const la = run(
+    Array.from({ length: 20 }, (_, i) => mk(NOW - (19 - i) * DAY, 200 + i * 8, 0.9 + i * 0.004)),
+  );
+  assert(
+    (la.scorecards.avgDeltaPct ?? 0) > 0 && (la.scorecards.accuracyDeltaPct ?? 0) > 0,
+    '20+ improving lessons → positive avg & accuracy deltas',
+  );
+
+  // (c) streak gap: bestStreak (run of 5) > currentStreak (tail of 3).
+  const ga = run([0, 1, 2, 6, 7, 8, 9, 10].map((off) => mk(NOW - off * DAY, 250, 0.95)));
+  assert(
+    ga.calendar.currentStreak === 3,
+    `current streak = unbroken tail (got ${ga.calendar.currentStreak})`,
+  );
+  assert(
+    ga.calendar.bestStreak === 5 && ga.calendar.bestStreak > ga.calendar.currentStreak,
+    `best streak exceeds current across a gap (got best=${ga.calendar.bestStreak})`,
+  );
+
+  // (d) grace: today empty but yesterday active → streak stays alive.
+  const gra = run([1, 2, 3].map((off) => mk(NOW - off * DAY, 250, 0.95)));
+  assert(
+    gra.calendar.currentStreak === 3,
+    `grace keeps the streak alive (got ${gra.calendar.currentStreak})`,
+  );
+
+  // (e) consistency: one point per lesson; steady run < noisy run.
+  const steady = run(Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, 300, 0.97)));
+  const noisy = run(
+    Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, i % 2 ? 200 : 400, 0.97)),
+  );
+  const tail = (xs: number[]) => xs[xs.length - 1]!;
+  assert(steady.consistency.length === 10, 'consistency has one point per lesson');
+  assert(
+    tail(steady.consistency) < tail(noisy.consistency),
+    'steady run has lower wpm std-dev than a noisy one',
+  );
+
+  // (f) empty history: safe, zeroed.
+  let threw = false;
+  let ea: ReturnType<typeof run> | null = null;
+  try {
+    ea = run([]);
+  } catch {
+    threw = true;
+  }
+  assert(
+    !threw && ea!.scorecards.bestWpm === 0 && ea!.calendar.activeDays === 0,
+    'empty history: no throw, zeroed aggregates',
+  );
+}
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
 process.exit(failures === 0 ? 0 : 1);

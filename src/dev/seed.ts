@@ -7,6 +7,18 @@ import type { BigramEntry, HistogramEntry, LessonResult } from '../core/types';
 import { computeMetrics } from '../core/result';
 import { speedToTime } from '../core/target';
 
+// Wall-clock completion times, oldest-first, spread across the last `spreadDays`
+// and ending at "now" — so the practice calendar + day-streak demo look real
+// (matches the wall-clock `Date.now()` the live commit path now records).
+function spreadTimestamps(n: number, spreadDays: number): number[] {
+  const now = Date.now();
+  const DAY = 86_400_000;
+  return Array.from({ length: n }, (_, i) => {
+    const off = Math.round(((n - 1 - i) / Math.max(1, n - 1)) * spreadDays);
+    return now - off * DAY - (n - 1 - i) * 2000; // monotonic; newest == now
+  });
+}
+
 // from, to, base ms, ms improvement per lesson. th/er stay slow on purpose.
 const BIGRAMS: Array<[string, string, number, number]> = [
   ['t', 'h', 330, 1.1],
@@ -22,7 +34,7 @@ export function seedDemo(): void {
   const weak = new Set(['n', 'r']); // these stay slower & sloppier on purpose
   const results: LessonResult[] = [];
   const N = 40;
-  let ts = 1_700_000_000_000;
+  const stamps = spreadTimestamps(N, 24); // ~3½ weeks of activity
 
   for (let i = 0; i < N; i++) {
     const unlocked = letters.slice(0, Math.min(letters.length, 6 + Math.floor(i / 6)));
@@ -46,9 +58,8 @@ export function seedDemo(): void {
       hitCount: 5,
       timeToType: Math.round(Math.max(70, base - imp * i)),
     }));
-    ts += 90_000;
     results.push({
-      timeStamp: ts,
+      timeStamp: stamps[i]!,
       layout: 'en',
       length,
       time,
@@ -74,7 +85,7 @@ export function seedFull(): void {
   const letters = 'etaoinshrdlcumwfgypbvkjxqz'.split('');
   const results: LessonResult[] = [];
   const N = 12;
-  let ts = 1_700_000_000_000;
+  const stamps = spreadTimestamps(N, 11); // 12 lessons over ~12 days → full streak
 
   for (let i = 0; i < N; i++) {
     const histogram: HistogramEntry[] = letters.map((ch) => ({
@@ -86,9 +97,8 @@ export function seedFull(): void {
     const length = histogram.reduce((a, h) => a + h.hitCount, 0);
     const time = histogram.reduce((a, h) => a + h.hitCount * h.timeToType, 0);
     const metrics = computeMetrics(length, time, 0, histogram.length);
-    ts += 90_000;
     results.push({
-      timeStamp: ts,
+      timeStamp: stamps[i]!,
       layout: 'en',
       length,
       time,

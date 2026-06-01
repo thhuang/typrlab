@@ -255,6 +255,7 @@ export default function TyprlabApp() {
           bigrams={bigrams}
           settings={settings}
           history={history}
+          plan={plan}
           onExport={exportData}
           onImportClick={() => fileRef.current?.click()}
         />

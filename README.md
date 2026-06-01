@@ -67,14 +67,18 @@ npm run build        # production build
   why), **Instrument** (a dense stat strip), plus a chrome-free **Zen** focus mode
   (Esc to exit). Per-key stats accumulate across every mode.
 
-### Analysis
+A progress **dashboard** answering three questions at a glance — _am I improving?_,
+_what's still slow?_, _have I been consistent?_
 
-- Learning curve (speed over time) with trend.
-- **Per-key learning heatmap** — each key's confidence across your whole history,
-  including digits and punctuation, shown on the lessons where you actually typed it.
-- **Keys to drill** — weakest-first table with speed, accuracy, confidence, and a
-  projected _lessons-to-target_ estimate per key.
-- **Transitions to drill** — your slowest digraphs.
+- **Scorecards** — best speed, avg of your last 10 (with trend), accuracy, time
+  invested, day streak, and letters unlocked.
+- **Speed over time** — net + raw wpm with a goal line; plus **accuracy** and a
+  **consistency** (rolling std-dev) trend.
+- **Per-key speed heatmap** — your QWERTY keys colored by current speed (with per-key
+  wpm); locked keys dim.
+- **Slowest keys** (avg ms vs. target), **accuracy by key** (lowest first), and
+  **slowest transitions** (the digraphs costing you the most).
+- **Practice calendar** — a GitHub-style activity grid with your current/best day streak.
 
 ### Themes
 
