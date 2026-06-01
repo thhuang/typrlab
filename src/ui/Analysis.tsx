@@ -46,7 +46,7 @@ export function Analysis({
   const head = (
     <div className="pagehead">
       <div>
-        <h1>Your progress</h1>
+        <h2 className="dash-title">Your progress</h2>
         <p>
           Where you&rsquo;ve improved, what&rsquo;s still slow, and how consistent you&rsquo;ve
           been.
@@ -133,7 +133,7 @@ export function Analysis({
       {/* Speed over time */}
       <section className="panel">
         <div className="ph">
-          <h2>Typing speed over time</h2>
+          <h3>Typing speed over time</h3>
           <div className="legend">
             <span>
               <i style={{ background: 'var(--accent)' }} />
@@ -161,7 +161,6 @@ export function Analysis({
               values: a.speed.map((p) => p.net),
               color: 'var(--accent)',
               fill: true,
-              markers: true,
             },
           ]}
         />
@@ -171,7 +170,7 @@ export function Analysis({
       <section className="grid2">
         <div className="panel">
           <div className="ph">
-            <h2>Accuracy</h2>
+            <h3>Accuracy</h3>
             <span className="sub">avg {(sc.recentAccuracy * 100).toFixed(1)}% · last 10</span>
           </div>
           <LineChart
@@ -180,21 +179,19 @@ export function Analysis({
             max={100}
             unit="%"
             markerEvery={6}
-            series={[{ values: a.accuracy, color: 'var(--hit)', fill: true, markers: true }]}
+            series={[{ values: a.accuracy, color: 'var(--hit)', fill: true }]}
           />
         </div>
         <div className="panel">
           <div className="ph">
-            <h2>Consistency</h2>
+            <h3>Consistency</h3>
             <span className="sub">wpm std-dev · lower is steadier</span>
           </div>
           <LineChart
             height={180}
             min={0}
             markerEvery={6}
-            series={[
-              { values: a.consistency, color: 'var(--accent-soft)', fill: true, markers: true },
-            ]}
+            series={[{ values: a.consistency, color: 'var(--accent-soft)', fill: true }]}
           />
         </div>
       </section>
@@ -203,7 +200,7 @@ export function Analysis({
       <section className="grid-keys">
         <div className="panel">
           <div className="ph">
-            <h2>Per-key speed</h2>
+            <h3>Per-key speed</h3>
             <div className="legend">
               <span>
                 <i style={{ background: 'var(--slow-key-color)' }} />
@@ -219,7 +216,11 @@ export function Analysis({
               </span>
             </div>
           </div>
-          <KeyboardHeatmap values={a.keyboard.confidence} />
+          <KeyboardHeatmap
+            values={a.keyboard.confidence}
+            mini={a.keyboard.perKeyWpm}
+            locked={a.keyboard.locked}
+          />
           <p className="note kbnote">
             {a.keyboard.weakest.length
               ? `Weakest keys: ${a.keyboard.weakest.join(' · ')} — these gate your next unlock.`
@@ -228,7 +229,7 @@ export function Analysis({
         </div>
         <div className="panel">
           <div className="ph">
-            <h2>Slowest transitions</h2>
+            <h3>Slowest transitions</h3>
             <span className="sub">bigrams to drill</span>
           </div>
           <table className="dtable">
@@ -268,7 +269,7 @@ export function Analysis({
       <section className="grid2">
         <div className="panel">
           <div className="ph">
-            <h2>Slowest keys</h2>
+            <h3>Slowest keys</h3>
             <span className="sub">avg ms / keystroke</span>
           </div>
           <table className="dtable">
@@ -301,7 +302,7 @@ export function Analysis({
         </div>
         <div className="panel">
           <div className="ph">
-            <h2>Accuracy by key</h2>
+            <h3>Accuracy by key</h3>
             <span className="sub">lowest 5 · % correct</span>
           </div>
           <table className="dtable">
@@ -345,7 +346,7 @@ export function Analysis({
       {/* Practice calendar */}
       <section className="panel">
         <div className="ph">
-          <h2>Practice activity</h2>
+          <h3>Practice activity</h3>
           <div className="callegend">
             Less
             {[0, 1, 2, 3].map((l) => (

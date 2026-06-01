@@ -79,7 +79,7 @@ export function LineChart({
       viewBox={`0 0 ${width} ${height}`}
       preserveAspectRatio="none"
       style={{ height }}
-      role="img"
+      aria-hidden="true"
     >
       {gridY.map((v, t) => (
         <g key={t}>

@@ -93,6 +93,9 @@ export interface Scorecards {
 export function scorecards(history: LessonResult[], included: Set<CodePoint>): Scorecards {
   const last10 = history.slice(-10);
   const prev10 = history.slice(-20, -10);
+  // Only show a delta once a like-for-like 10-vs-10 comparison exists (i.e. ≥20
+  // lessons); below that the "prior 10" window is partial and the % is misleading.
+  const hasPrior = prev10.length === 10;
   const avgLast10 = meanWpm(last10);
   const avgPrev10 = meanWpm(prev10);
   const recentAccuracy = last10.length
@@ -104,10 +107,10 @@ export function scorecards(history: LessonResult[], included: Set<CodePoint>): S
   return {
     bestWpm: history.length ? Math.max(...history.map((r) => wpm(r.speed))) : 0,
     avgLast10,
-    avgDeltaPct: prev10.length && avgPrev10 ? ((avgLast10 - avgPrev10) / avgPrev10) * 100 : null,
+    avgDeltaPct: hasPrior && avgPrev10 ? ((avgLast10 - avgPrev10) / avgPrev10) * 100 : null,
     recentAccuracy,
     accuracyDeltaPct:
-      prev10.length && prevAccuracy ? ((recentAccuracy - prevAccuracy) / prevAccuracy) * 100 : null,
+      hasPrior && prevAccuracy ? ((recentAccuracy - prevAccuracy) / prevAccuracy) * 100 : null,
     totalHours: history.reduce((a, r) => a + r.time, 0) / 3_600_000,
     lessonCount: history.length,
     lettersUnlocked: [...included].filter(isLetter).length,

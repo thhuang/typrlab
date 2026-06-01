@@ -419,7 +419,10 @@ console.log('16) analytics aggregates on a seeded history');
     a.scorecards.lettersUnlocked === 10,
     `lettersUnlocked counts a–z in included (got ${a.scorecards.lettersUnlocked})`,
   );
-  assert((a.scorecards.avgDeltaPct ?? 0) > 0, 'avg last-10 improves vs prior 10 (delta > 0)');
+  assert(
+    a.scorecards.avgDeltaPct === null,
+    'avg delta is null below a full 20-lesson window (13 lessons here)',
+  );
   const last = a.speed[a.speed.length - 1]!;
   assert(
     Math.abs(last.net - last.raw * 0.99) < 0.01,
@@ -454,6 +457,91 @@ console.log('16) analytics aggregates on a seeded history');
   assert(
     Math.round(a.calendar.totalMinutes) === 6,
     `calendar totals datable minutes only (got ${a.calendar.totalMinutes})`,
+  );
+}
+
+console.log(
+  '17) analytics edge cases — streak gaps/grace, short-history deltas, consistency, empty',
+);
+{
+  const DAY = 86_400_000;
+  const NOW = Date.UTC(2026, 0, 20, 12, 0, 0);
+  const inc = new Set('etaoin'.split('').map((c) => c.codePointAt(0)!));
+  const empties = new KeyStatsMap();
+  const ebig = new BigramStatsMap();
+  const mk = (ts: number, speed: number, acc: number): LessonResult => ({
+    timeStamp: ts,
+    layout: 'en',
+    length: 24,
+    time: 30_000,
+    errors: 1,
+    speed,
+    accuracy: acc,
+    complexity: 3,
+    score: 1,
+    histogram: [],
+    bigrams: [],
+  });
+  const run = (history: LessonResult[]) =>
+    analyze({ history, stats: empties, bigrams: ebig, targetSpeed: 300, included: inc, now: NOW });
+
+  // (a) short history (<20): deltas are null (no full prior window).
+  const sa = run(Array.from({ length: 5 }, (_, i) => mk(NOW - (4 - i) * DAY, 200 + i * 20, 0.95)));
+  assert(
+    sa.scorecards.avgDeltaPct === null && sa.scorecards.accuracyDeltaPct === null,
+    'sub-20 history yields null avg/accuracy deltas',
+  );
+
+  // (b) 20 improving lessons: deltas present and positive (incl. accuracy delta).
+  const la = run(
+    Array.from({ length: 20 }, (_, i) => mk(NOW - (19 - i) * DAY, 200 + i * 8, 0.9 + i * 0.004)),
+  );
+  assert(
+    (la.scorecards.avgDeltaPct ?? 0) > 0 && (la.scorecards.accuracyDeltaPct ?? 0) > 0,
+    '20+ improving lessons → positive avg & accuracy deltas',
+  );
+
+  // (c) streak gap: bestStreak (run of 5) > currentStreak (tail of 3).
+  const ga = run([0, 1, 2, 6, 7, 8, 9, 10].map((off) => mk(NOW - off * DAY, 250, 0.95)));
+  assert(
+    ga.calendar.currentStreak === 3,
+    `current streak = unbroken tail (got ${ga.calendar.currentStreak})`,
+  );
+  assert(
+    ga.calendar.bestStreak === 5 && ga.calendar.bestStreak > ga.calendar.currentStreak,
+    `best streak exceeds current across a gap (got best=${ga.calendar.bestStreak})`,
+  );
+
+  // (d) grace: today empty but yesterday active → streak stays alive.
+  const gra = run([1, 2, 3].map((off) => mk(NOW - off * DAY, 250, 0.95)));
+  assert(
+    gra.calendar.currentStreak === 3,
+    `grace keeps the streak alive (got ${gra.calendar.currentStreak})`,
+  );
+
+  // (e) consistency: one point per lesson; steady run < noisy run.
+  const steady = run(Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, 300, 0.97)));
+  const noisy = run(
+    Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, i % 2 ? 200 : 400, 0.97)),
+  );
+  const tail = (xs: number[]) => xs[xs.length - 1]!;
+  assert(steady.consistency.length === 10, 'consistency has one point per lesson');
+  assert(
+    tail(steady.consistency) < tail(noisy.consistency),
+    'steady run has lower wpm std-dev than a noisy one',
+  );
+
+  // (f) empty history: safe, zeroed.
+  let threw = false;
+  let ea: ReturnType<typeof run> | null = null;
+  try {
+    ea = run([]);
+  } catch {
+    threw = true;
+  }
+  assert(
+    !threw && ea!.scorecards.bestWpm === 0 && ea!.calendar.activeDays === 0,
+    'empty history: no throw, zeroed aggregates',
   );
 }
 
