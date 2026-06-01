@@ -1073,6 +1073,33 @@
   color: var(--text);
 }
 
+/* Stacked row (label above a full-width control, e.g. the custom-text box). */
+.srow-block {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.settings-textarea {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.settings-textarea:focus {
+  outline: none;
+  border-color: var(--accent-line);
+}
+.settings-textarea::placeholder {
+  color: var(--muted);
+}
+
 /* Switch */
 .switch {
   position: relative;
