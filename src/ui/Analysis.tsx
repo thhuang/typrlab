@@ -73,15 +73,21 @@ export function Analysis({ stats, bigrams, settings, history, onExport, onImport
     .sort((a, b) => a.conf - b.conf)
     .slice(0, 8);
 
-  // Per-key learning heatmap: replay history, snapshotting each key's live
-  // confidence after every lesson.
+  // Per-key learning heatmap: replay history, and for each lesson snapshot the
+  // running confidence of ONLY the keys actually typed in that lesson — so a
+  // column reflects that lesson's content. (A key practiced in a single
+  // words/numbers/custom line shouldn't read as "mastered" across every later
+  // lesson; its cell lights up only on the lessons where it actually appeared.)
   const replay = new KeyStatsMap();
   const columns: Array<Map<number, number>> = [];
   for (const r of history) {
     replay.ingestResult(r);
+    const typedThisLesson = new Set<number>();
+    for (const h of r.histogram) if (h.hitCount > 0) typedThisLesson.add(h.codePoint);
     const snap = new Map<number, number>();
     for (const ch of FREQ_ORDER) {
       const cp = ch.codePointAt(0)!;
+      if (!typedThisLesson.has(cp)) continue;
       const st = replay.get(cp);
       if (st && st.timeToType !== null) snap.set(cp, replay.confidence(cp, settings.targetSpeed));
     }

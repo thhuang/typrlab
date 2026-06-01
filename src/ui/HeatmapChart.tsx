@@ -1,6 +1,6 @@
 // Per-key learning heatmap: one row per letter, one cell per lesson, colored by
-// that key's confidence at that point in history (red = slow, green = at target).
-// A null cell means the key had no data yet at that lesson.
+// that key's running confidence (red = slow, green = at target). A cell is shown
+// only for lessons where the key was actually typed; it's empty (null) otherwise.
 import { confidenceColor } from './color';
 
 export interface HeatRow {
