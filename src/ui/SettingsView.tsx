@@ -32,6 +32,25 @@ const CURSORS: Array<{ id: Settings['cursorStyle']; label: string }> = [
   { id: 'block', label: 'Block' },
 ];
 
+// Letter-introduction order: a learning-path preference, not a promised speed gain.
+const KEY_ORDERS: Array<{ id: Settings['keyOrder']; label: string; desc: string }> = [
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    desc: 'Frequency-driven but balanced across both hands to ease early lessons. Recommended.',
+  },
+  {
+    id: 'frequency',
+    label: 'Frequency',
+    desc: 'Unlock the most common letters first (e, t, a…). Best if you already touch-type.',
+  },
+  {
+    id: 'home-row',
+    label: 'Home row',
+    desc: 'Start on the home row and expand by row — the classic touch-typing path. Best for beginners.',
+  },
+];
+
 type GroupProps = { settings: Settings; update: Props['update'] };
 
 export function SettingsView({ settings, update, onClear }: Props) {
@@ -109,6 +128,25 @@ function PracticeGroup({ settings, update }: GroupProps) {
             onChange={(e) => update({ targetSpeed: Number(e.target.value) })}
           />
           <span className="rangeval">{Math.round(settings.targetSpeed / 5)} wpm</span>
+        </div>
+      </div>
+
+      <div className="srow">
+        <div className="slabel">
+          <span className="sname">Key introduction order</span>
+          <span className="sdesc">{KEY_ORDERS.find((k) => k.id === settings.keyOrder)?.desc}</span>
+        </div>
+        <div className="sctrl segmented">
+          {KEY_ORDERS.map((k) => (
+            <button
+              key={k.id}
+              type="button"
+              className={`seg${settings.keyOrder === k.id ? ' active' : ''}`}
+              onClick={() => update({ keyOrder: k.id })}
+            >
+              {k.label}
+            </button>
+          ))}
         </div>
       </div>
 

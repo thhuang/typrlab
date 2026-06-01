@@ -33,8 +33,12 @@ npm run build        # production build
 
 ### Adaptive practice
 
-- Guided lessons over a dynamically expanding letter set (starts with the most
-  common letters and grows as you improve).
+- Guided lessons over a dynamically expanding letter set (starts with a small core
+  set and grows as you improve).
+- **Configurable key-introduction order** — **Balanced** (default; frequency-driven
+  but alternated across hands), **Frequency**, or **Home row** (the classic
+  touch-typing path). A learning-path preference, not a speed claim; there's no
+  proven-optimal order (rationale in `src/core/keyOrder.ts`).
 - Stop-on-error typing with precise per-keystroke timing and outlier rejection.
 - **Accuracy-aware unlocking** — a key must be typed fast _and_ accurately before
   it counts toward unlocking the next letter.

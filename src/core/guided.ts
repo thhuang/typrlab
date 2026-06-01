@@ -1,5 +1,6 @@
 // The adaptive engine. Implements keybr's GUIDED mode:
-//  - letters are ordered by language frequency
+//  - letters are introduced in a configurable order (see keyOrder.ts); only the
+//    sequence varies — the gate below is unchanged
 //  - the active set starts at MIN_SIZE and grows one letter at a time, gated on
 //    every included key reaching confidence >= 1 (bestConfidence by default)
 //  - each lesson focuses the single weakest included key, which the text
@@ -9,9 +10,8 @@ import { PhoneticModel, type Filter } from './phonetic';
 import { KeyStatsMap } from './keyStats';
 import { BigramStatsMap } from './bigramStats';
 import type { Settings } from './settings';
+import { orderedLetters, type KeyOrder } from './keyOrder';
 
-// English letters ordered by descending frequency (keybr orders per language).
-const FREQ_ORDER = 'etaoinshrdlcumwfgypbvkjxqz';
 const MIN_SIZE = 6;
 const LINE_MIN_CHARS = 45;
 const NATURAL_WORD_THRESHOLD = 15;
@@ -32,13 +32,19 @@ export interface LessonPlan {
 }
 
 export class GuidedLesson {
-  private readonly letters: CodePoint[];
+  // Letter-introduction sequence per policy, cached once (see keyOrder.ts). The
+  // active set is sliced from the array for the current settings.keyOrder.
+  private readonly orders: Record<KeyOrder, CodePoint[]>;
 
   constructor(
     private readonly model: PhoneticModel,
     private readonly words: string[],
   ) {
-    this.letters = Array.from(FREQ_ORDER).map((c) => c.codePointAt(0)!);
+    this.orders = {
+      frequency: orderedLetters('frequency'),
+      'home-row': orderedLetters('home-row'),
+      balanced: orderedLetters('balanced'),
+    };
   }
 
   private chosenConfidence(cp: CodePoint, stats: KeyStatsMap, s: Settings): number {
@@ -47,19 +53,26 @@ export class GuidedLesson {
     return stats.effectiveConfidence(cp, s.targetSpeed, !s.recoverKeys, s.accuracyAware);
   }
 
-  /** The set of letters active in the current lesson. */
+  /** The active key-introduction order, with a defensive fallback for an
+   *  out-of-enum persisted keyOrder (loadSettings spreads unvalidated JSON). */
+  private order(s: Settings): CodePoint[] {
+    return this.orders[s.keyOrder] ?? this.orders.balanced;
+  }
+
+  /** The set of letters active in the current lesson (in the active key order). */
   computeIncluded(stats: KeyStatsMap, s: Settings): CodePoint[] {
-    const total = this.letters.length;
+    const letters = this.order(s);
+    const total = letters.length;
     const forced = MIN_SIZE + Math.round((total - MIN_SIZE) * clamp01(s.alphabetSize));
     let n = Math.max(MIN_SIZE, forced);
     while (n < total) {
-      const allConfident = this.letters
+      const allConfident = letters
         .slice(0, n)
         .every((cp) => this.chosenConfidence(cp, stats, s) >= 1);
       if (allConfident) n += 1;
       else break;
     }
-    return this.letters.slice(0, n);
+    return letters.slice(0, n);
   }
 
   /** The single weakest (lowest-confidence, < 1) included key, or null. */
@@ -106,8 +119,9 @@ export class GuidedLesson {
     const text = this.generateLine(filter, s, rng);
 
     // Unlock progress, by the same gate computeIncluded uses: the next letter in
-    // frequency order, and how many active keys are still below target confidence.
-    const nextKey = included.length < this.letters.length ? this.letters[included.length]! : null;
+    // the active key order, and how many active keys are still below target.
+    const letters = this.order(s);
+    const nextKey = included.length < letters.length ? letters[included.length]! : null;
     let remaining = 0;
     for (const cp of included) {
       if (this.chosenConfidence(cp, stats, s) < 1) remaining += 1;

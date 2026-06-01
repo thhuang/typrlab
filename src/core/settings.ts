@@ -1,11 +1,18 @@
 // User settings. Defaults mirror keybr's verified defaults so behaviour
 // matches the reference unless deliberately changed.
+import type { KeyOrder } from './keyOrder';
 
 export interface Settings {
   /** Target typing speed in CPM. keybr default 175 CPM (= 35 WPM). */
   targetSpeed: number;
   /** 0..1 "unlock more letters" slider; 0 = pure confidence-gated growth. */
   alphabetSize: number;
+  /**
+   * Order in which new letters are introduced during guided practice. The unlock
+   * gate (master a few before advancing) is unchanged — only the sequence varies.
+   * See src/core/keyOrder.ts.
+   */
+  keyOrder: KeyOrder;
   /**
    * false (keybr default): unlock gate uses each key's BEST historical
    * confidence (one good run banks a key). true: uses live confidence,
@@ -47,6 +54,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   targetSpeed: 175,
   alphabetSize: 0,
+  keyOrder: 'balanced',
   recoverKeys: false,
   naturalWords: true,
   dailyGoalMinutes: 30,
