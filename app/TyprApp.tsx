@@ -111,9 +111,9 @@ export default function TyprApp() {
   return (
     <div className="app">
       <header className="topbar">
-        <h1 className="sr-only">typr — adaptive typing trainer</h1>
+        <h1 className="sr-only">typrlab — adaptive typing trainer</h1>
         <div className="brand">
-          typr<span className="caret">_</span>
+          typrlab<span className="caret">_</span>
           <span className="tag">{settings.contentMode}</span>
         </div>
         <div className="header-right">
