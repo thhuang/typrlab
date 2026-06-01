@@ -25,7 +25,7 @@ self-contained package below. Expect more packages over time.
 | `ARCHITECTURE.md` | **Read first.** The current codebase map (Next.js App Router), the token system, styling/theming/font conventions, and dev-preview hooks. Every package assumes this. |
 | `shared/typr-tokens.css` | Portable copy of the generated theme tokens — the exact `:root` + `[data-theme]` blocks the product ships. |
 | `shared/Color & Theme System.html` | Interactive token reference (all 10 themes, live switcher) for visual grounding. |
-| `practice_settings_redesign/` | **Package 01 — ready.** Refreshed Practice + Settings redesign (3 practice directions, 2 settings directions) with Next.js-specific integration steps. |
+| `practice_settings_redesign/` | **Package 01 — shipped.** Refreshed Practice + Settings redesign (3 practice directions, 2 settings directions) with Next.js-specific integration steps. |
 
 ## Packages & status
 
@@ -33,6 +33,7 @@ self-contained package below. Expect more packages over time.
 |---|---|---|---|
 | 01 | `practice_settings_redesign` | ✅ Shipped | All five directions live: **Coach** rail + **Two-pane** settings (PR #17), plus the **Zen** focus toggle (#21), **Instrument** layout (#22), and the **Single-column** settings fallback (#24). |
 | 02 | Typography / font shelf | ✅ Shipped | Curated 9-font shelf, ≥3 per category (PR #26); default settled on **Atkinson Hyperlegible** (#26–#28). |
+| — | Post-ship hardening | ✅ Shipped | Adversarial QA review (15 confirmed findings) hardened the shipped packages: accessibility on Settings / Coach rail / nav (`role="group"`, `aria-pressed`, `aria-current`, a visually-hidden `<h1>`, heading promotion), theme-token fixes for affordances that vanished on the light palettes, content-mode UI consistency (mode-aware Zen eyebrow + brand tag, adaptive-only Target pill), and the font-default fallback (PRs #32–#33). |
 
 ## Conventions for every handoff
 
