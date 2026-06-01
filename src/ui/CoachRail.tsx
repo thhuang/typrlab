@@ -81,7 +81,7 @@ export function CoachRail({ plan, stats, bigrams, settings }: Props) {
           </div>
         </div>
         <p className="coach-note coach-note-center">
-          {bf ? 'Your slowest transition right now.' : 'The key typr is drilling right now.'}
+          {bf ? 'Your slowest transition right now.' : 'The key typrlab is drilling right now.'}
         </p>
       </section>
 

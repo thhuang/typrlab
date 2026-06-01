@@ -56,7 +56,7 @@ export function ZenView({ plan, position, hasError, settings, history, onExit }:
     <div className="zen">
       <header className="zen-top">
         <div className="brand">
-          typr<span className="caret">_</span>
+          typrlab<span className="caret">_</span>
         </div>
         <button type="button" className="zen-exit" onClick={onExit} title="Exit focus (Esc)">
           exit focus
