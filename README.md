@@ -1,16 +1,18 @@
-# typr
+# typrlab
+
+**Live → [typrlab.com](https://typrlab.com)**
 
 An **adaptive typing trainer** that figures out exactly what's slowing you down —
 key by key, _transition by transition_ — and drills it, so practice time goes
 where it actually moves the needle.
 
 For **anyone who types a lot** — students, writers, content creators, developers,
-and other professionals — not just programmers. That's why typr ships polished
+and other professionals — not just programmers. That's why typrlab ships polished
 **light _and_ dark** themes (research shows the best choice depends on your
 environment and eyes), including a warm sepia **Paper** theme for long writing
 sessions.
 
-typr generates practice text on the fly from the letters you've unlocked, weighted
+typrlab generates practice text on the fly from the letters you've unlocked, weighted
 toward your weak spots. It expands your alphabet only when you're both fast **and**
 accurate, tracks per-key and per-transition timing, and shows you an honest,
 actionable picture of what to work on next.
@@ -45,7 +47,7 @@ npm run build        # production build
 - **Bigram-aware targeting** — finds the slowest _transitions_ (digraphs like
   `th`, `er`) hiding inside otherwise-fine per-key averages, and drills them.
 - Phonetic pseudo-words plus a real-word mode.
-- Calm, configurable typing cursor — **box / underline / bar / reverse** — and a
+- Calm, configurable typing cursor — **Box / Underline / Line / Block** — and a
   theme-aware confidence ramp (each theme's own red→green, mixed in OKLCH).
 - **Adjustable text size** (the evidence-backed lever for reading performance) and a
   **typing-font picker** — 9 **self-hosted** fonts (no CDN), three per category:
@@ -55,10 +57,21 @@ npm run build        # production build
   size and personal fit matter more
   (see [`docs/font-research.md`](docs/font-research.md)).
 
+### Content modes
+
+- Practice on what you want: **Adaptive** (the guided stream), **Words** (real
+  words, ungated), **Numbers** (configurable digit groups), or your own pasted
+  **Custom** text. Optional **capitals** and **punctuation** modifiers sprinkle
+  into the adaptive and words streams.
+- **Practice layouts** — **Coach** (a focus rail showing what's being drilled and
+  why), **Instrument** (a dense stat strip), plus a chrome-free **Zen** focus mode
+  (Esc to exit). Per-key stats accumulate across every mode.
+
 ### Analysis
 
 - Learning curve (speed over time) with trend.
-- **Per-key learning heatmap** — every key's confidence over your whole history.
+- **Per-key learning heatmap** — each key's confidence across your whole history,
+  including digits and punctuation, shown on the lessons where you actually typed it.
 - **Keys to drill** — weakest-first table with speed, accuracy, confidence, and a
   projected _lessons-to-target_ estimate per key.
 - **Transitions to drill** — your slowest digraphs.
@@ -68,7 +81,7 @@ npm run build        # production build
 - **10 presets — 6 dark + 4 light** — chosen for a broad audience: dark dev
   favorites (Dracula, Tokyo Night, Nord, Catppuccin Mocha, One Dark) and
   reading/writing-friendly lights (a warm **Paper** sepia, Solarized Light,
-  GitHub Light, Catppuccin Latte), plus typr's default **Amber**.
+  GitHub Light, Catppuccin Latte), plus typrlab's default **Amber**.
 - Palettes are defined as **OKLCH** design tokens (perceptually uniform),
   generated from each project's canonical colors by `scripts/gen-themes.mjs`.
 - Your choice persists locally.
@@ -80,9 +93,10 @@ npm run build        # production build
 ## Tech & structure
 
 Next.js (App Router) · TypeScript (strict) · ESLint + Prettier · **self-hosted
-fonts** (no CDN). The local-first app renders client-side (`ssr: false`), so future
-SEO/marketing pages and sync/payments **API routes drop in as sibling routes** — no
-rewrite needed.
+fonts** (no CDN). Ships as a **fully static export** (`output: 'export'`) — the app
+is client-side and local-first (`ssr: false`), so it hosts on any CDN
+(see [`DEPLOY.md`](DEPLOY.md)). Server features later (SEO pages, sync/payments)
+would drop the export flag and add sibling routes — no app rewrite.
 
 - `app/` — routes (`/`, `/analysis`, `/settings`) + shell (layout, no-flash theme script)
 - `src/core/` — framework-agnostic domain: typing engine, per-key & per-transition
@@ -93,7 +107,8 @@ rewrite needed.
 
 ## Roadmap
 
-- Content modes: code, numbers, punctuation, custom text, quotes.
+- More content modes: **code** (with an on-screen number/symbol keyboard) and
+  **quotes** (a public-domain prose corpus).
 - A custom theme builder; optional auto light/dark by time of day.
 - Larger / real phonetic models per language; responsive / mobile polish.
 - Optional accounts + cross-device sync; SEO / marketing pages.
@@ -101,9 +116,9 @@ rewrite needed.
 
 ## Acknowledgements
 
-typr's adaptive approach was informed by studying **keybr.com**
+typrlab's adaptive approach was informed by studying **keybr.com**
 ([source](https://github.com/aradzie/keybr.com), AGPL-3.0) — an excellent
-open-source typing trainer. typr is an independent, from-scratch implementation
+open-source typing trainer. typrlab is an independent, from-scratch implementation
 with its own design and improvements; no keybr code was used. Detailed study
 notes: [`docs/keybr-explainer.md`](docs/keybr-explainer.md). See
 [`docs/ATTRIBUTION.md`](docs/ATTRIBUTION.md).
