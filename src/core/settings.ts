@@ -62,6 +62,20 @@ export interface Settings {
   punctuationPct: number;
 }
 
+/**
+ * First-run theme: the brand's **Amber** in OS dark mode, **Paper** in OS light —
+ * scheme-aware so the default UI matches the amber icon out of the box. A saved
+ * theme always wins (this only fills the default). SSR-safe: returns 'paper' when
+ * there's no window (e.g. static prerender), then re-resolves in the browser.
+ */
+export function defaultTheme(): string {
+  return typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'amber'
+    : 'paper';
+}
+
 export const DEFAULT_SETTINGS: Settings = {
   targetSpeed: 175,
   alphabetSize: 0,
@@ -73,7 +87,7 @@ export const DEFAULT_SETTINGS: Settings = {
   accuracyAware: true,
   bigramTargeting: true,
   layout: 'en',
-  theme: 'paper',
+  theme: defaultTheme(),
   cursorStyle: 'underline',
   font: 'atkinson',
   textSize: 32,

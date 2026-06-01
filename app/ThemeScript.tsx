@@ -4,7 +4,8 @@
 // cleanly via CSS, so any swap is unnoticeable).
 const CODE = `(function(){try{
   var s = JSON.parse(localStorage.getItem('typrlab.settings') || localStorage.getItem('typr.settings') || '{}');
-  document.documentElement.setAttribute('data-theme', s.theme || 'paper');
+  var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', s.theme || (dark ? 'amber' : 'paper'));
   document.documentElement.style.setProperty('--board-size', (s.textSize || 32) + 'px');
 }catch(e){}})();`;
 
