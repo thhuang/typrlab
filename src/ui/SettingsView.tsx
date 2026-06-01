@@ -85,6 +85,7 @@ export function SettingsView({ settings, update, onClear }: Props) {
         {practice}
         {appearance}
         {data}
+        <MadeBy />
       </section>
     );
   }
@@ -113,8 +114,26 @@ export function SettingsView({ settings, update, onClear }: Props) {
         {category === 'practice' && practice}
         {category === 'appearance' && appearance}
         {category === 'data' && data}
+        <MadeBy />
       </div>
     </section>
+  );
+}
+
+// Small, muted attribution at the bottom of Settings — house identity without
+// letting the portfolio mark become the product icon.
+function MadeBy() {
+  return (
+    <a
+      className="madeby"
+      href="https://thhuang.github.io"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- static export, tiny credit icon */}
+      <img src="/madeby-thhuang.png" alt="" width={22} height={22} />
+      <span>Made by thhuang</span>
+    </a>
   );
 }
 

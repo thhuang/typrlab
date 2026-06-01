@@ -2,6 +2,8 @@
 
 **Live → [typrlab.com](https://typrlab.com)**
 
+![typrlab — adaptive typing trainer: the Coach practice view with a per-key heatmap and live coaching rail](docs/screenshots/practice.png)
+
 An **adaptive typing trainer** that figures out exactly what's slowing you down —
 key by key, _transition by transition_ — and drills it, so practice time goes
 where it actually moves the needle.
@@ -69,6 +71,8 @@ npm run build        # production build
 
 A progress **dashboard** answering three questions at a glance — _am I improving?_,
 _what's still slow?_, _have I been consistent?_
+
+![typrlab Analysis dashboard — scorecards, speed/accuracy curves, per-key heatmap, slowest keys and transitions, and a practice calendar](docs/screenshots/analysis.png)
 
 - **Scorecards** — best speed, avg of your last 10 (with trend), accuracy, time
   invested, day streak, and letters unlocked.
