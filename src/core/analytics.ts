@@ -174,7 +174,7 @@ export interface KeyboardSpeed {
   confidence: Map<CodePoint, number>;
   /** code point → current wpm, for the mini key label. */
   perKeyWpm: Map<CodePoint, number>;
-  /** a–z code points NOT in the unlocked set (rendered dim/locked). */
+  /** a–z code points with no typing data yet (rendered dim). */
   locked: Set<CodePoint>;
   /** the 3 weakest unlocked letters (lowest confidence), as chars. */
   weakest: string[];
@@ -191,13 +191,16 @@ export function keyboardSpeed(
   for (let cp = 0x61; cp <= 0x7a; cp++) {
     const s = stats.get(cp);
     if (!s || s.timeToType === null) {
-      if (!included.has(cp)) locked.add(cp);
+      locked.add(cp); // dim: no typing data yet (regardless of unlock state)
       continue;
     }
+    // Any key with data is colored — the heatmap shows every key you've
+    // practiced, not just the adaptively-unlocked ones.
     confidence.set(cp, stats.confidence(cp, targetSpeed));
     perKeyWpm.set(cp, wpm(timeToSpeed(s.timeToType)));
-    if (!included.has(cp)) locked.add(cp);
   }
+  // The weakest-keys note still speaks to the adaptive unlock gate, so it stays
+  // scoped to the unlocked set.
   const weakest = [...confidence.entries()]
     .filter(([cp]) => included.has(cp))
     .sort((a, b) => a[1] - b[1])
@@ -222,20 +225,20 @@ export interface KeyProgress {
 }
 
 /**
- * Each unlocked key's speed trend across the sessions it was typed in —
+ * Each practiced key's speed trend across the sessions it was typed in —
  * computed from REAL history (every lesson's per-key `histogram.timeToType`),
- * not approximated. Sorted WEAKEST FIRST (lowest current confidence).
+ * not approximated. Includes EVERY key you've typed (not just the adaptively
+ * unlocked ones), sorted WEAKEST FIRST (lowest current confidence).
  */
 export function perKeyProgress(
   history: LessonResult[],
   stats: KeyStatsMap,
   targetSpeed: number,
-  included: Set<CodePoint>,
 ): KeyProgress[] {
   const series = new Map<CodePoint, number[]>();
   for (const r of history) {
     for (const h of r.histogram) {
-      if (h.timeToType > 0 && isLetter(h.codePoint) && included.has(h.codePoint)) {
+      if (h.timeToType > 0 && isLetter(h.codePoint)) {
         const arr = series.get(h.codePoint) ?? [];
         arr.push(wpm(timeToSpeed(h.timeToType)));
         series.set(h.codePoint, arr);
@@ -369,7 +372,7 @@ export function analyze(input: AnalyticsInput): Analytics {
     scorecards: scorecards(history, included),
     speed: speedSeries(history),
     accuracy: accuracySeries(history),
-    perKeyProgress: perKeyProgress(history, stats, targetSpeed, included),
+    perKeyProgress: perKeyProgress(history, stats, targetSpeed),
     goalWpm: wpm(targetSpeed),
     keyboard: keyboardSpeed(stats, targetSpeed, included),
     slowestKeys: slowestKeys(stats, targetSpeed),
