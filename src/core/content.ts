@@ -21,7 +21,10 @@ export interface SourceCtx {
   rng: () => number;
 }
 
-const LINE_MIN_CHARS = 45;
+/** Words per practice line, clamped to a sane range. */
+function lessonWords(s: Settings): number {
+  return Math.max(1, Math.min(50, Math.round(s.lessonWords)));
+}
 
 /** A lesson for a non-adaptive mode: text only, no unlock/focus target. */
 function plain(text: string): LessonPlan {
@@ -54,18 +57,17 @@ function applyModifiers(text: string, s: Settings, rng: () => number): string {
 
 // ---- sources ----
 function wordsLesson(s: Settings, rng: () => number): string {
+  const target = lessonWords(s);
   const words: string[] = [];
-  let len = 0;
   let prev = '';
   let tries = 0;
-  while (len < LINE_MIN_CHARS) {
+  while (words.length < target) {
     const w = WORDS[Math.floor(rng() * WORDS.length)]!;
     // Avoid obvious back-to-back repeats, but always make progress (any rng).
     if (w === prev && ++tries < 8) continue;
     tries = 0;
     words.push(w);
     prev = w;
-    len += w.length + 1;
   }
   return applyModifiers(words.join(' '), s, rng);
 }
@@ -85,14 +87,13 @@ function numbersLesson(s: Settings, rng: () => number): string {
 function customLesson(s: Settings, rng: () => number): string {
   const words = s.customText.trim().replace(/\s+/g, ' ').split(' ').filter(Boolean);
   if (words.length === 0) return 'paste your own text in settings to practice it here';
-  // Walk a ~line-length window from a varied start so successive lessons cover the text.
+  // Walk an N-word window from a varied start so successive lessons cover the text
+  // (never more words than the source has).
+  const target = Math.min(lessonWords(s), words.length);
   const start = Math.floor(rng() * words.length);
   const out: string[] = [];
-  let len = 0;
-  for (let i = 0; i < words.length && len < LINE_MIN_CHARS; i++) {
-    const w = words[(start + i) % words.length]!;
-    out.push(w);
-    len += w.length + 1;
+  for (let i = 0; i < target; i++) {
+    out.push(words[(start + i) % words.length]!);
   }
   return out.join(' ');
 }

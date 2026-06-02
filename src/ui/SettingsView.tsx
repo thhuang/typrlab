@@ -5,7 +5,7 @@
 // Reuses the shared controls (.switch, .segmented, .theme-select, range,
 // .danger-btn) and pushes every change through update / onClear.
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { type Settings, DAILY_GOALS } from '../core/settings';
+import { type Settings, DAILY_GOALS, LESSON_WORDS } from '../core/settings';
 import { WORDS } from '../core/words';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { DARK_THEMES, LIGHT_THEMES } from './themes';
@@ -253,6 +253,28 @@ function PracticeGroup({ settings, update }: GroupProps) {
             </div>
           </div>
         </>
+      )}
+
+      {settings.contentMode !== 'numbers' && (
+        <div className="srow">
+          <div className="slabel">
+            <span className="sname">Lesson length</span>
+            <span className="sdesc">Words per practice line.</span>
+          </div>
+          <div className="sctrl segmented" role="group" aria-label="Lesson length (words)">
+            {LESSON_WORDS.map((w) => (
+              <button
+                key={w}
+                type="button"
+                className={`seg${settings.lessonWords === w ? ' active' : ''}`}
+                aria-pressed={settings.lessonWords === w}
+                onClick={() => update({ lessonWords: w })}
+              >
+                {w}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       <div className="srow">
