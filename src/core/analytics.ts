@@ -245,7 +245,14 @@ export function perKeyProgress(
   const out: KeyProgress[] = [];
   for (const [cp, trend] of series) {
     if (trend.length === 0) continue;
-    const currentWpm = Math.round(trend[trend.length - 1]!);
+    // Headline wpm = the SMOOTHED (EMA) current speed — the same basis as `confidence`
+    // and the weakest-first sort, so the big number can't contradict the ordering (a
+    // lucky fast last session shouldn't make a weak key read as fast). The sparkline
+    // still shows the raw per-session journey.
+    const s = stats.get(cp);
+    const smoothed =
+      s && s.timeToType !== null ? wpm(timeToSpeed(s.timeToType)) : trend[trend.length - 1]!;
+    const currentWpm = Math.round(smoothed);
     out.push({
       ch: chr(cp),
       cp,

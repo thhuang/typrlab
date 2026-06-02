@@ -390,10 +390,10 @@ export function Analysis({
             </div>
           </div>
         </div>
-        <Calendar dayMinutes={cal.dayMinutes} goalMinutes={settings.dailyGoalMinutes} />
+        <Calendar dayMinutes={cal.dayMinutes} goalMinutes={cal.dailyGoalMinutes} />
         <p className="note calnote">
           <b>{cal.activeDays} active days</b> · <b className="bg">{cal.goalMetDays}</b> hit your{' '}
-          {settings.dailyGoalMinutes}-min goal · current streak{' '}
+          {cal.dailyGoalMinutes}-min goal · current streak{' '}
           <b className="bg">
             {cal.currentStreak} {cal.currentStreak === 1 ? 'day' : 'days'}
           </b>
@@ -500,8 +500,8 @@ function KeyProgressCard({ k }: { k: KeyProgress }) {
             {k.currentWpm}
             <span className="uu">wpm</span>
           </span>
-          <span className={`kdelta ${k.gainWpm > 0 ? 'up' : 'flat'}`}>
-            {k.gainWpm > 0 ? `▲ ${k.gainWpm}` : '—'}
+          <span className={`kdelta ${k.gainWpm > 0 ? 'up' : k.gainWpm < 0 ? 'down' : 'flat'}`}>
+            {k.gainWpm > 0 ? `▲ ${k.gainWpm}` : k.gainWpm < 0 ? `▼ ${Math.abs(k.gainWpm)}` : '—'}
           </span>
         </span>
       </div>
@@ -620,7 +620,7 @@ function Calendar({
         </div>
         <div className="calgrid">
           {cells.map((c, i) => {
-            const met = !c.future && c.min >= goalMinutes;
+            const met = !c.future && c.min > 0 && c.min >= goalMinutes;
             return (
               <div
                 key={i}

@@ -1466,6 +1466,9 @@
 .kprog .kdelta.up {
   color: var(--hit);
 }
+.kprog .kdelta.down {
+  color: var(--miss);
+}
 .kprog .kdelta.flat {
   color: var(--muted);
 }
