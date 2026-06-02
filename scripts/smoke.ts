@@ -334,6 +334,30 @@ const constRngWords = nextLesson({
   rng: () => 0, // pathological: always picks the same word — must still terminate
 });
 assert(constRngWords.text.length > 0, 'words mode terminates with a constant rng (bounded retry)');
+// Lesson length (words per line) — applies to adaptive / words / custom.
+assert(
+  lessonFor('words', { lessonWords: 5 }).text.split(' ').length === 5,
+  'lesson length: words mode yields exactly N words',
+);
+assert(
+  lessonFor('words', { lessonWords: 15 }).text.split(' ').length === 15,
+  'lesson length: a larger setting yields more words',
+);
+assert(
+  lessonFor('adaptive', { lessonWords: 6 }).text.split(' ').length === 6,
+  'lesson length applies to the adaptive stream',
+);
+assert(
+  lessonFor('custom', {
+    customText: 'alpha beta gamma delta epsilon zeta theta',
+    lessonWords: 3,
+  }).text.split(' ').length === 3,
+  'lesson length: custom mode caps to N words',
+);
+assert(
+  lessonFor('custom', { customText: 'one two', lessonWords: 10 }).text.split(' ').length === 2,
+  'lesson length: custom never exceeds the source word count',
+);
 
 console.log('15) capitalized practice credits the lowercase base key (case-fold)');
 const tiCap = new TextInput('aEe', { stopOnError: true });

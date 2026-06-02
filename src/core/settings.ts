@@ -60,7 +60,12 @@ export interface Settings {
   /** Modifiers for the adaptive/words streams: % of words capitalised / punctuated. */
   capitalsPct: number;
   punctuationPct: number;
+  /** Words per practice line (adaptive / words / custom). Numbers uses its own controls. */
+  lessonWords: number;
 }
+
+/** Lesson-length presets (words per line). */
+export const LESSON_WORDS = [5, 10, 15, 25] as const;
 
 /** Daily practice goal options (minutes) — drives goal-met days + streak. */
 export const DAILY_GOALS = [10, 20, 30, 60] as const;
@@ -101,4 +106,5 @@ export const DEFAULT_SETTINGS: Settings = {
   numberGroupCount: 6,
   capitalsPct: 0,
   punctuationPct: 0,
+  lessonWords: 10,
 };

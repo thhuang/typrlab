@@ -13,7 +13,6 @@ import type { Settings } from './settings';
 import { orderedLetters, type KeyOrder } from './keyOrder';
 
 const MIN_SIZE = 6;
-const LINE_MIN_CHARS = 45;
 const NATURAL_WORD_THRESHOLD = 15;
 
 export interface LessonPlan {
@@ -156,10 +155,10 @@ export class GuidedLesson {
         ? matching[Math.floor(rng() * matching.length)]!
         : real[Math.floor(rng() * real.length)]!;
 
+    const wordTarget = Math.max(1, Math.min(50, Math.round(s.lessonWords)));
     const words: string[] = [];
-    let len = 0;
     let prev = '';
-    while (len < LINE_MIN_CHARS) {
+    while (words.length < wordTarget) {
       let w = useReal ? pickReal() : this.model.nextWord(filter, rng);
       // Avoid obvious back-to-back repeats when the pool allows variety.
       for (let tries = 0; tries < 3 && w === prev; tries++) {
@@ -167,7 +166,6 @@ export class GuidedLesson {
       }
       words.push(w);
       prev = w;
-      len += w.length + 1;
     }
     return words.join(' ');
   }
