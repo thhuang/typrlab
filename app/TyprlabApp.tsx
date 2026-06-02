@@ -256,6 +256,7 @@ export default function TyprlabApp() {
           settings={settings}
           history={history}
           plan={plan}
+          update={updateSettings}
           onExport={exportData}
           onImportClick={() => fileRef.current?.click()}
         />

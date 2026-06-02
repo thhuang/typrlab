@@ -5,7 +5,7 @@
 // Reuses the shared controls (.switch, .segmented, .theme-select, range,
 // .danger-btn) and pushes every change through update / onClear.
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import type { Settings } from '../core/settings';
+import { type Settings, DAILY_GOALS } from '../core/settings';
 import { WORDS } from '../core/words';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { DARK_THEMES, LIGHT_THEMES } from './themes';
@@ -272,6 +272,28 @@ function PracticeGroup({ settings, update }: GroupProps) {
             onChange={(e) => update({ targetSpeed: Number(e.target.value) })}
           />
           <span className="rangeval">{Math.round(settings.targetSpeed / 5)} wpm</span>
+        </div>
+      </div>
+
+      <div className="srow">
+        <div className="slabel">
+          <span className="sname">Daily goal</span>
+          <span className="sdesc">
+            Minutes of practice per day. Sets the goal-met days and streak on the Analysis calendar.
+          </span>
+        </div>
+        <div className="sctrl segmented" role="group" aria-label="Daily practice goal">
+          {DAILY_GOALS.map((g) => (
+            <button
+              key={g}
+              type="button"
+              className={`seg${settings.dailyGoalMinutes === g ? ' active' : ''}`}
+              aria-pressed={settings.dailyGoalMinutes === g}
+              onClick={() => update({ dailyGoalMinutes: g })}
+            >
+              {g}m
+            </button>
+          ))}
         </div>
       </div>
 

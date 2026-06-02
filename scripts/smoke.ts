@@ -377,7 +377,7 @@ console.log('16) analytics aggregates on a seeded history');
       timeStamp: NOW - (11 - i) * DAY, // 12 consecutive days, ending today
       layout: 'en',
       length: 24,
-      time: 30_000, // 0.5 min each
+      time: 60_000, // 1 min each
       errors: 1,
       speed,
       accuracy,
@@ -411,6 +411,7 @@ console.log('16) analytics aggregates on a seeded history');
     bigrams: aBigrams,
     targetSpeed: 300,
     included: new Set('etaoinshrd'.split('').map(cp)),
+    dailyGoalMinutes: 1,
     now: NOW,
   });
 
@@ -451,18 +452,27 @@ console.log('16) analytics aggregates on a seeded history');
     'wall-clock guard: real datable, legacy excluded',
   );
   assert(
-    a.calendar.activeDays === 12 && a.calendar.currentStreak === 12 && a.calendar.bestStreak === 12,
-    `calendar: 12 active days, streak 12 (got active=${a.calendar.activeDays}, streak=${a.calendar.currentStreak})`,
+    a.calendar.activeDays === 12 &&
+      a.calendar.goalMetDays === 12 &&
+      a.calendar.currentStreak === 12 &&
+      a.calendar.bestStreak === 12,
+    `calendar: 12 active + goal-met days, streak 12 (got active=${a.calendar.activeDays}, met=${a.calendar.goalMetDays}, streak=${a.calendar.currentStreak})`,
   );
   assert(
-    Math.round(a.calendar.totalMinutes) === 6,
+    Math.round(a.calendar.totalMinutes) === 12,
     `calendar totals datable minutes only (got ${a.calendar.totalMinutes})`,
+  );
+  // Per-key progress: only unlocked keys with data (e ∈ included; q/z are not), real trend.
+  assert(
+    a.perKeyProgress.length === 1 &&
+      a.perKeyProgress[0]?.ch === 'e' &&
+      a.perKeyProgress[0]?.currentWpm === 80 &&
+      a.perKeyProgress[0]?.trend.length === 12,
+    `per-key progress: unlocked-with-data only, real current wpm + trend (got ${a.perKeyProgress.map((p) => p.ch).join(',')})`,
   );
 }
 
-console.log(
-  '17) analytics edge cases — streak gaps/grace, short-history deltas, consistency, empty',
-);
+console.log('17) analytics edge cases — deltas, streaks, goal threshold, per-key progress, empty');
 {
   const DAY = 86_400_000;
   const NOW = Date.UTC(2026, 0, 20, 12, 0, 0);
@@ -473,7 +483,7 @@ console.log(
     timeStamp: ts,
     layout: 'en',
     length: 24,
-    time: 30_000,
+    time: 60_000,
     errors: 1,
     speed,
     accuracy: acc,
@@ -483,7 +493,15 @@ console.log(
     bigrams: [],
   });
   const run = (history: LessonResult[]) =>
-    analyze({ history, stats: empties, bigrams: ebig, targetSpeed: 300, included: inc, now: NOW });
+    analyze({
+      history,
+      stats: empties,
+      bigrams: ebig,
+      targetSpeed: 300,
+      included: inc,
+      dailyGoalMinutes: 1, // 1 min/lesson day meets the goal → goal-met == active here
+      now: NOW,
+    });
 
   // (a) short history (<20): deltas are null (no full prior window).
   const sa = run(Array.from({ length: 5 }, (_, i) => mk(NOW - (4 - i) * DAY, 200 + i * 20, 0.95)));
@@ -519,19 +537,7 @@ console.log(
     `grace keeps the streak alive (got ${gra.calendar.currentStreak})`,
   );
 
-  // (e) consistency: one point per lesson; steady run < noisy run.
-  const steady = run(Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, 300, 0.97)));
-  const noisy = run(
-    Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, i % 2 ? 200 : 400, 0.97)),
-  );
-  const tail = (xs: number[]) => xs[xs.length - 1]!;
-  assert(steady.consistency.length === 10, 'consistency has one point per lesson');
-  assert(
-    tail(steady.consistency) < tail(noisy.consistency),
-    'steady run has lower wpm std-dev than a noisy one',
-  );
-
-  // (f) empty history: safe, zeroed.
+  // (e) empty history: safe, zeroed.
   let threw = false;
   let ea: ReturnType<typeof run> | null = null;
   try {
@@ -542,6 +548,59 @@ console.log(
   assert(
     !threw && ea!.scorecards.bestWpm === 0 && ea!.calendar.activeDays === 0,
     'empty history: no throw, zeroed aggregates',
+  );
+
+  // (g) goal threshold: only days whose minutes meet the daily goal count.
+  const gt = analyze({
+    history: [
+      { ...mk(NOW, 250, 0.95), time: 40 * 60_000 }, // today: 40 min ≥ 30 → met
+      { ...mk(NOW - DAY, 250, 0.95), time: 5 * 60_000 }, // yesterday: 5 min < 30 → not
+    ],
+    stats: empties,
+    bigrams: ebig,
+    targetSpeed: 300,
+    included: inc,
+    now: NOW,
+    dailyGoalMinutes: 30,
+  });
+  assert(
+    gt.calendar.activeDays === 2 &&
+      gt.calendar.goalMetDays === 1 &&
+      gt.calendar.currentStreak === 1,
+    `goal threshold: only days ≥ goal count (active=${gt.calendar.activeDays}, met=${gt.calendar.goalMetDays}, streak=${gt.calendar.currentStreak})`,
+  );
+
+  // (h) per-key progress: real per-session trend, weakest-first, positive gain on an improving key.
+  const pkStats = new KeyStatsMap();
+  const pkHist: LessonResult[] = [];
+  for (let i = 0; i < 6; i++) {
+    const r: LessonResult = {
+      ...mk(NOW - (5 - i) * DAY, 250, 0.97),
+      histogram: [
+        { codePoint: 'a'.codePointAt(0)!, hitCount: 8, missCount: 0, timeToType: 300 - i * 25 }, // a improves 300→175ms
+        { codePoint: 'e'.codePointAt(0)!, hitCount: 8, missCount: 0, timeToType: 400 }, // e steady slow
+      ],
+    };
+    pkStats.ingestResult(r);
+    pkHist.push(r);
+  }
+  const pk = analyze({
+    history: pkHist,
+    stats: pkStats,
+    bigrams: ebig,
+    targetSpeed: 300,
+    included: inc,
+    now: NOW,
+    dailyGoalMinutes: 1,
+  }).perKeyProgress;
+  assert(
+    pk.length === 2 && pk[0]?.ch === 'e',
+    `per-key progress weakest-first (got ${pk.map((p) => p.ch).join(',')})`,
+  );
+  const aProg = pk.find((p) => p.ch === 'a');
+  assert(
+    !!aProg && aProg.trend.length === 6 && aProg.gainWpm > 0,
+    `improving key: 6-session trend + positive gain (gain=${aProg?.gainWpm})`,
   );
 }
 

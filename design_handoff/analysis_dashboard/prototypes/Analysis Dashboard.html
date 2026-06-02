@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>typrlab — Analysis Dashboard</title>
+<link href="https://cdn.jsdelivr.net/fontsource/css/space-grotesk@latest/index.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/fontsource/css/jetbrains-mono@latest/index.css" rel="stylesheet" />
+<link rel="stylesheet" href="typrlab-tokens.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: var(--font-display); color: var(--text); background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(900px 520px at 10% -12%, var(--glow-1), transparent 60%), radial-gradient(900px 560px at 100% -8%, var(--glow-2), transparent 55%);
+    background-attachment: fixed;
+    transition: background-color 240ms ease, color 240ms ease;
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  /* top bar */
+  .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 14px clamp(18px,4vw,40px); background: color-mix(in oklch, var(--bg) 82%, transparent); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .brand { font-size: 21px; font-weight: 700; letter-spacing: -0.5px; display: inline-flex; align-items: baseline; }
+  .brand .c { color: var(--accent); font-family: var(--font-mono); font-weight: 800; }
+  .nav { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 11px; padding: 4px; }
+  .nav button { background: transparent; color: var(--muted); border: 0; border-radius: 8px; padding: 7px 15px; font-family: var(--font-display); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .nav button.active { background: var(--accent); color: var(--on-accent); }
+  .right { display: flex; align-items: center; gap: 10px; }
+  .theme-select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-family: var(--font-display); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+
+  .wrap { max-width: 1160px; margin: 0 auto; padding: clamp(20px,4vw,34px) clamp(18px,4vw,40px) 90px; display: flex; flex-direction: column; gap: 16px; }
+  .pagehead { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 4px; }
+  .pagehead h1 { margin: 0; font-size: clamp(22px,3vw,30px); font-weight: 700; letter-spacing: -0.8px; }
+  .pagehead p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+  .rangetabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .rangetabs button { background: transparent; color: var(--muted); border: 0; border-radius: 7px; padding: 6px 12px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; cursor: pointer; }
+  .rangetabs button.active { background: var(--accent-dim); color: var(--accent); }
+
+  /* KPI scorecards */
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 540px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 15px; display: flex; flex-direction: column; gap: 7px; position: relative; overflow: hidden; }
+  .kpi .kl { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .kpi .kv { font-family: var(--font-mono); font-size: 25px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi .kv .u { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+  .kpi .kd { font-family: var(--font-mono); font-size: 10.5px; display: flex; align-items: center; gap: 4px; }
+  .kpi .kd.up { color: var(--hit); } .kpi .kd.down { color: var(--miss); } .kpi .kd.flat { color: var(--muted); }
+  .kpi.hero { background: linear-gradient(160deg, var(--accent-dim), transparent 70%); border-color: var(--accent-line); }
+  .kpi.hero .kv { color: var(--accent); }
+  .spark { position: absolute; right: 0; bottom: 0; opacity: 0.5; }
+
+  /* panels */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .panel > .ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
+  .panel .ph h2 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.3px; }
+  .panel .ph .sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .legend { display: flex; gap: 14px; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); flex-wrap: wrap; }
+  .legend span { white-space: nowrap; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-keys { display: grid; grid-template-columns: 1.45fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .grid2, .grid-keys { grid-template-columns: 1fr; } }
+
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .axis { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .gl { stroke: var(--line); stroke-width: 1; }
+  .endlabel { font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+
+  /* per-key progress — small multiples */
+  .kprog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(122px, 1fr)); gap: 10px; }
+  .kprog { background: var(--panel-2); border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px 9px; display: flex; flex-direction: column; gap: 8px; }
+  .kprog .ktop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .kprog .kcap { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--on-confidence); }
+  .kprog .kfig { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+  .kprog .kwpm { font-family: var(--font-mono); font-size: 17px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kprog .kwpm .uu { font-size: 9px; color: var(--muted); font-weight: 500; margin-left: 2px; }
+  .kprog .kdelta { font-family: var(--font-mono); font-size: 10px; }
+  .kprog .kdelta.up { color: var(--hit); } .kprog .kdelta.flat { color: var(--muted); }
+  .kprog .kspark { width: 100%; height: 30px; display: block; }
+
+  /* daily goal segmented control */
+  .goalset { display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; }
+  .seg button { background: transparent; color: var(--muted); border: 0; border-radius: 6px; padding: 5px 10px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; cursor: pointer; transition: background 120ms ease, color 120ms ease; }
+  .seg button.active { background: var(--accent); color: var(--on-accent); }
+
+  /* keyboard heatmap */
+  .kb { display: flex; flex-direction: column; gap: 7px; align-items: center; padding: 6px 0; }
+  .kbrow { display: flex; gap: 7px; }
+  .key { width: 42px; height: 44px; display: grid; place-items: center; border-radius: 9px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--on-confidence); border: 1px solid color-mix(in oklch, var(--text) 12%, transparent); position: relative; }
+  .key.lock { color: var(--muted); background: var(--panel-2) !important; border-color: var(--line); opacity: 0.5; }
+  .key .mini { position: absolute; bottom: 2px; right: 4px; font-size: 7px; opacity: 0.8; font-weight: 500; }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12.5px; }
+  th { text-align: left; font-weight: 500; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; padding: 0 0 9px; border-bottom: 1px solid var(--line); }
+  td { padding: 9px 0; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  .kc { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); font-weight: 700; color: var(--text); }
+  .bg { color: var(--accent-soft); }
+  .minitrack { height: 7px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; min-width: 60px; }
+  .minifill { height: 100%; border-radius: 999px; }
+  .tdr { text-align: right; color: var(--muted); }
+
+  /* calendar heatmap */
+  .cal { display: flex; gap: 12px; align-items: flex-start; overflow-x: auto; padding-bottom: 4px; }
+  .calmonths { display: grid; grid-auto-flow: column; gap: 3px; font-family: var(--font-mono); font-size: 9.5px; color: var(--muted); margin-bottom: 4px; }
+  .calgrid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 3px; }
+  .cell { width: 13px; height: 13px; border-radius: 3px; background: var(--panel-2); border: 1px solid color-mix(in oklch, var(--line) 60%, transparent); }
+  .caldays { display: grid; grid-template-rows: repeat(7, 1fr); gap: 3px; font-family: var(--font-mono); font-size: 9px; color: var(--muted); padding-top: 0; }
+  .caldays span { height: 13px; line-height: 13px; }
+  .callegend { display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-left: auto; }
+  .callegend .cell { width: 11px; height: 11px; }
+
+  .note { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  .footnote { text-align: center; color: var(--muted); font-size: 12px; font-family: var(--font-mono); border-top: 1px solid var(--line); padding-top: 14px; margin-top: 4px; }
+  .tag { font-family: var(--font-mono); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); background: var(--accent-dim); border-radius: 999px; padding: 3px 8px; margin-left: 9px; align-self: center; }
+</style>
+</head>
+<body data-theme="amber">
+  <header class="topbar">
+    <div class="brand">typr<span class="c">_</span>lab<span class="tag">analysis</span></div>
+    <nav class="nav"><button>Practice</button><button class="active">Analysis</button><button>Settings</button></nav>
+    <div class="right">
+      <select class="theme-select" id="themeSelect" aria-label="Theme"></select>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="pagehead">
+      <div>
+        <h1>Your progress</h1>
+        <p>Where you've improved, what's still slow, and how consistent you've been.</p>
+      </div>
+      <div class="rangetabs" id="rangetabs"><button>Last 10</button><button class="active">Last 30</button><button>All time</button></div>
+    </div>
+
+    <!-- KPI scorecards -->
+    <section class="kpis" id="kpis"></section>
+
+    <!-- Speed over time (the learning curve) -->
+    <section class="panel">
+      <div class="ph">
+        <h2>Typing speed over time</h2>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>net wpm</span>
+          <span><i style="background:var(--muted)"></i>raw wpm</span>
+          <span><i style="background:var(--hit)"></i>goal 75</span>
+        </div>
+      </div>
+      <div id="speedChart"></div>
+    </section>
+
+    <!-- Per-key progress over time (small multiples — one card per key) -->
+    <section class="panel">
+      <div class="ph">
+        <h2>Per-key progress</h2>
+        <span class="sub">each key's speed trend · weakest first</span>
+      </div>
+      <div class="kprog-grid" id="keyProgGrid"></div>
+      <p class="note" id="keyProgNote" style="margin:14px 0 0"></p>
+    </section>
+
+    <!-- Accuracy -->
+    <section class="panel">
+      <div class="ph"><h2>Accuracy over time</h2><span class="sub">avg 96.8% · last 30</span></div>
+      <div id="accChart"></div>
+    </section>
+
+    <!-- Per-key mastery -->
+    <section class="grid-keys">
+      <div class="panel">
+        <div class="ph">
+          <h2>Per-key speed</h2>
+          <div class="legend"><span><i style="background:var(--slow-key-color)"></i>slow</span><span><i style="background:var(--fast-key-color)"></i>fast</span><span><i style="background:var(--panel-2);border:1px solid var(--line)"></i>locked</span></div>
+        </div>
+        <div class="kb" id="kb"></div>
+        <p class="note" id="kbnote" style="text-align:center;margin:10px 0 0"></p>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>Slowest transitions</h2><span class="sub">bigrams to drill</span></div>
+        <table id="bigramTable"></table>
+      </div>
+    </section>
+
+    <!-- Slowest / fastest keys + word stats -->
+    <section class="grid2">
+      <div class="panel">
+        <div class="ph"><h2>Slowest keys</h2><span class="sub">avg ms / keystroke</span></div>
+        <table id="slowTable"></table>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>Accuracy by key</h2><span class="sub">lowest 5 · % correct</span></div>
+        <table id="missTable"></table>
+      </div>
+    </section>
+
+    <!-- Activity calendar -->
+    <section class="panel">
+      <div class="ph">
+        <h2>Practice activity</h2>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <label class="goalset">Daily goal
+            <span class="seg" id="goalSeg"></span>
+          </label>
+          <div class="callegend">Less <span class="cell" id="lg0"></span><span class="cell" id="lg1"></span><span class="cell" id="lg2"></span><span class="cell" id="lg3"></span> More</div>
+        </div>
+      </div>
+      <div class="cal">
+        <div class="caldays"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div>
+        <div>
+          <div class="calmonths" id="calmonths"></div>
+          <div class="calgrid" id="calgrid"></div>
+        </div>
+      </div>
+      <p class="note" id="calnote" style="margin:12px 0 0"></p>
+    </section>
+
+    <p class="footnote">Proposed Analysis dashboard · all figures are mock data · panels map to engine data already exposed by useTypingSession (history, stats, bigrams)</p>
+  </main>
+
+<script>
+  // ---------- mock data ----------
+  function rng(seed){ return ()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }; }
+  const rand = rng(42);
+  const N = 30, GOAL = 75;
+  const sessions = [];
+  let base = 47;
+  for (let i=0;i<N;i++){
+    base += 0.7 + (rand()-0.4)*2.2;               // upward drift + noise
+    const net = Math.max(30, base + (rand()-0.5)*4);
+    const raw = net + 4 + rand()*6;
+    const acc = Math.min(99.5, 92 + (i/N)*5 + (rand()-0.5)*2.5);
+    sessions.push({ i, net:+net.toFixed(1), raw:+raw.toFixed(1), acc:+acc.toFixed(1) });
+  }
+  const nets = sessions.map(s=>s.net);
+  const best = Math.max(...nets), avg10 = nets.slice(-10).reduce((a,b)=>a+b)/10;
+  const avgPrev10 = nets.slice(-20,-10).reduce((a,b)=>a+b)/10;
+
+  const confBg = (c)=>`color-mix(in oklch, var(--fast-key-color) ${Math.round(c*100)}%, var(--slow-key-color))`;
+  const KEYS = { q:0.34,w:0.62,e:0.93,r:0.71,t:0.40,y:0.58,u:0.80,i:0.86,o:0.95,p:0.50, a:0.90,s:0.83,d:0.77,f:0.88,g:0.66,h:0.74,j:null,k:null,l:0.60, z:0.45,x:0.55,c:0.70,v:0.52,b:0.61,n:0.84,m:0.68 };
+  const BIGRAMS = [['t','h',0.36],['e','r',0.44],['i','n',0.49],['o','u',0.53],['s','t',0.58]];
+  const SLOW = [['q',312],['z',298],['x',271],['p',254],['v',242]];
+  const MISS = [['t',88],['q',90],['b',92],['n',93],['r',94]];
+
+  // ---------- KPIs ----------
+  const dpct = ((avg10-avgPrev10)/avgPrev10*100);
+  const kpis = [
+    { l:'Best speed', v:best.toFixed(0), u:'wpm', d:'all-time', dir:'flat', hero:true, spark:true },
+    { l:'Avg (last 10)', v:avg10.toFixed(0), u:'wpm', d:(dpct>=0?'+':'')+dpct.toFixed(1)+'%', dir:dpct>=0?'up':'down' },
+    { l:'Accuracy', v:'96.8', u:'%', d:'+0.9%', dir:'up' },
+    { l:'Time invested', v:'14.2', u:'h', d:'146 lessons', dir:'flat' },
+    { l:'Day streak', v:'9', u:'days', d:'best 17', dir:'flat' },
+    { l:'Letters', v:'18', u:'/26', d:'2 to unlock k', dir:'flat' },
+  ];
+  function sparkline(){
+    const w=70,h=34, vals=nets.slice(-12), mn=Math.min(...vals), mx=Math.max(...vals);
+    const pts=vals.map((v,i)=>`${(i/(vals.length-1)*w).toFixed(1)},${(h-((v-mn)/(mx-mn||1))*h).toFixed(1)}`).join(' ');
+    return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" opacity="0.6"/></svg>`;
+  }
+  document.getElementById('kpis').innerHTML = kpis.map(k=>`
+    <div class="kpi ${k.hero?'hero':''}">
+      <span class="kl">${k.l}</span>
+      <span class="kv">${k.v}<span class="u">${k.u}</span></span>
+      <span class="kd ${k.dir}">${k.dir==='up'?'▲':k.dir==='down'?'▼':''} ${k.d}</span>
+      ${k.spark?sparkline():''}
+    </div>`).join('');
+
+  // ---------- line chart helper ----------
+  function lineChart(el, series, opts){
+    const W=opts.w||1080, H=opts.h||230, P={l:38,r:opts.padRight||14,t:12,b:24};
+    const iw=W-P.l-P.r, ih=H-P.t-P.b;
+    const all=series.flatMap(s=>s.vals);
+    let mn=opts.min!=null?opts.min:Math.min(...all), mx=opts.max!=null?opts.max:Math.max(...all);
+    const pad=(mx-mn)*0.12; mn-=pad; mx+=pad;
+    const X=i=>P.l+(i/(series[0].vals.length-1))*iw;
+    const Y=v=>P.t+ih-((v-mn)/(mx-mn))*ih;
+    let g='';
+    const ticks=opts.ticks||4;
+    for(let t=0;t<=ticks;t++){ const v=mn+(mx-mn)*t/ticks; const y=Y(v); g+=`<line class="gl" x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}"/><text class="axis" x="${P.l-7}" y="${(y+3).toFixed(1)}" text-anchor="end">${v.toFixed(0)}</text>`; }
+    if(opts.goal!=null){ const y=Y(opts.goal); g+=`<line x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}" stroke="var(--hit)" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.7"/>`; }
+    let paths='';
+    series.forEach(s=>{
+      const pts=s.vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+      if(s.fill){ paths+=`<polygon points="${X(0)},${P.t+ih} ${pts} ${X(s.vals.length-1)},${P.t+ih}" fill="${s.color}" opacity="0.12"/>`; }
+      paths+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.w||2.5}" stroke-linejoin="round" stroke-linecap="round" ${s.dash?`stroke-dasharray="${s.dash}"`:''} opacity="${s.op||1}"/>`;
+      if(s.dots){ s.vals.forEach((v,i)=>{ if(i%opts.dotEvery===0||i===s.vals.length-1) paths+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.5" fill="${s.color}"/>`; }); }
+    });
+    // x labels
+    let xl='';
+    const xlabels=opts.xlabels||[];
+    xlabels.forEach(([i,t])=>{ xl+=`<text class="axis" x="${X(i).toFixed(1)}" y="${H-6}" text-anchor="middle">${t}</text>`; });
+    // end labels (for highlighted series)
+    let endl='';
+    series.forEach(s=>{ if(s.endLabel){ const i=s.vals.length-1; endl+=`<text class="endlabel" x="${(X(i)+6).toFixed(1)}" y="${(Y(s.vals[i])+4).toFixed(1)}" fill="${s.color}">${s.endLabel}</text>`; } });
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}${paths}${xl}${endl}</svg>`;
+  }
+
+  lineChart(document.getElementById('speedChart'), [
+    { vals: sessions.map(s=>s.raw), color:'var(--muted)', w:1.8, op:0.55 },
+    { vals: nets, color:'var(--accent)', fill:true, dots:true },
+  ], { goal:GOAL, dotEvery:5, h:240, xlabels:[[0,'30 ago'],[14,'15 ago'],[29,'now']] });
+
+  lineChart(document.getElementById('accChart'), [
+    { vals: sessions.map(s=>s.acc), color:'var(--hit)', fill:true, dots:true },
+  ], { min:90, max:100, ticks:4, dotEvery:6, h:180, xlabels:[[0,'30 ago'],[29,'now']] });
+
+  // per-key progress — one small card per key with its own trend sparkline (weakest first)
+  const unlocked = Object.entries(KEYS).filter(([k,c])=>c!=null).sort((a,b)=>a[1]-b[1]);
+  function keySpark(vals, color){
+    const w=110,h=30,p=3, mn=Math.min(...vals), mx=Math.max(...vals);
+    const X=i=>p+(i/(vals.length-1))*(w-2*p);
+    const Y=v=>p+(h-2*p)-((v-mn)/(mx-mn||1))*(h-2*p);
+    const pts=vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const area=`${X(0)},${h-p} ${pts} ${X(vals.length-1)},${h-p}`;
+    return `<svg class="kspark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polygon points="${area}" fill="${color}" opacity="0.12"/><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+  }
+  document.getElementById('keyProgGrid').innerHTML = unlocked.map(([k,c])=>{
+    const seed=rng(k.charCodeAt(0)*7+3);
+    const startWpm=30+c*18, endWpm=35+c*55;
+    const vals=sessions.map((s,i)=>{ const t=i/(N-1), ease=t*t*(3-2*t); return +(startWpm+(endWpm-startWpm)*ease+(seed()-0.5)*3).toFixed(1); });
+    const cur=Math.round(vals[vals.length-1]), gain=cur-Math.round(vals[0]);
+    const col=confBg(c);
+    return `<div class="kprog">
+      <div class="ktop">
+        <span class="kcap" style="background:${col}">${k}</span>
+        <span class="kfig">
+          <span class="kwpm">${cur}<span class="uu">wpm</span></span>
+          <span class="kdelta ${gain>0?'up':'flat'}">${gain>0?'▲ '+gain:'—'}</span>
+        </span>
+      </div>
+      ${keySpark(vals, col)}
+    </div>`;
+  }).join('');
+  const weakest3=unlocked.slice(0,3).map(([k])=>k);
+  document.getElementById('keyProgNote').innerHTML = `Each card is one unlocked key's speed trend across sessions, weakest first. <b style="color:var(--accent-soft)">${weakest3.join(' · ')}</b> are furthest from target — drill these next.`;
+
+  // ---------- keyboard heatmap ----------
+  const ROWS=['qwertyuiop','asdfghjkl','zxcvbnm'];
+  document.getElementById('kb').innerHTML = ROWS.map(r=>`<div class="kbrow">${Array.from(r).map(ch=>{
+    const c=KEYS[ch];
+    if(c==null) return `<div class="key lock">${ch}</div>`;
+    const wpm=Math.round(35+c*55);
+    return `<div class="key" style="background:${confBg(c)}">${ch}<span class="mini">${wpm}</span></div>`;
+  }).join('')}</div>`).join('');
+  document.getElementById('kbnote').innerHTML = 'Weakest keys: <b style="color:var(--accent-soft)">q · t · z</b> — these gate your next unlock.';
+
+  // ---------- tables ----------
+  document.getElementById('bigramTable').innerHTML =
+    '<tr><th>Transition</th><th>Mastery</th><th class="tdr">wpm</th></tr>' +
+    BIGRAMS.map(([a,b,c])=>`<tr><td><span class="kc">${a}</span> <span class="bg">→</span> <span class="kc">${b}</span></td><td><div class="minitrack"><div class="minifill" style="width:${c*100}%;background:${confBg(c)}"></div></div></td><td class="tdr">${Math.round(35+c*55)}</td></tr>`).join('');
+
+  document.getElementById('slowTable').innerHTML =
+    '<tr><th>Key</th><th>Avg</th><th class="tdr">vs target</th></tr>' +
+    SLOW.map(([k,ms])=>`<tr><td><span class="kc">${k}</span></td><td>${ms} ms</td><td class="tdr">+${ms-180} ms</td></tr>`).join('');
+
+  document.getElementById('missTable').innerHTML =
+    '<tr><th>Key</th><th>Accuracy</th><th class="tdr">%</th></tr>' +
+    MISS.map(([k,p])=>`<tr><td><span class="kc">${k}</span></td><td><div class="minitrack"><div class="minifill" style="width:${p}%;background:${p<90?'var(--miss)':'var(--accent)'}"></div></div></td><td class="tdr">${p}%</td></tr>`).join('');
+
+  // ---------- calendar heatmap ----------
+  const WEEKS=26, calData=[];
+  for(let i=0;i<WEEKS*7;i++){ const active=rand(); calData.push(active<0.35?0:active<0.6?rand()*8:active<0.85?8+rand()*12:20+rand()*20); }
+  const calLevel=(m)=> m===0?0 : m<8?1 : m<20?2 : 3;
+  const calColor=(lvl)=> lvl===0?'var(--panel-2)' : `color-mix(in srgb, var(--accent) ${[0,30,62,100][lvl]}%, var(--panel-2))`;
+  document.getElementById('calgrid').innerHTML = calData.map(m=>`<div class="cell" style="background:${calColor(calLevel(m))}"></div>`).join('');
+  // months row (approx)
+  const moNames=['Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  document.getElementById('calmonths').innerHTML = moNames.map(m=>`<span style="grid-column:span 4">${m}</span>`).join('');
+  [0,1,2,3].forEach(l=>{ const e=document.getElementById('lg'+l); if(e) e.style.background=calColor(l); });
+  const activeDays=calData.filter(m=>m>0).length, totalMin=Math.round(calData.reduce((a,b)=>a+b,0));
+
+  // daily goal control (canonical home is Settings; mirrored here for quick adjustment)
+  const GOALS=[10,20,30,60];
+  let dailyGoal=30;
+  try{ const g=parseInt(localStorage.getItem('typrlab-daily-goal')); if(GOALS.includes(g)) dailyGoal=g; }catch(e){}
+  function renderGoal(){
+    document.getElementById('goalSeg').innerHTML = GOALS.map(g=>`<button class="${g===dailyGoal?'active':''}" data-g="${g}">${g}m</button>`).join('');
+    document.querySelectorAll('#goalSeg button').forEach(b=>b.addEventListener('click',()=>{ dailyGoal=+b.dataset.g; try{localStorage.setItem('typrlab-daily-goal',dailyGoal)}catch(e){} renderGoal(); updateGoalNote(); }));
+  }
+  function updateGoalNote(){
+    const metDays = calData.filter(m=>m>=dailyGoal).length;
+    document.getElementById('calnote').innerHTML = `<b style="color:var(--text)">${activeDays} active days</b> in the last 26 weeks · <b style="color:var(--accent-soft)">${metDays}</b> hit your ${dailyGoal}-min goal · current streak <b style="color:var(--accent-soft)">9 days</b>`;
+  }
+  renderGoal(); updateGoalNote();
+
+  // ---------- theme switcher ----------
+  const THEMES=[['amber','Amber','dark'],['one-dark','One Dark','dark'],['dracula','Dracula','dark'],['tokyo-night','Tokyo Night','dark'],['nord','Nord','dark'],['catppuccin-mocha','Catppuccin Mocha','dark'],['paper','Paper (sepia)','light'],['solarized-light','Solarized Light','light'],['github-light','GitHub Light','light'],['catppuccin-latte','Catppuccin Latte','light']];
+  const sel=document.getElementById('themeSelect');
+  const grp=(l,s)=>`<optgroup label="${l}">${THEMES.filter(t=>t[2]===s).map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</optgroup>`;
+  sel.innerHTML=grp('Dark','dark')+grp('Light','light');
+  function apply(id){ document.documentElement.setAttribute('data-theme',id); sel.value=id; try{localStorage.setItem('typrlab-analysis-theme',id)}catch(e){} }
+  sel.addEventListener('change',()=>apply(sel.value));
+  let start='amber'; try{const s=localStorage.getItem('typrlab-analysis-theme'); if(s&&THEMES.some(t=>t[0]===s)) start=s;}catch(e){}
+  apply(start);
+
+  // range tabs (visual only in mock)
+  document.querySelectorAll('#rangetabs button').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('#rangetabs button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }));
+  document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }));
+</script>
+</body>
+</html>

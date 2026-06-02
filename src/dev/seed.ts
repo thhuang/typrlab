@@ -33,46 +33,68 @@ export function seedDemo(): void {
   const letters = 'etaoinshrd'.split('');
   const weak = new Set(['n', 'r']); // these stay slower & sloppier on purpose
   const results: LessonResult[] = [];
-  const N = 40;
-  const stamps = spreadTimestamps(N, 24); // ~3½ weeks of activity
+  const now = Date.now();
+  const DAY = 86_400_000;
+  const DAYS = 18;
+  const GOAL = 10; // demo daily goal (minutes)
+  const gaps = new Set([13, 16]); // days-ago with no practice (calendar texture)
+  let idx = 0;
 
-  for (let i = 0; i < N; i++) {
-    const unlocked = letters.slice(0, Math.min(letters.length, 6 + Math.floor(i / 6)));
-    const histogram: HistogramEntry[] = unlocked.map((ch) => {
-      const base = weak.has(ch) ? 270 : 205;
-      const improve = (weak.has(ch) ? 1.3 : 3.2) * i;
-      const timeToType = Math.round(Math.max(70, base - improve));
-      const missCount = weak.has(ch) ? (i < 26 ? 2 : 1) : i % 7 === 0 ? 1 : 0;
-      return { codePoint: ch.codePointAt(0)!, hitCount: 8, missCount, timeToType };
-    });
-    const length = histogram.reduce((a, h) => a + h.hitCount, 0);
-    const errors = histogram.reduce((a, h) => a + h.missCount, 0);
-    const time = histogram.reduce((a, h) => a + h.hitCount * h.timeToType, 0);
-    const metrics = computeMetrics(length, time, errors, histogram.length);
-    const unlockedSet = new Set(unlocked);
-    const bigrams: BigramEntry[] = BIGRAMS.filter(
-      ([f, t]) => unlockedSet.has(f) && unlockedSet.has(t),
-    ).map(([f, t, base, imp]) => ({
-      from: f.codePointAt(0)!,
-      to: t.codePointAt(0)!,
-      hitCount: 5,
-      timeToType: Math.round(Math.max(70, base - imp * i)),
-    }));
-    results.push({
-      timeStamp: stamps[i]!,
-      layout: 'en',
-      length,
-      time,
-      errors,
-      ...metrics,
-      histogram,
-      bigrams,
-    });
+  // One day at a time, OLDEST first, generating several short (~30–50s) lessons per
+  // day until the day's minutes hit a target — so daily volume (and the goal-met
+  // streak) is realistic. Speed only depends on timeToType, so the larger hitCount
+  // inflates minutes without changing the wpm curve.
+  for (let d = DAYS - 1; d >= 0; d--) {
+    if (gaps.has(d)) continue;
+    const targetMin = d < 12 ? 14 : 5; // recent 12 days clear the 10-min goal; earlier are lighter
+    let dayMin = 0;
+    let perDay = 0;
+    while (dayMin < targetMin && perDay < 40) {
+      const unlocked = letters.slice(0, Math.min(letters.length, 6 + Math.floor(idx / 60)));
+      const histogram: HistogramEntry[] = unlocked.map((ch) => {
+        const base = weak.has(ch) ? 270 : 205;
+        const improve = (weak.has(ch) ? 0.18 : 0.5) * idx; // gentle gain over many lessons
+        const timeToType = Math.round(Math.max(70, base - improve));
+        const missCount = weak.has(ch) ? 1 : idx % 9 === 0 ? 1 : 0;
+        return { codePoint: ch.codePointAt(0)!, hitCount: 40, missCount, timeToType };
+      });
+      const length = histogram.reduce((a, h) => a + h.hitCount, 0);
+      const errors = histogram.reduce((a, h) => a + h.missCount, 0);
+      const time = histogram.reduce((a, h) => a + h.hitCount * h.timeToType, 0);
+      const metrics = computeMetrics(length, time, errors, histogram.length);
+      const unlockedSet = new Set(unlocked);
+      const bigrams: BigramEntry[] = BIGRAMS.filter(
+        ([f, t]) => unlockedSet.has(f) && unlockedSet.has(t),
+      ).map(([f, t, b, imp]) => ({
+        from: f.codePointAt(0)!,
+        to: t.codePointAt(0)!,
+        hitCount: 24,
+        timeToType: Math.round(Math.max(70, b - imp * (idx / 8))),
+      }));
+      const ts = Math.min(now, now - d * DAY + perDay * 90_000); // within the day, never future
+      results.push({
+        timeStamp: ts,
+        layout: 'en',
+        length,
+        time,
+        errors,
+        ...metrics,
+        histogram,
+        bigrams,
+      });
+      dayMin += time / 60_000;
+      perDay += 1;
+      idx += 1;
+    }
   }
 
   localStorage.setItem('typrlab.history', JSON.stringify(results));
-  // Demo with a 60 wpm (300 CPM) target so weak keys show real projections.
-  localStorage.setItem('typrlab.settings', JSON.stringify({ targetSpeed: 300 }));
+  // 60 wpm (300 CPM) target so weak keys show real projections; a 10-min daily goal
+  // the recent days clear, so the calendar shows a live streak.
+  localStorage.setItem(
+    'typrlab.settings',
+    JSON.stringify({ targetSpeed: 300, dailyGoalMinutes: GOAL }),
+  );
 }
 
 // Fully-mastered history: every letter unlocked and comfortably above target.
@@ -90,7 +112,7 @@ export function seedFull(): void {
   for (let i = 0; i < N; i++) {
     const histogram: HistogramEntry[] = letters.map((ch) => ({
       codePoint: ch.codePointAt(0)!,
-      hitCount: 6,
+      hitCount: 200, // long sessions so each day clears the daily goal (calendar streak)
       missCount: 0,
       timeToType: fast,
     }));
@@ -110,5 +132,8 @@ export function seedFull(): void {
   }
 
   localStorage.setItem('typrlab.history', JSON.stringify(results));
-  localStorage.setItem('typrlab.settings', JSON.stringify({ targetSpeed: target }));
+  localStorage.setItem(
+    'typrlab.settings',
+    JSON.stringify({ targetSpeed: target, dailyGoalMinutes: 10 }),
+  );
 }

@@ -62,6 +62,9 @@ export interface Settings {
   punctuationPct: number;
 }
 
+/** Daily practice goal options (minutes) — drives goal-met days + streak. */
+export const DAILY_GOALS = [10, 20, 30, 60] as const;
+
 /**
  * First-run theme: the brand's **Amber** in OS dark mode, **Paper** in OS light —
  * scheme-aware so the default UI matches the amber icon out of the box. A saved
