@@ -30,6 +30,19 @@ export interface LessonPlan {
   nextUnlock: { remaining: number; nextKey: CodePoint | null };
 }
 
+/**
+ * A mode-independent snapshot of adaptive progress, derived from stats alone:
+ * the unlocked-letter set and the next-unlock counter. The Analysis dashboard
+ * reads THIS rather than the current lesson plan — a non-adaptive lesson
+ * (words/numbers/custom) carries an empty `included`, but the user's unlocked
+ * set and per-key data accumulate across every mode, so the per-key panels must
+ * not depend on which mode the user happens to be in.
+ */
+export interface AdaptiveProgress {
+  included: CodePoint[];
+  nextUnlock: LessonPlan['nextUnlock'];
+}
+
 export class GuidedLesson {
   // Letter-introduction sequence per policy, cached once (see keyOrder.ts). The
   // active set is sliced from the array for the current settings.keyOrder.
@@ -74,6 +87,23 @@ export class GuidedLesson {
     return letters.slice(0, n);
   }
 
+  /**
+   * Adaptive progress derived purely from stats (independent of content mode):
+   * the unlocked set plus how far the next unlock is. `plan()` reuses this, and
+   * the Analysis dashboard reads it directly so per-key panels populate in every
+   * mode (the current lesson's plan may carry an empty `included`).
+   */
+  progress(stats: KeyStatsMap, s: Settings): AdaptiveProgress {
+    const included = this.computeIncluded(stats, s);
+    const letters = this.order(s);
+    const nextKey = included.length < letters.length ? letters[included.length]! : null;
+    let remaining = 0;
+    for (const cp of included) {
+      if (this.chosenConfidence(cp, stats, s) < 1) remaining += 1;
+    }
+    return { included, nextUnlock: { remaining, nextKey } };
+  }
+
   /** The single weakest (lowest-confidence, < 1) included key, or null. */
   pickFocus(included: CodePoint[], stats: KeyStatsMap, s: Settings): CodePoint | null {
     let best: CodePoint | null = null;
@@ -94,7 +124,7 @@ export class GuidedLesson {
     rng: () => number = Math.random,
     bigrams?: BigramStatsMap,
   ): LessonPlan {
-    const included = this.computeIncluded(stats, s);
+    const { included, nextUnlock } = this.progress(stats, s);
     const keyFocus = this.pickFocus(included, stats, s);
     const allowed = new Set(included);
 
@@ -117,21 +147,12 @@ export class GuidedLesson {
     const filter: Filter = { allowed, focus: genFocus, boost };
     const text = this.generateLine(filter, s, rng);
 
-    // Unlock progress, by the same gate computeIncluded uses: the next letter in
-    // the active key order, and how many active keys are still below target.
-    const letters = this.order(s);
-    const nextKey = included.length < letters.length ? letters[included.length]! : null;
-    let remaining = 0;
-    for (const cp of included) {
-      if (this.chosenConfidence(cp, stats, s) < 1) remaining += 1;
-    }
-
     return {
       text,
       included,
       focus: keyFocus,
       bigramFocus,
-      nextUnlock: { remaining, nextKey },
+      nextUnlock,
     };
   }
 

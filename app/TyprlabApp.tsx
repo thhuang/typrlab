@@ -35,6 +35,7 @@ export default function TyprlabApp() {
     settings,
     history,
     plan,
+    progress,
     position,
     hasError,
     last,
@@ -255,7 +256,7 @@ export default function TyprlabApp() {
           bigrams={bigrams}
           settings={settings}
           history={history}
-          plan={plan}
+          progress={progress}
           update={updateSettings}
           onExport={exportData}
           onImportClick={() => fileRef.current?.click()}
