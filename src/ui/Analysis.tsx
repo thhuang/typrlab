@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react';
 import type { LessonResult } from '../core/types';
 import { type Settings, DAILY_GOALS } from '../core/settings';
-import type { LessonPlan } from '../core/guided';
+import type { AdaptiveProgress } from '../core/guided';
 import { KeyStatsMap } from '../core/keyStats';
 import { BigramStatsMap } from '../core/bigramStats';
 import { analyze, type KeyProgress } from '../core/analytics';
@@ -18,7 +18,7 @@ interface Props {
   bigrams: BigramStatsMap;
   settings: Settings;
   history: LessonResult[];
-  plan: LessonPlan | null;
+  progress: AdaptiveProgress | null;
   update: (patch: Partial<Settings>) => void;
   onExport: () => void;
   onImportClick: () => void;
@@ -38,12 +38,15 @@ export function Analysis({
   bigrams,
   settings,
   history,
-  plan,
+  progress,
   update,
   onExport,
   onImportClick,
 }: Props) {
-  const included = new Set(plan?.included ?? []);
+  // The unlocked set comes from `progress` (derived from stats), NOT the current
+  // lesson plan — otherwise every per-key panel goes blank in non-adaptive modes,
+  // whose lesson plan carries an empty `included`.
+  const included = new Set(progress?.included ?? []);
   const a = analyze({
     history,
     stats,
@@ -86,7 +89,7 @@ export function Analysis({
 
   const sc = a.scorecards;
   const cal = a.calendar;
-  const next = plan?.nextUnlock;
+  const next = progress?.nextUnlock;
   const lettersSub =
     next && next.nextKey != null
       ? `${next.remaining} to unlock ${chr(next.nextKey)}`

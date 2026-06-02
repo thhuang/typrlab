@@ -7,7 +7,7 @@ import type { Settings } from '@/core/settings';
 import { KeyStatsMap } from '@/core/keyStats';
 import { BigramStatsMap } from '@/core/bigramStats';
 import { PhoneticModel } from '@/core/phonetic';
-import { GuidedLesson, type LessonPlan } from '@/core/guided';
+import { GuidedLesson, type LessonPlan, type AdaptiveProgress } from '@/core/guided';
 import { nextLesson } from '@/core/content';
 import { TextInput } from '@/core/textInput';
 import { isValidResult } from '@/core/result';
@@ -26,6 +26,12 @@ export interface TypingSession {
   settings: Settings;
   history: LessonResult[];
   plan: LessonPlan | null;
+  /**
+   * Mode-independent adaptive progress (unlocked set + next unlock) derived from
+   * the live stats — for the Analysis dashboard. Unlike `plan`, this is NOT
+   * zeroed in non-adaptive content modes, so per-key panels stay populated.
+   */
+  progress: AdaptiveProgress | null;
   position: number;
   hasError: boolean;
   last: LessonResult | null;
@@ -277,10 +283,18 @@ export function useTypingSession(): TypingSession {
     [startNext, rerender],
   );
 
+  // Adaptive progress for the Analysis dashboard, recomputed from the live stats
+  // each render (cheap: ≤26 key lookups). Independent of the active content
+  // mode, so the per-key panels populate even in words/numbers/custom mode.
+  const progress = guidedRef.current
+    ? guidedRef.current.progress(statsRef.current, settings)
+    : null;
+
   return {
     settings,
     history,
     plan,
+    progress,
     position,
     hasError,
     last,

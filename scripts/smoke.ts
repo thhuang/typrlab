@@ -628,5 +628,74 @@ console.log('17) analytics edge cases — deltas, streaks, goal threshold, per-k
   );
 }
 
+console.log(
+  '18) Analysis unlocked set is mode-independent (regression: per-key panels went blank in non-adaptive modes)',
+);
+{
+  const cp = (c: string) => c.codePointAt(0)!;
+  const s18 = { ...DEFAULT_SETTINGS, keyOrder: 'frequency' as const };
+  const fast18 = speedToTime(s18.targetSpeed) * 0.5; // 2× target → confidence ~2
+  const st18 = new KeyStatsMap();
+  for (let i = 0; i < 3; i++)
+    for (const ch of 'etaoinsh')
+      st18.ingest({ codePoint: cp(ch), hitCount: 5, missCount: 0, timeToType: fast18 });
+
+  // progress() is derived from stats alone — the same unlocked set in every mode.
+  const progAdaptive = guided.progress(st18, { ...s18, contentMode: 'adaptive' });
+  const progCustom = guided.progress(st18, { ...s18, contentMode: 'custom' });
+  assert(
+    progAdaptive.included.length >= 6,
+    `progress() yields a real unlocked set (got ${progAdaptive.included.length})`,
+  );
+  assert(
+    progCustom.included.length === progAdaptive.included.length,
+    'progress() ignores contentMode (custom unlocked set === adaptive)',
+  );
+
+  // The bug's source: a non-adaptive lesson PLAN carries an empty included set.
+  const customPlan = nextLesson({
+    guided,
+    stats: st18,
+    bigrams: new BigramStatsMap(),
+    settings: { ...s18, contentMode: 'custom' },
+    rng,
+  });
+  assert(customPlan.included.length === 0, 'a custom-mode lesson plan has an empty included set');
+
+  // So analytics fed the PLAN set shows nothing; fed the PROGRESS set it populates.
+  const hist18: LessonResult[] = [
+    {
+      timeStamp: Date.UTC(2026, 0, 10, 12),
+      layout: 'en',
+      length: 24,
+      time: 60_000,
+      errors: 0,
+      speed: 300,
+      accuracy: 1,
+      complexity: 3,
+      score: 1,
+      histogram: 'etaoinsh'
+        .split('')
+        .map((ch) => ({ codePoint: cp(ch), hitCount: 8, missCount: 0, timeToType: fast18 })),
+    },
+  ];
+  const common = {
+    history: hist18,
+    stats: st18,
+    bigrams: new BigramStatsMap(),
+    targetSpeed: s18.targetSpeed,
+  };
+  const blank = analyze({ ...common, included: new Set(customPlan.included) });
+  const fixed = analyze({ ...common, included: new Set(progCustom.included) });
+  assert(
+    blank.perKeyProgress.length === 0 && blank.keyboard.weakest.length === 0,
+    'plan-derived (empty) set → per-key panels blank (the reported bug)',
+  );
+  assert(
+    fixed.perKeyProgress.length > 0 && fixed.keyboard.weakest.length > 0,
+    `progress-derived set → per-key panels populate (cards=${fixed.perKeyProgress.length}, weakest=${fixed.keyboard.weakest.length})`,
+  );
+}
+
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
 process.exit(failures === 0 ? 0 : 1);
