@@ -198,7 +198,8 @@ export function Analysis({
               ))}
             </div>
             <p className="note keyprognote">
-              Each card is one unlocked key&rsquo;s speed trend across sessions, weakest first.{' '}
+              Each card is one key you&rsquo;ve practiced &mdash; its speed trend across sessions,
+              weakest first.{' '}
               {weakest3.length > 0 && (
                 <>
                   <b className="bg">{weakest3.join(' · ')}</b> are furthest from target — drill
@@ -244,7 +245,7 @@ export function Analysis({
               </span>
               <span>
                 <i style={{ background: 'var(--panel-2)', border: '1px solid var(--line)' }} />
-                locked
+                untyped
               </span>
             </div>
           </div>

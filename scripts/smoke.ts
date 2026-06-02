@@ -468,8 +468,14 @@ console.log('16) analytics aggregates on a seeded history');
     `slowest transition is t→h (got ${a.slowestBigrams[0]?.from}→${a.slowestBigrams[0]?.to})`,
   );
   assert(
-    a.keyboard.locked.has(cp('b')) && !a.keyboard.locked.has(cp('e')),
-    'unlearned letters render locked, unlocked ones do not',
+    a.keyboard.locked.has(cp('b')) &&
+      !a.keyboard.locked.has(cp('e')) &&
+      !a.keyboard.locked.has(cp('q')),
+    'heatmap dims only never-typed keys (b); typed keys are colored even if not unlocked (q)',
+  );
+  assert(
+    a.keyboard.weakest.length === 1 && a.keyboard.weakest[0] === 'e',
+    `heatmap "weakest" stays scoped to the unlocked set (got ${a.keyboard.weakest.join(',')})`,
   );
   assert(
     isDatable(real[0]!) && !isDatable(legacy),
@@ -486,13 +492,15 @@ console.log('16) analytics aggregates on a seeded history');
     Math.round(a.calendar.totalMinutes) === 12,
     `calendar totals datable minutes only (got ${a.calendar.totalMinutes})`,
   );
-  // Per-key progress: only unlocked keys with data (e ∈ included; q/z are not), real trend.
+  // Per-key progress: EVERY practiced key (e ∈ included; q/z are not but still
+  // shown), weakest-first by confidence (z slowest → e fastest), real trend.
   assert(
-    a.perKeyProgress.length === 1 &&
-      a.perKeyProgress[0]?.ch === 'e' &&
-      a.perKeyProgress[0]?.currentWpm === 80 &&
-      a.perKeyProgress[0]?.trend.length === 12,
-    `per-key progress: unlocked-with-data only, real current wpm + trend (got ${a.perKeyProgress.map((p) => p.ch).join(',')})`,
+    a.perKeyProgress.length === 3 &&
+      a.perKeyProgress[0]?.ch === 'z' &&
+      a.perKeyProgress[2]?.ch === 'e' &&
+      a.perKeyProgress[2]?.currentWpm === 80 &&
+      a.perKeyProgress[2]?.trend.length === 12,
+    `per-key progress: every practiced key, weakest-first, real wpm + trend (got ${a.perKeyProgress.map((p) => p.ch).join(',')})`,
   );
 }
 
@@ -629,30 +637,34 @@ console.log('17) analytics edge cases — deltas, streaks, goal threshold, per-k
 }
 
 console.log(
-  '18) Analysis unlocked set is mode-independent (regression: per-key panels went blank in non-adaptive modes)',
+  '18) per-key panels show EVERY practiced key, independent of mode/unlock; adaptive framing stays scoped to the unlocked set',
 );
 {
   const cp = (c: string) => c.codePointAt(0)!;
   const s18 = { ...DEFAULT_SETTINGS, keyOrder: 'frequency' as const };
   const fast18 = speedToTime(s18.targetSpeed) * 0.5; // 2× target → confidence ~2
   const st18 = new KeyStatsMap();
+  // Typed letters: some that WOULD be unlocked (etaoin) AND a rare one that would NOT (z).
+  const typed = 'etaoinz';
   for (let i = 0; i < 3; i++)
-    for (const ch of 'etaoinsh')
-      st18.ingest({ codePoint: cp(ch), hitCount: 5, missCount: 0, timeToType: fast18 });
+    for (const ch of typed)
+      st18.ingest({ codePoint: cp(ch), hitCount: 8, missCount: 0, timeToType: fast18 });
+  const hist18: LessonResult[] = Array.from({ length: 3 }, () => ({
+    timeStamp: Date.UTC(2026, 0, 10, 12),
+    layout: 'en',
+    length: 24,
+    time: 60_000,
+    errors: 0,
+    speed: 300,
+    accuracy: 1,
+    complexity: 3,
+    score: 1,
+    histogram: typed
+      .split('')
+      .map((ch) => ({ codePoint: cp(ch), hitCount: 8, missCount: 0, timeToType: fast18 })),
+  }));
 
-  // progress() is derived from stats alone — the same unlocked set in every mode.
-  const progAdaptive = guided.progress(st18, { ...s18, contentMode: 'adaptive' });
-  const progCustom = guided.progress(st18, { ...s18, contentMode: 'custom' });
-  assert(
-    progAdaptive.included.length >= 6,
-    `progress() yields a real unlocked set (got ${progAdaptive.included.length})`,
-  );
-  assert(
-    progCustom.included.length === progAdaptive.included.length,
-    'progress() ignores contentMode (custom unlocked set === adaptive)',
-  );
-
-  // The bug's source: a non-adaptive lesson PLAN carries an empty included set.
+  // A non-adaptive (custom) plan carries an empty included — the per-key panels must NOT depend on it.
   const customPlan = nextLesson({
     guided,
     stats: st18,
@@ -660,40 +672,54 @@ console.log(
     settings: { ...s18, contentMode: 'custom' },
     rng,
   });
-  assert(customPlan.included.length === 0, 'a custom-mode lesson plan has an empty included set');
+  assert(
+    customPlan.included.length === 0,
+    'premise: a custom-mode lesson plan has an empty included set',
+  );
+  const adaptiveIncluded = new Set(guided.progress(st18, s18).included);
 
-  // So analytics fed the PLAN set shows nothing; fed the PROGRESS set it populates.
-  const hist18: LessonResult[] = [
-    {
-      timeStamp: Date.UTC(2026, 0, 10, 12),
-      layout: 'en',
-      length: 24,
-      time: 60_000,
-      errors: 0,
-      speed: 300,
-      accuracy: 1,
-      complexity: 3,
-      score: 1,
-      histogram: 'etaoinsh'
-        .split('')
-        .map((ch) => ({ codePoint: cp(ch), hitCount: 8, missCount: 0, timeToType: fast18 })),
-    },
-  ];
   const common = {
     history: hist18,
     stats: st18,
     bigrams: new BigramStatsMap(),
     targetSpeed: s18.targetSpeed,
   };
-  const blank = analyze({ ...common, included: new Set(customPlan.included) });
-  const fixed = analyze({ ...common, included: new Set(progCustom.included) });
+  const withEmpty = analyze({ ...common, included: new Set(customPlan.included) });
+  const withAdaptive = analyze({ ...common, included: adaptiveIncluded });
+
+  // (i) per-key PROGRESS = every typed key (incl. the not-unlocked z), independent of `included`.
+  const keysOf = (a: ReturnType<typeof analyze>) =>
+    a.perKeyProgress
+      .map((p) => p.ch)
+      .sort()
+      .join('');
+  const want = [...typed].sort().join('');
   assert(
-    blank.perKeyProgress.length === 0 && blank.keyboard.weakest.length === 0,
-    'plan-derived (empty) set → per-key panels blank (the reported bug)',
+    keysOf(withEmpty) === want && keysOf(withEmpty) === keysOf(withAdaptive),
+    `per-key progress = every typed key, independent of included (got "${keysOf(withEmpty)}", want "${want}")`,
+  );
+
+  // (ii) per-key SPEED colors every typed key; dims ONLY never-typed keys.
+  assert(
+    withEmpty.keyboard.confidence.has(cp('z')) && !withEmpty.keyboard.locked.has(cp('z')),
+    'a typed-but-not-unlocked key (z) is colored, not locked',
   );
   assert(
-    fixed.perKeyProgress.length > 0 && fixed.keyboard.weakest.length > 0,
-    `progress-derived set → per-key panels populate (cards=${fixed.perKeyProgress.length}, weakest=${fixed.keyboard.weakest.length})`,
+    withEmpty.keyboard.locked.has(cp('b')) && withEmpty.keyboard.confidence.size === typed.length,
+    `heatmap dims only never-typed keys (got ${withEmpty.keyboard.confidence.size} colored, want ${typed.length})`,
+  );
+
+  // (iii) the adaptive framing STILL tracks `included`: weakest ⊆ included, Letters counts included.
+  assert(
+    withAdaptive.keyboard.weakest.length > 0 &&
+      withAdaptive.keyboard.weakest.every((ch) => adaptiveIncluded.has(cp(ch))),
+    'heatmap "weakest" stays scoped to the unlocked set',
+  );
+  assert(
+    withAdaptive.scorecards.lettersUnlocked ===
+      [...adaptiveIncluded].filter((c) => c >= 0x61 && c <= 0x7a).length &&
+      withEmpty.scorecards.lettersUnlocked === 0,
+    'Letters KPI still reflects the adaptive unlocked set (0 when an empty set is passed)',
   );
 }
 
