@@ -51,6 +51,9 @@ const KEY_ORDERS: Array<{ id: Settings['keyOrder']; label: string; desc: string 
   },
 ];
 
+// Daily practice goal (minutes). Drives goal-met days + streak on the Analysis calendar.
+export const DAILY_GOALS = [10, 20, 30, 60] as const;
+
 // What you practice on. Non-adaptive modes drop the unlock/focus targeting.
 const MODES: Array<{ id: Settings['contentMode']; label: string; desc: string }> = [
   {
@@ -272,6 +275,28 @@ function PracticeGroup({ settings, update }: GroupProps) {
             onChange={(e) => update({ targetSpeed: Number(e.target.value) })}
           />
           <span className="rangeval">{Math.round(settings.targetSpeed / 5)} wpm</span>
+        </div>
+      </div>
+
+      <div className="srow">
+        <div className="slabel">
+          <span className="sname">Daily goal</span>
+          <span className="sdesc">
+            Minutes of practice per day. Sets the goal-met days and streak on the Analysis calendar.
+          </span>
+        </div>
+        <div className="sctrl segmented" role="group" aria-label="Daily practice goal">
+          {DAILY_GOALS.map((g) => (
+            <button
+              key={g}
+              type="button"
+              className={`seg${settings.dailyGoalMinutes === g ? ' active' : ''}`}
+              aria-pressed={settings.dailyGoalMinutes === g}
+              onClick={() => update({ dailyGoalMinutes: g })}
+            >
+              {g}m
+            </button>
+          ))}
         </div>
       </div>
 

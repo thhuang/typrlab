@@ -222,51 +222,116 @@ export function keyboardSpeed(
   return { confidence, perKeyWpm, locked, weakest };
 }
 
+// ---- per-key progress (small-multiples) ----
+
+export interface KeyProgress {
+  ch: string;
+  cp: CodePoint;
+  /** wpm in the most recent session this key was typed. */
+  currentWpm: number;
+  /** currentWpm minus the first session's wpm (rounded; can be negative). */
+  gainWpm: number;
+  /** live speed confidence (0..1+) — drives the sparkline tint and the sort. */
+  confidence: number;
+  /** per-session wpm where this key was typed, oldest first (real history). */
+  trend: number[];
+}
+
+/**
+ * Each unlocked key's speed trend across the sessions it was typed in —
+ * computed from REAL history (every lesson's per-key `histogram.timeToType`),
+ * not approximated. Sorted WEAKEST FIRST (lowest current confidence).
+ */
+export function perKeyProgress(
+  history: LessonResult[],
+  stats: KeyStatsMap,
+  targetSpeed: number,
+  included: Set<CodePoint>,
+): KeyProgress[] {
+  const series = new Map<CodePoint, number[]>();
+  for (const r of history) {
+    for (const h of r.histogram) {
+      if (h.timeToType > 0 && isLetter(h.codePoint) && included.has(h.codePoint)) {
+        const arr = series.get(h.codePoint) ?? [];
+        arr.push(wpm(timeToSpeed(h.timeToType)));
+        series.set(h.codePoint, arr);
+      }
+    }
+  }
+  const out: KeyProgress[] = [];
+  for (const [cp, trend] of series) {
+    if (trend.length === 0) continue;
+    const currentWpm = Math.round(trend[trend.length - 1]!);
+    out.push({
+      ch: chr(cp),
+      cp,
+      currentWpm,
+      gainWpm: currentWpm - Math.round(trend[0]!),
+      confidence: stats.confidence(cp, targetSpeed),
+      trend,
+    });
+  }
+  return out.sort((a, b) => a.confidence - b.confidence); // weakest first
+}
+
 // ---- practice calendar ----
 
 export interface Calendar {
   /** local day index → total practice minutes that day (datable results only). */
   dayMinutes: Map<number, number>;
+  /** days with any practice. */
   activeDays: number;
   totalMinutes: number;
+  /** the daily goal used for goal-met days + streaks. */
+  dailyGoalMinutes: number;
+  /** days whose minutes met the goal. */
+  goalMetDays: number;
+  /** consecutive GOAL-MET days ending today (one-day grace). */
   currentStreak: number;
+  /** longest run of consecutive GOAL-MET days. */
   bestStreak: number;
 }
 
-export function calendar(history: LessonResult[], now: number): Calendar {
+export function calendar(history: LessonResult[], now: number, dailyGoalMinutes: number): Calendar {
   const dayMinutes = new Map<number, number>();
   for (const r of history) {
     if (!isDatable(r)) continue;
     const d = dayIndex(r.timeStamp);
     dayMinutes.set(d, (dayMinutes.get(d) ?? 0) + r.time / 60_000);
   }
-  const days = [...dayMinutes.keys()].sort((a, b) => a - b);
-  const active = new Set(days);
+  const goal = Math.max(1, dailyGoalMinutes);
+  // Streaks count GOAL-MET days (minutes >= the daily goal), not merely active days.
+  const metDays = [...dayMinutes.entries()]
+    .filter(([, m]) => m >= goal)
+    .map(([d]) => d)
+    .sort((a, b) => a - b);
+  const met = new Set(metDays);
 
-  // Best streak: longest run of consecutive day indices.
   let bestStreak = 0;
   let run = 0;
   let prev: number | null = null;
-  for (const d of days) {
+  for (const d of metDays) {
     run = prev !== null && d === prev + 1 ? run + 1 : 1;
     bestStreak = Math.max(bestStreak, run);
     prev = d;
   }
 
-  // Current streak: count back from today (with a one-day grace if today is empty
-  // but yesterday isn't, so "haven't practiced yet today" doesn't zero it).
+  // Current streak: count back from today over goal-met days (one-day grace so
+  // "haven't hit today's goal yet" doesn't zero a streak that was alive yesterday).
   const today = dayIndex(now);
-  let cursor = active.has(today) ? today : active.has(today - 1) ? today - 1 : null;
+  let cursor = met.has(today) ? today : met.has(today - 1) ? today - 1 : null;
   let currentStreak = 0;
-  while (cursor !== null && active.has(cursor)) {
+  while (cursor !== null && met.has(cursor)) {
     currentStreak += 1;
     cursor -= 1;
   }
 
   return {
     dayMinutes,
-    activeDays: days.length,
+    activeDays: dayMinutes.size,
     totalMinutes: [...dayMinutes.values()].reduce((a, b) => a + b, 0),
+    dailyGoalMinutes: goal,
+    goalMetDays: met.size,
     currentStreak,
     bestStreak,
   };
@@ -280,6 +345,8 @@ export interface AnalyticsInput {
   bigrams: BigramStatsMap;
   targetSpeed: number;
   included: Set<CodePoint>;
+  /** daily practice goal in minutes (drives goal-met days + streaks). */
+  dailyGoalMinutes?: number;
   /** wall-clock "now" for streak math; injectable for tests. */
   now?: number;
 }
@@ -288,7 +355,9 @@ export interface Analytics {
   scorecards: Scorecards;
   speed: SpeedPoint[];
   accuracy: number[];
+  /** @deprecated dropped from the v2 dashboard; removed in step 2 with the page rebuild. */
   consistency: number[];
+  perKeyProgress: KeyProgress[];
   goalWpm: number;
   keyboard: KeyboardSpeed;
   slowestKeys: SlowKey[];
@@ -298,17 +367,26 @@ export interface Analytics {
 }
 
 export function analyze(input: AnalyticsInput): Analytics {
-  const { history, stats, bigrams, targetSpeed, included, now = Date.now() } = input;
+  const {
+    history,
+    stats,
+    bigrams,
+    targetSpeed,
+    included,
+    dailyGoalMinutes = 30,
+    now = Date.now(),
+  } = input;
   return {
     scorecards: scorecards(history, included),
     speed: speedSeries(history),
     accuracy: accuracySeries(history),
     consistency: consistencySeries(history),
+    perKeyProgress: perKeyProgress(history, stats, targetSpeed, included),
     goalWpm: wpm(targetSpeed),
     keyboard: keyboardSpeed(stats, targetSpeed, included),
     slowestKeys: slowestKeys(stats, targetSpeed),
     lowestAccuracyKeys: lowestAccuracyKeys(stats),
     slowestBigrams: slowestBigrams(bigrams, targetSpeed),
-    calendar: calendar(history, now),
+    calendar: calendar(history, now, dailyGoalMinutes),
   };
 }
