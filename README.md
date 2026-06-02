@@ -68,6 +68,12 @@ npm run build        # production build
 - **Practice layouts** — **Coach** (a focus rail showing what's being drilled and
   why), **Instrument** (a dense stat strip), plus a chrome-free **Zen** focus mode
   (Esc to exit). Per-key stats accumulate across every mode.
+- **Lesson length** — choose how many words per line (5 / 10 / 15 / 25).
+
+Everything is tunable in **Settings** — practice mode, lesson length, a daily practice
+goal, key-introduction order, plus theme and font pickers:
+
+![typrlab Settings — practice mode, lesson length, daily goal, key-introduction order, plus theme and font pickers](docs/screenshots/settings.png)
 
 A progress **dashboard** answering three questions at a glance — _am I improving?_,
 _what's still slow?_, _have I been consistent?_
