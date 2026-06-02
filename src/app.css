@@ -727,6 +727,7 @@
 .chart {
   display: block;
   width: 100%;
+  height: auto; /* height follows the viewBox aspect ratio → uniform scaling */
 }
 
 /* ---------- Practice actions row ---------- */

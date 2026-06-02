@@ -103,6 +103,8 @@ export function Analysis({
         ]
       : [];
   const weakest3 = a.perKeyProgress.slice(0, 3).map((k) => k.ch);
+  // ~18 markers regardless of history length (avoids a dot per lesson on long histories).
+  const markerEvery = Math.max(1, Math.round(a.speed.length / 18));
 
   return (
     <section className="dash">
@@ -164,12 +166,17 @@ export function Analysis({
         <LineChart
           height={240}
           goal={goalWpm}
-          markerEvery={5}
+          markerEvery={markerEvery}
           xLabels={xLabels}
           unit="wpm"
           series={[
             { values: a.speed.map((p) => p.raw), color: 'var(--muted)', width: 1.8, opacity: 0.55 },
-            { values: a.speed.map((p) => p.net), color: 'var(--accent)', fill: true },
+            {
+              values: a.speed.map((p) => p.net),
+              color: 'var(--accent)',
+              fill: true,
+              markers: true,
+            },
           ]}
         />
       </section>
@@ -213,8 +220,8 @@ export function Analysis({
           min={Math.min(90, Math.floor(Math.min(...a.accuracy)))}
           max={100}
           unit="%"
-          markerEvery={6}
-          series={[{ values: a.accuracy, color: 'var(--hit)', fill: true }]}
+          markerEvery={markerEvery}
+          series={[{ values: a.accuracy, color: 'var(--hit)', fill: true, markers: true }]}
         />
       </section>
 

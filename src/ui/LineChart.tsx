@@ -74,13 +74,9 @@ export function LineChart({
   const gridY = Array.from({ length: ticks + 1 }, (_, t) => lo + (span * t) / ticks);
 
   return (
-    <svg
-      className="chart"
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="none"
-      style={{ height }}
-      aria-hidden="true"
-    >
+    <svg className="chart" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+      {/* Uniform scaling (no preserveAspectRatio="none"): width:100% + height:auto
+          from the viewBox aspect ratio, so axis text and markers don't distort. */}
       {gridY.map((v, t) => (
         <g key={t}>
           <line className="chart-grid" x1={P.l} y1={Y(v)} x2={width - P.r} y2={Y(v)} />
