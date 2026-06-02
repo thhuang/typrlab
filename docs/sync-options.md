@@ -1,5 +1,9 @@
 # Cross-device sync — options & design comparison
 
+> **Status: investigated · ON HOLD** (2026-06-01). Backend options compared and a backend
+> direction identified; the open question is the **identity / UX model** (see that section) —
+> deferred so we can ship other critical features first. Resume from "Identity & UX" + "Recommendation".
+
 > Decision doc. typrlab is **local-first** (state in `localStorage`: `typrlab.settings` +
 > `typrlab.history`, a JSON `{version,settings,history}` blob, ≤ a few MB) and ships as a
 > **fully static export** on Cloudflare Pages. Sync is **opt-in**; local stays the source of
@@ -136,6 +140,39 @@ Google Cloud et al.), and the operator (you) can read all data — the opposite 
 local-first posture. keybr chose it because keybr was already a server-rendered app with its own
 infra. **Not a model to copy for a static, solo, privacy-first app** — but a useful proof that
 "server + DB + social OAuth" works at scale if you ever want full accounts.
+
+## Identity & UX — "nothing to memorize" (the open decision)
+
+The *backend* (above) is only half the design; the other half is **how a user is identified
+across devices**, and it drives UX. **Hard rule: the user must never memorize or manage a secret
+code.** That rules out the raw "anonymous sync-code" UX. Two ways to achieve zero-memorization:
+
+1. **Reuse an identity the user already has** (Google / email / device biometric) — nothing *new*
+   to remember.
+2. **Stay anonymous but never show/type the code** — pair devices via **QR / link** (like
+   WhatsApp Web / Signal); the code lives on-device + in the QR, never in the user's head.
+
+**The inherent triangle — pick ~2, not all 3:** **Easy UX ↔ No Google ↔ Server can't read the data.**
+
+| Identity model | UX | Avoids Google? | Server-blind? | Catch |
+|---|---|---|---|---|
+| **Sign in with Google** (OAuth) | ⭐ one tap, ubiquitous | ❌ needs Google Cloud app | ❌ provider reads it | most familiar |
+| **Email magic-link** (passwordless; keybr's) | 🟢 enter email → click link | ✅ | ❌ provider reads it | needs an email-send backend |
+| **Passkey** (Face/Touch ID, WebAuthn) | 🟢 biometric, platform-synced | ✅ | ⚠️ possible (PRF, advanced) | newer; backend keyed to credential |
+| **QR / link device-pairing + E2EE** | 🟢 scan once, nothing typed | ✅ | ✅ **yes** | first-time pairing needs both devices |
+
+- **Insight:** the privacy benefits of the sync-code survive if you **pair via QR instead of
+  typing** — the user never sees, types, or memorizes anything.
+- **Recovery:** for the anonymous routes, the existing **JSON export = the backup**; for the
+  account routes, "log in again" recovers (provider can reset).
+
+### Two coherent end-states
+- **Most familiar UX →** Sign in with Google + email magic-link (Firebase/Supabase). *Relax:*
+  server-blind privacy + the no-Google goal.
+- **Privacy-first, still easy →** QR/link pairing + E2EE on the Cloudflare Worker. *Relax:* a
+  slightly less familiar first-time pairing (both devices present).
+
+**➡ Unresolved:** which corner of the triangle to keep. Decide this before implementing.
 
 ## Recommendation
 
