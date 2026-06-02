@@ -1402,3 +1402,111 @@
   border-radius: 50%;
   display: block;
 }
+
+/* ===================== Analysis dashboard v2 additions ===================== */
+
+/* Per-key progress — small multiples */
+.kprog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+  gap: 10px;
+}
+.kprog {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 11px 12px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kprog .ktop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kprog .kcap {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--on-confidence);
+}
+.kprog .kfig {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.kprog .kwpm {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.kprog .kwpm .uu {
+  font-size: 9px;
+  color: var(--muted);
+  font-weight: 500;
+  margin-left: 2px;
+}
+.kprog .kdelta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.kprog .kdelta.up {
+  color: var(--hit);
+}
+.kprog .kdelta.flat {
+  color: var(--muted);
+}
+.kprog .kspark {
+  width: 100%;
+  height: 30px;
+  display: block;
+}
+.keyprognote {
+  margin: 14px 0 0;
+}
+
+/* Daily-goal control (calendar-header mirror of the Settings control) */
+.calhead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.goalset {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.goalseg .seg {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+/* Goal-met calendar cells get a subtle accent ring. */
+.cell.met {
+  box-shadow: inset 0 0 0 1.5px var(--accent-line);
+}
+
+/* Tabular figures across the dashboard tables. */
+.dtable {
+  font-variant-numeric: tabular-nums;
+}

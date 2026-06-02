@@ -472,9 +472,7 @@ console.log('16) analytics aggregates on a seeded history');
   );
 }
 
-console.log(
-  '17) analytics edge cases — streak gaps/grace, short-history deltas, consistency, empty',
-);
+console.log('17) analytics edge cases — deltas, streaks, goal threshold, per-key progress, empty');
 {
   const DAY = 86_400_000;
   const NOW = Date.UTC(2026, 0, 20, 12, 0, 0);
@@ -539,19 +537,7 @@ console.log(
     `grace keeps the streak alive (got ${gra.calendar.currentStreak})`,
   );
 
-  // (e) consistency: one point per lesson; steady run < noisy run.
-  const steady = run(Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, 300, 0.97)));
-  const noisy = run(
-    Array.from({ length: 10 }, (_, i) => mk(NOW - (9 - i) * DAY, i % 2 ? 200 : 400, 0.97)),
-  );
-  const tail = (xs: number[]) => xs[xs.length - 1]!;
-  assert(steady.consistency.length === 10, 'consistency has one point per lesson');
-  assert(
-    tail(steady.consistency) < tail(noisy.consistency),
-    'steady run has lower wpm std-dev than a noisy one',
-  );
-
-  // (f) empty history: safe, zeroed.
+  // (e) empty history: safe, zeroed.
   let threw = false;
   let ea: ReturnType<typeof run> | null = null;
   try {

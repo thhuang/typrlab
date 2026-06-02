@@ -36,7 +36,7 @@ export function dayIndex(ts: number): number {
   return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY_MS);
 }
 
-// ---- speed / accuracy / consistency series ----
+// ---- speed / accuracy series ----
 
 export interface SpeedPoint {
   raw: number;
@@ -54,22 +54,6 @@ export function speedSeries(history: LessonResult[]): SpeedPoint[] {
 /** Per-lesson accuracy as a percentage (0–100), oldest first. */
 export function accuracySeries(history: LessonResult[]): number[] {
   return history.map((r) => r.accuracy * 100);
-}
-
-/** Sample standard deviation of a window. */
-function stdDev(values: number[]): number {
-  const n = values.length;
-  if (n < 2) return 0;
-  const mean = values.reduce((a, b) => a + b, 0) / n;
-  const variance = values.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1);
-  return Math.sqrt(variance);
-}
-
-/** Rolling std-dev of net wpm (lower = steadier). One value per lesson once the
- *  window fills; emits the partial window early so the line starts at lesson 1. */
-export function consistencySeries(history: LessonResult[], window = 5): number[] {
-  const net = speedSeries(history).map((p) => p.net);
-  return net.map((_, i) => stdDev(net.slice(Math.max(0, i - window + 1), i + 1)));
 }
 
 // ---- scorecards ----
@@ -355,8 +339,6 @@ export interface Analytics {
   scorecards: Scorecards;
   speed: SpeedPoint[];
   accuracy: number[];
-  /** @deprecated dropped from the v2 dashboard; removed in step 2 with the page rebuild. */
-  consistency: number[];
   perKeyProgress: KeyProgress[];
   goalWpm: number;
   keyboard: KeyboardSpeed;
@@ -380,7 +362,6 @@ export function analyze(input: AnalyticsInput): Analytics {
     scorecards: scorecards(history, included),
     speed: speedSeries(history),
     accuracy: accuracySeries(history),
-    consistency: consistencySeries(history),
     perKeyProgress: perKeyProgress(history, stats, targetSpeed, included),
     goalWpm: wpm(targetSpeed),
     keyboard: keyboardSpeed(stats, targetSpeed, included),

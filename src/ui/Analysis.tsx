@@ -1,14 +1,15 @@
-// The Analysis view — a progress dashboard answering three questions at a glance:
-// Am I improving? (speed/accuracy curves) · What's still slow? (per-key heatmap +
-// slow-key / weak-transition tables) · Have I been consistent? (practice calendar).
-// All figures come from useTypingSession via the pure src/core/analytics module.
+// The Analysis view — a progress dashboard answering: Am I improving? (speed +
+// per-key trends), What's still slow? (heatmap + slow-key/transition tables), and
+// Have I been consistent? (practice calendar with a daily goal). All figures come
+// from useTypingSession via the pure src/core/analytics module.
 import type { ReactNode } from 'react';
 import type { LessonResult } from '../core/types';
-import type { Settings } from '../core/settings';
+import { type Settings, DAILY_GOALS } from '../core/settings';
 import type { LessonPlan } from '../core/guided';
 import { KeyStatsMap } from '../core/keyStats';
 import { BigramStatsMap } from '../core/bigramStats';
-import { analyze } from '../core/analytics';
+import { analyze, type KeyProgress } from '../core/analytics';
+import { confidenceColor } from './color';
 import { LineChart } from './LineChart';
 import { KeyboardHeatmap } from './KeyboardHeatmap';
 
@@ -18,6 +19,7 @@ interface Props {
   settings: Settings;
   history: LessonResult[];
   plan: LessonPlan | null;
+  update: (patch: Partial<Settings>) => void;
   onExport: () => void;
   onImportClick: () => void;
 }
@@ -37,11 +39,19 @@ export function Analysis({
   settings,
   history,
   plan,
+  update,
   onExport,
   onImportClick,
 }: Props) {
   const included = new Set(plan?.included ?? []);
-  const a = analyze({ history, stats, bigrams, targetSpeed: settings.targetSpeed, included });
+  const a = analyze({
+    history,
+    stats,
+    bigrams,
+    targetSpeed: settings.targetSpeed,
+    included,
+    dailyGoalMinutes: settings.dailyGoalMinutes,
+  });
 
   const head = (
     <div className="pagehead">
@@ -75,6 +85,7 @@ export function Analysis({
   }
 
   const sc = a.scorecards;
+  const cal = a.calendar;
   const next = plan?.nextUnlock;
   const lettersSub =
     next && next.nextKey != null
@@ -91,6 +102,7 @@ export function Analysis({
           [lastIdx, 'now'],
         ]
       : [];
+  const weakest3 = a.perKeyProgress.slice(0, 3).map((k) => k.ch);
 
   return (
     <section className="dash">
@@ -123,9 +135,9 @@ export function Analysis({
         />
         <Kpi
           label="Day streak"
-          value={a.calendar.currentStreak}
-          unit={a.calendar.currentStreak === 1 ? 'day' : 'days'}
-          sub={`best ${a.calendar.bestStreak}`}
+          value={cal.currentStreak}
+          unit={cal.currentStreak === 1 ? 'day' : 'days'}
+          sub={`best ${cal.bestStreak}`}
         />
         <Kpi label="Letters" value={sc.lettersUnlocked} unit="/26" sub={lettersSub} />
       </section>
@@ -157,46 +169,56 @@ export function Analysis({
           unit="wpm"
           series={[
             { values: a.speed.map((p) => p.raw), color: 'var(--muted)', width: 1.8, opacity: 0.55 },
-            {
-              values: a.speed.map((p) => p.net),
-              color: 'var(--accent)',
-              fill: true,
-            },
+            { values: a.speed.map((p) => p.net), color: 'var(--accent)', fill: true },
           ]}
         />
       </section>
 
-      {/* Accuracy + consistency */}
-      <section className="grid2">
-        <div className="panel">
-          <div className="ph">
-            <h3>Accuracy</h3>
-            <span className="sub">avg {(sc.recentAccuracy * 100).toFixed(1)}% · last 10</span>
-          </div>
-          <LineChart
-            height={180}
-            min={Math.min(90, Math.floor(Math.min(...a.accuracy)))}
-            max={100}
-            unit="%"
-            markerEvery={6}
-            series={[{ values: a.accuracy, color: 'var(--hit)', fill: true }]}
-          />
+      {/* Per-key progress — small multiples */}
+      <section className="panel">
+        <div className="ph">
+          <h3>Per-key progress</h3>
+          <span className="sub">each key&rsquo;s speed trend · weakest first</span>
         </div>
-        <div className="panel">
-          <div className="ph">
-            <h3>Consistency</h3>
-            <span className="sub">wpm std-dev · lower is steadier</span>
-          </div>
-          <LineChart
-            height={180}
-            min={0}
-            markerEvery={6}
-            series={[{ values: a.consistency, color: 'var(--accent-soft)', fill: true }]}
-          />
-        </div>
+        {a.perKeyProgress.length > 0 ? (
+          <>
+            <div className="kprog-grid">
+              {a.perKeyProgress.map((k) => (
+                <KeyProgressCard key={k.cp} k={k} />
+              ))}
+            </div>
+            <p className="note keyprognote">
+              Each card is one unlocked key&rsquo;s speed trend across sessions, weakest first.{' '}
+              {weakest3.length > 0 && (
+                <>
+                  <b className="bg">{weakest3.join(' · ')}</b> are furthest from target — drill
+                  these next.
+                </>
+              )}
+            </p>
+          </>
+        ) : (
+          <p className="note">Type a few lessons to see per-key trends.</p>
+        )}
       </section>
 
-      {/* Per-key speed + slowest transitions */}
+      {/* Accuracy over time */}
+      <section className="panel">
+        <div className="ph">
+          <h3>Accuracy over time</h3>
+          <span className="sub">avg {(sc.recentAccuracy * 100).toFixed(1)}% · last 10</span>
+        </div>
+        <LineChart
+          height={180}
+          min={Math.min(90, Math.floor(Math.min(...a.accuracy)))}
+          max={100}
+          unit="%"
+          markerEvery={6}
+          series={[{ values: a.accuracy, color: 'var(--hit)', fill: true }]}
+        />
+      </section>
+
+      {/* Per-key speed heatmap + slowest transitions */}
       <section className="grid-keys">
         <div className="panel">
           <div className="ph">
@@ -343,22 +365,31 @@ export function Analysis({
         </div>
       </section>
 
-      {/* Practice calendar */}
+      {/* Practice calendar + daily goal */}
       <section className="panel">
         <div className="ph">
           <h3>Practice activity</h3>
-          <div className="callegend">
-            Less
-            {[0, 1, 2, 3].map((l) => (
-              <span key={l} className="cell" style={{ background: calColor(l) }} />
-            ))}
-            More
+          <div className="calhead">
+            <GoalControl
+              value={settings.dailyGoalMinutes}
+              onChange={(g) => update({ dailyGoalMinutes: g })}
+            />
+            <div className="callegend">
+              Less
+              {[0, 1, 2, 3].map((l) => (
+                <span key={l} className="cell" style={{ background: calColor(l) }} />
+              ))}
+              More
+            </div>
           </div>
         </div>
-        <Calendar dayMinutes={a.calendar.dayMinutes} />
+        <Calendar dayMinutes={cal.dayMinutes} goalMinutes={settings.dailyGoalMinutes} />
         <p className="note calnote">
-          <b>{a.calendar.activeDays} active days</b> · ~{Math.round(a.calendar.totalMinutes)} min
-          total · current streak <b className="bg">{a.calendar.currentStreak} days</b>
+          <b>{cal.activeDays} active days</b> · <b className="bg">{cal.goalMetDays}</b> hit your{' '}
+          {settings.dailyGoalMinutes}-min goal · current streak{' '}
+          <b className="bg">
+            {cal.currentStreak} {cal.currentStreak === 1 ? 'day' : 'days'}
+          </b>
         </p>
       </section>
     </section>
@@ -447,10 +478,95 @@ function MiniTrack({ value, color }: { value: number; color?: string }) {
   );
 }
 
+// ---- per-key progress card ----
+
+function KeyProgressCard({ k }: { k: KeyProgress }) {
+  const tint = confidenceColor(Math.min(1, k.confidence));
+  return (
+    <div className="kprog">
+      <div className="ktop">
+        <span className="kcap" style={{ background: tint }}>
+          {k.ch}
+        </span>
+        <span className="kfig">
+          <span className="kwpm">
+            {k.currentWpm}
+            <span className="uu">wpm</span>
+          </span>
+          <span className={`kdelta ${k.gainWpm > 0 ? 'up' : 'flat'}`}>
+            {k.gainWpm > 0 ? `▲ ${k.gainWpm}` : '—'}
+          </span>
+        </span>
+      </div>
+      <KeySpark values={k.trend} color={tint} />
+    </div>
+  );
+}
+
+// Tiny area sparkline for a per-key trend. No axis text, so it may fill its box
+// (preserveAspectRatio="none") — the uniform-scaling rule is for axis charts.
+function KeySpark({ values, color }: { values: number[]; color: string }) {
+  const w = 110;
+  const h = 30;
+  const p = 3;
+  const vals = values.length >= 2 ? values : [values[0] ?? 0, values[0] ?? 0];
+  const mn = Math.min(...vals);
+  const mx = Math.max(...vals);
+  const X = (i: number) => p + (i / (vals.length - 1)) * (w - 2 * p);
+  const Y = (v: number) => p + (h - 2 * p) - ((v - mn) / (mx - mn || 1)) * (h - 2 * p);
+  const pts = vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const area = `${X(0).toFixed(1)},${h - p} ${pts} ${X(vals.length - 1).toFixed(1)},${h - p}`;
+  return (
+    <svg className="kspark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+      <polygon points={area} fill={color} opacity={0.12} />
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+// ---- daily goal segmented control (mirrors Settings → Practice → Daily goal) ----
+
+function GoalControl({ value, onChange }: { value: number; onChange: (g: number) => void }) {
+  return (
+    <span className="goalset">
+      Daily goal
+      <span className="segmented goalseg" role="group" aria-label="Daily practice goal">
+        {DAILY_GOALS.map((g) => (
+          <button
+            key={g}
+            type="button"
+            className={`seg${value === g ? ' active' : ''}`}
+            aria-pressed={value === g}
+            onClick={() => onChange(g)}
+          >
+            {g}m
+          </button>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+// ---- practice calendar ----
+
 const WEEKS = 26;
 const DOW_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 
-function Calendar({ dayMinutes }: { dayMinutes: Map<number, number> }) {
+function Calendar({
+  dayMinutes,
+  goalMinutes,
+}: {
+  dayMinutes: Map<number, number>;
+  goalMinutes: number;
+}) {
   const DAY_MS = 86_400_000;
   const now = Date.now();
   const today = Math.floor(
@@ -496,14 +612,17 @@ function Calendar({ dayMinutes }: { dayMinutes: Map<number, number> }) {
           ))}
         </div>
         <div className="calgrid">
-          {cells.map((c, i) => (
-            <div
-              key={i}
-              className="cell"
-              style={{ background: c.future ? 'transparent' : calColor(calLevel(c.min)) }}
-              title={c.future ? '' : `${Math.round(c.min)} min`}
-            />
-          ))}
+          {cells.map((c, i) => {
+            const met = !c.future && c.min >= goalMinutes;
+            return (
+              <div
+                key={i}
+                className={`cell${met ? ' met' : ''}`}
+                style={{ background: c.future ? 'transparent' : calColor(calLevel(c.min)) }}
+                title={c.future ? '' : `${Math.round(c.min)} min${met ? ' · goal met' : ''}`}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

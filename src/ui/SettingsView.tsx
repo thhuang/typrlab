@@ -5,7 +5,7 @@
 // Reuses the shared controls (.switch, .segmented, .theme-select, range,
 // .danger-btn) and pushes every change through update / onClear.
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import type { Settings } from '../core/settings';
+import { type Settings, DAILY_GOALS } from '../core/settings';
 import { WORDS } from '../core/words';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { DARK_THEMES, LIGHT_THEMES } from './themes';
@@ -50,9 +50,6 @@ const KEY_ORDERS: Array<{ id: Settings['keyOrder']; label: string; desc: string 
     desc: 'Start on the home row and expand by row — the classic touch-typing path. Best for beginners.',
   },
 ];
-
-// Daily practice goal (minutes). Drives goal-met days + streak on the Analysis calendar.
-export const DAILY_GOALS = [10, 20, 30, 60] as const;
 
 // What you practice on. Non-adaptive modes drop the unlock/focus targeting.
 const MODES: Array<{ id: Settings['contentMode']; label: string; desc: string }> = [
