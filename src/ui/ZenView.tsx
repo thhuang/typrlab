@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import type { LessonPlan } from '@/core/guided';
 import type { Settings } from '@/core/settings';
 import type { LessonResult } from '@/core/types';
+import { todayMinutes } from '@/core/analytics';
 import { TypingBoard } from '@/ui/TypingBoard';
 
 interface Props {
@@ -46,10 +47,10 @@ export function ZenView({ plan, position, hasError, settings, history, onExit }:
     cur && prev ? Math.round(cur.accuracy * 100) - Math.round(prev.accuracy * 100) : null;
   const scoreDelta = cur && prev ? Math.round(cur.score) - Math.round(prev.score) : null;
 
-  const totalMin = history.reduce((a, r) => a + r.time, 0) / 60000;
+  const todayMin = todayMinutes(history);
   const goalPct =
     settings.dailyGoalMinutes > 0
-      ? Math.min(100, Math.round((totalMin / settings.dailyGoalMinutes) * 100))
+      ? Math.min(100, Math.round((todayMin / settings.dailyGoalMinutes) * 100))
       : 0;
 
   return (
@@ -110,7 +111,7 @@ export function ZenView({ plan, position, hasError, settings, history, onExit }:
             <div className="goalfill" style={{ width: `${goalPct}%` }} />
           </div>
           <span className="goaltext">
-            {Math.round(totalMin)} / {settings.dailyGoalMinutes} min
+            {Math.round(todayMin)} / {settings.dailyGoalMinutes} min
           </span>
         </div>
       </footer>
