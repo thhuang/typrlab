@@ -2,6 +2,7 @@
 // daily-goal bar. A fuller analysis page (learning curve, heatmaps) comes next.
 import type { LessonResult } from '../core/types';
 import type { Settings } from '../core/settings';
+import { todayMinutes } from '../core/analytics';
 
 interface Props {
   last: LessonResult | null;
@@ -18,10 +19,10 @@ export function StatsPanel({ last, history, settings, unlocked, focus }: Props) 
   const avgWpm = history.length
     ? wpm(history.reduce((a, r) => a + r.speed, 0) / history.length)
     : 0;
-  const totalMin = history.reduce((a, r) => a + r.time, 0) / 60000;
+  const todayMin = todayMinutes(history);
   const goalPct =
     settings.dailyGoalMinutes > 0
-      ? Math.min(100, Math.round((totalMin / settings.dailyGoalMinutes) * 100))
+      ? Math.min(100, Math.round((todayMin / settings.dailyGoalMinutes) * 100))
       : 0;
 
   return (
@@ -41,7 +42,7 @@ export function StatsPanel({ last, history, settings, unlocked, focus }: Props) 
           <div className="goalfill" style={{ width: `${goalPct}%` }} />
         </div>
         <span className="goaltext">
-          {Math.round(totalMin)} / {settings.dailyGoalMinutes} min today
+          {Math.round(todayMin)} / {settings.dailyGoalMinutes} min today
         </span>
       </div>
     </section>

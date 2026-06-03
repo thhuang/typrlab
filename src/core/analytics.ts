@@ -36,6 +36,21 @@ export function dayIndex(ts: number): number {
   return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY_MS);
 }
 
+/**
+ * Total practice minutes for the LOCAL day containing `now` — datable results
+ * only (legacy relative-timestamp results have no wall-clock day), matching the
+ * practice calendar. This is what the daily-goal bars want; it is NOT the
+ * all-time total (summing the whole history mislabels lifetime time as "today").
+ */
+export function todayMinutes(history: LessonResult[], now: number = Date.now()): number {
+  const today = dayIndex(now);
+  let ms = 0;
+  for (const r of history) {
+    if (isDatable(r) && dayIndex(r.timeStamp) === today) ms += r.time;
+  }
+  return ms / 60_000;
+}
+
 // ---- speed / accuracy series ----
 
 export interface SpeedPoint {

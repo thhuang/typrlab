@@ -10,7 +10,7 @@ import { speedToTime } from '../src/core/target';
 import { projectLessonsToTarget } from '../src/core/learning';
 import { orderedLetters, type KeyOrder } from '../src/core/keyOrder';
 import { nextLesson, type ContentMode } from '../src/core/content';
-import { analyze, isDatable } from '../src/core/analytics';
+import { analyze, isDatable, todayMinutes } from '../src/core/analytics';
 import type { LessonResult } from '../src/core/types';
 
 let failures = 0;
@@ -721,6 +721,41 @@ console.log(
       withEmpty.scorecards.lettersUnlocked === 0,
     'Letters KPI still reflects the adaptive unlocked set (0 when an empty set is passed)',
   );
+}
+
+console.log('19) daily-goal "today" counts only today\'s datable minutes (not the all-time total)');
+{
+  const DAY = 86_400_000;
+  const NOW = Date.UTC(2026, 0, 20, 12, 0, 0);
+  const mk = (ts: number, mins: number): LessonResult => ({
+    timeStamp: ts,
+    layout: 'en',
+    length: 24,
+    time: mins * 60_000,
+    errors: 0,
+    speed: 300,
+    accuracy: 1,
+    complexity: 3,
+    score: 1,
+    histogram: [],
+  });
+  const history: LessonResult[] = [
+    mk(NOW, 3), // today, 3 min
+    mk(NOW - 30_000, 2), // today (30s earlier), 2 min → today total 5
+    mk(NOW - DAY, 20), // yesterday, 20 min
+    mk(50_000, 4), // legacy page-relative timestamp → not datable, excluded
+  ];
+  const today = todayMinutes(history, NOW);
+  const allTime = history.reduce((a, r) => a + r.time, 0) / 60_000;
+  assert(
+    Math.round(today) === 5,
+    `today = only today's datable minutes (got ${today.toFixed(2)}, want 5)`,
+  );
+  assert(
+    Math.round(allTime) === 29 && Math.round(today) !== Math.round(allTime),
+    `today (${Math.round(today)}m) must NOT equal the all-time total (${Math.round(allTime)}m) — the reported bug`,
+  );
+  assert(todayMinutes([], NOW) === 0, 'empty history → 0 minutes today');
 }
 
 console.log(failures === 0 ? '\nALL SMOKE CHECKS PASSED ✅' : `\n${failures} CHECK(S) FAILED ❌`);
