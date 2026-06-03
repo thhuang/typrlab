@@ -257,7 +257,9 @@ export function Analysis({
           <p className="note kbnote">
             {a.keyboard.weakest.length
               ? `Weakest keys: ${a.keyboard.weakest.join(' · ')} — these gate your next unlock.`
-              : 'All active keys are at target — keep going.'}
+              : 'All active keys are at target — keep going.'}{' '}
+            Every key you&rsquo;ve typed is colored by speed; the weakest list covers only your
+            unlocked letters.
           </p>
         </div>
         <div className="panel">
